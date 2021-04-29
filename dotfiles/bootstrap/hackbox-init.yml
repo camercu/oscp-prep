@@ -20,18 +20,64 @@
           - requests
       apt:
         install:
+          # - Paramspider
+          # - amass
+          # - anew
+          # - anti-burl
+          # - aquatone
+          # - assetfinder
+          # - dalfox
+          # - default-libmysqlclient-dev
+          # - dnsprobe
+          # - dnsvalidator
+          # - dotnet-sdk
+          # - fbrobe
+          # - ffuf
+          # - flameshot  # screenshot tool
+          # - gau
+          # - getjs
+          # - gf
+          # - gowitness
+          # - hakrawler
+          # - httprobe
+          # - jq
+          # - kazam  # screenshot tool
+          # - kxss
+          # - massdns
+          # - monodevelop
+          # - mosh
+          # - nodejs
+          # - oscanner  # Oracle enumeration tool
+          # - projectdiscovery chaos
+          # - projectdiscovery chaos-client
+          # - projectdiscovery httpx
+          # - projectdiscovery naabu
+          # - projectdiscovery nuclei
+          # - projectdiscovery shuffledns
+          # - shellter  # AV-evasion by injecting malware into legit .exe
+          # - sipvicious  # used to audit SIP-based VoIP systems
+          # - sn0int
+          # - sslscan  # audit SSL algorithms/cipher suites allowed
+          # - subfinder
+          # - subgen
+          # - subjack
+          # - tnscmd10g  # tool to talk to Oracle TNS listener on port 1521/tcp
+          # - urlprobe
+          # - waybackurls
+          # - wkhtmltopdf  # HTML to PDF rendering
+          # - zdns
+          # - zlib1g-dev  # sslscan dependency
           - apt-transport-https
           - build-essential
           - crackmapexec
           - curl
-          # - default-libmysqlclient-dev
           - default-mysql-client
-          # - dotnet-sdk
+          - dirb
+          - docker
           - download-mibs
           - enum4linux
           - exploitdb
           - fd-find
-          # - flameshot  # screenshot tool
           - fonts-wine
           - freerdp2-x11  # xfreerdp
           - fzf  # dependency for custom hashcat mode finder
@@ -41,7 +87,6 @@
           - gobuster
           - hashcat
           - john
-          # - kazam  # screenshot tool
           - libbz2-dev
           - libc6:i386
           - libffi-dev  # pwntools dependency
@@ -53,49 +98,45 @@
           - masscan
           - metasploit-framework
           - mingw-w64
-          # - monodevelop
           - nbtscan  # scans IP networks for NetBIOS name information
           - ncat
           - neo4j
           - nikto
           - nmap
-          # - nodejs
           - onesixtyone
           - openresolv  # required for wireguard
           - openvpn
-          # - oscanner  # Oracle enumeration tool
           - postgresql
           - powercat  # powershell implementation of netcat
           - powershell-empire
           - proxychains
           - pure-ftpd
-          - python3-pip
           - python3-dev # pwntools dependency
+          - python3-pip
           - rinetd
           - ripgrep
           - rsync
           - seclists
-          # - shellter  # AV-evasion by injecting malware into legit .exe
-          # - sipvicious  # used to audit SIP-based VoIP systems
           - smbclient
           - smbmap
           - smtp-user-enum
           - snmp
+          - snmp-check
           - snmp-mibs-downloader
+          - snmpwalk
+          - sqlmap
           - sqsh
-          # - sslscan  # audit SSL algorithms/cipher suites allowed
           - tcpdump
           - terminator
-          # - tnscmd10g  # tool to talk to Oracle TNS listener on port 1521/tcp
+          - tmux
           - vim
           - whatweb  # recognize web technologies/plugins used by a site
           - wine
           - wine32
           - wine64
           - wireguard
-          # - wkhtmltopdf  # HTML to PDF rendering
-          # - zlib1g-dev  # sslscan dependency
           - zsh
+
     go:
       version_url: https://golang.org/VERSION?m=text
     firefox:
