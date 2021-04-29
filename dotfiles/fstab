@@ -1,0 +1,1 @@
+.host:/vm-share    /mnt/vm-share        fuse.vmhgfs-fuse    defaults,allow_other    0    0

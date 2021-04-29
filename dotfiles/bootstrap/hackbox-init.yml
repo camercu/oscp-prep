@@ -1,0 +1,280 @@
+---
+# Ansible Playbook to install all desired tools on Kali hack box
+# To run:
+# sudo ansible-playbook -v -i localhost, --connection=local -e "ansible_python_interpreter=$(which python3)" hackbox-init.yml
+
+- name: Initialize Kali Hack-Box
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars:
+    services:
+      enable:
+    packages:
+      pip:
+        install:
+          - pip
+          - pwntools
+          - httpie
+          - requests
+      apt:
+        install:
+          - apt-transport-https
+          - build-essential
+          - crackmapexec
+          - curl
+          # - default-libmysqlclient-dev
+          - default-mysql-client
+          # - dotnet-sdk
+          - download-mibs
+          - enum4linux
+          - exploitdb
+          - fd-find
+          # - flameshot  # screenshot tool
+          - fonts-wine
+          - freerdp2-x11  # xfreerdp
+          - fzf  # dependency for custom hashcat mode finder
+          - gcc-multilib
+          - git
+          - gnome-screenshot
+          - gobuster
+          - hashcat
+          - john
+          # - kazam  # screenshot tool
+          - libbz2-dev
+          - libc6:i386
+          - libffi-dev  # pwntools dependency
+          - libreadline-dev
+          - libsqlite3-dev
+          - libssl-dev  # pwntools dependency
+          - libwine
+          - libwine:i386
+          - masscan
+          - metasploit-framework
+          - mingw-w64
+          # - monodevelop
+          - nbtscan  # scans IP networks for NetBIOS name information
+          - ncat
+          - neo4j
+          - nikto
+          - nmap
+          # - nodejs
+          - onesixtyone
+          - openresolv  # required for wireguard
+          - openvpn
+          # - oscanner  # Oracle enumeration tool
+          - postgresql
+          - powercat  # powershell implementation of netcat
+          - powershell-empire
+          - proxychains
+          - pure-ftpd
+          - python3-pip
+          - python3-dev # pwntools dependency
+          - rinetd
+          - ripgrep
+          - rsync
+          - seclists
+          # - shellter  # AV-evasion by injecting malware into legit .exe
+          # - sipvicious  # used to audit SIP-based VoIP systems
+          - smbclient
+          - smbmap
+          - smtp-user-enum
+          - snmp
+          - snmp-mibs-downloader
+          - sqsh
+          # - sslscan  # audit SSL algorithms/cipher suites allowed
+          - tcpdump
+          - terminator
+          # - tnscmd10g  # tool to talk to Oracle TNS listener on port 1521/tcp
+          - vim
+          - whatweb  # recognize web technologies/plugins used by a site
+          - wine
+          - wine32
+          - wine64
+          - wireguard
+          # - wkhtmltopdf  # HTML to PDF rendering
+          # - zlib1g-dev  # sslscan dependency
+          - zsh
+    go:
+      version_url: https://golang.org/VERSION?m=text
+    firefox:
+      extensions:
+        - FoxyProxy Standard
+        - Cookie-Editor
+    pyenv:
+      root: "/home/kali/.pyenv"
+      repo_url: "https://github.com/pyenv/pyenv"
+      release_api_url: >-
+        https://api.github.com/repos/pyenv/pyenv/releases/latest
+      python_ver: 2.7.18
+    dotfiles:
+      src: /mnt/vm-share/git/dotfiles
+      dest: /home/kali
+      files:
+        - .zsh-aliases
+        - .zshrc
+        - .vimrc
+    ohmyzsh:
+      install_url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+
+
+
+  tasks:  # ******************************************************************
+
+    - name: Apt full-upgrade
+      ansible.builtin.apt:
+        upgrade: full
+        update_cache: true
+        autoclean: true
+        autoremove: true
+
+    - name: Include Apt deb-src repos
+      ansible.builtin.apt_repository:
+        repo: deb-src http://http.kali.org/kali kali-rolling main contrib non-free
+        state: present
+
+    - name: Get foreign dpkg architectures
+      ansible.builtin.command: dpkg --print-foreign-architectures
+      register: dpkg_architectures
+      changed_when: false  # never shows as creating a change
+
+    - debug:
+        var: dpkg_architectures.stdout
+
+    - name: Add i386 architecture to dpkg
+      ansible.builtin.command: dpkg --add-architecture i386
+      when: "'i386' not in dpkg_architectures.stdout"
+
+    - name: "Install apt packages: {{ packages.apt.install | join(', ') }}"
+      ansible.builtin.apt:
+        name: "{{ packages.apt.install }}"
+        state: latest
+        update_cache: true
+      notify: Restart services
+
+    - name: Find latest release version of Go
+      ansible.builtin.uri:
+        method: GET
+        url: "{{ go.version_url }}"
+        follow_redirects: safe
+        body_format: raw
+        return_content: true
+      register: latest_go_version
+
+    - debug:
+        var: latest_go_version['content']
+
+    - name: Download & Install latest version of Go
+      ansible.builtin.unarchive:
+        src: "https://golang.org/dl/{{latest_go_version['content']}}.linux-amd64.tar.gz"
+        dest: /usr/local
+        remote_src: true
+
+    # Pyenv lets us have python2 install alongside the default system python3
+    - name: Install & configure pyenv for kali user
+      become_user: kali
+      block:
+        - name: Find latest release version of pyenv
+          ansible.builtin.uri:
+            method: GET
+            url: "{{ pyenv.release_api_url }}"
+            follow_redirects: safe
+            body_format: json
+          register: pyenv_release_info
+        - name: Download pyenv
+          ansible.builtin.git:
+            repo: "{{ pyenv.repo_url }}"
+            dest: "{{ pyenv.root }}"
+            depth: 1
+            version: "{{ pyenv_release_info['json']['tag_name'] }}"
+        - name: Install pyenv python version
+          ansible.builtin.shell: |
+            export PYENV_ROOT="$HOME/.pyenv"
+            export PATH="$PYENV_ROOT/bin:$PATH"
+            eval "$(pyenv init -)"
+            CFLAGS='-O2' pyenv install -s {{ pyenv.python_ver }}
+
+    - name: "Install python packages: {{ packages.pip.install | join(', ') }}"
+      become_user: kali
+      ansible.builtin.pip:
+        name: "{{ packages.pip.install }}"
+        state: latest
+
+    # - name: Put dotfiles in place (backing up old ones)
+    #   ansible.builtin.copy:
+    #     src: "{{ dotfiles.src + '/' + item }}"
+    #     dest: "{{ dotfiles.dest + '/' + item }}"
+    #     backup: true
+    #   loop: "{{ dotfiles.files }}"
+
+    - name: Make dotfiles symlinks
+      ansible.builtin.file:
+        src: "{{ dotfiles.src + '/' + item }}"
+        dest: "{{ dotfiles.dest + '/' + item }}"
+        state: link
+        force: true
+      loop: "{{ dotfiles.files }}"
+
+    - name: Configure Oh-My-Zsh
+      become_user: kali
+      block:
+
+        - name: Installing Oh-My-Zsh for kali user
+          ansible.builtin.shell:
+            cmd: curl -fsSL {{ ohmyzsh.install_url }} | sh
+            creates: /home/kali/.oh-my-zsh
+
+        - name: Install zsh-autosuggestions plugin
+          ansible.builtin.git:
+            repo: https://github.com/zsh-users/zsh-autosuggestions
+            dest: /home/kali/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+
+        - name: Install zsh-syntax-highlighting plugin
+          ansible.builtin.git:
+            repo: https://github.com/zsh-users/zsh-syntax-highlighting
+            dest: /home/kali/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+
+        - name: Install Powerlevel10k theme
+          ansible.builtin.git:
+            repo: https://github.com/romkatv/powerlevel10k.git
+            dest: /home/kali/.oh-my-zsh/custom/themes/powerlevel10k
+
+        - name: Copy over hashcat-mode-finder plugin
+          ansible.builtin.copy:
+            src: "{{ dotfiles.src + '/hashcat-mode-finder' }}"
+            dest: "/home/kali/.oh-my-zsh/custom/plugins/"
+            remote_src: true
+
+    - name: Install Meslo Nerd fonts
+      ansible.builtin.uri:
+        url: "{{ item }}"
+        dest: /usr/local/share/fonts/
+        creates: /usr/local/share/fonts/MesloLGS%20NF%20Regular.ttf
+      loop:
+        - https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf
+        - https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf
+        - https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf
+        - https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf
+      register: font_install
+
+    - name: Refresh font cache
+      ansible.builtin.command: fc-cache -fv
+      when: font_install.changed
+
+    - name: Checking if reboot required
+      ansible.builtin.command: test -f /var/run/reboot-required
+      failed_when: False
+      register: reboot_required
+      changed_when: reboot_required.rc == 0
+      notify: Rebooting machine
+
+  handlers:
+    - name: Restart services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: restarted
+      loop: "{{ services.enable }}"
+
+    - name: Rebooting machine
+      ansible.builtin.reboot:
