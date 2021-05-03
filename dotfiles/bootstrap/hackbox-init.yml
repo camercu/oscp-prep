@@ -161,6 +161,7 @@
         - .zsh-aliases
         - .zshrc
         - .vimrc
+        - .p10k.zsh
     ohmyzsh:
       install_url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
 

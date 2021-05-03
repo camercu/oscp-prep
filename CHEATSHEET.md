@@ -1252,6 +1252,12 @@ for C# and .NET.
 :: restart the machine now
 shutdown /r /t 0
 
+:: infinite loop of command with 5s timeout between runs
+for /l %n in () do @(
+  @echo Working really hard...
+  timeout /t 5 /nobreak > NUL
+)
+
 :: run regedit as SYSTEM (to view protected keys)
 psexec.exe -i -s regedit.exe
 :: check out HKLM\Software\Microsoft\Windows NT\Current Version\Winlogon\
@@ -1342,11 +1348,12 @@ cat /etc/auto?master
 
 # check this user's cron jobs
 crontab -l
-# check for running cron jobs
-grep "CRON" /var/log/cron.log
 # look at system-wide crontab
 cat /etc/crontab
 # pay attention to PATH in /etc/crontab and any bad file perms of scripts
+
+# check for running cron jobs
+grep "CRON" /var/log/cron.log
 
 # list every user's cron jobs
 for user in $(cut -f1 -d: /etc/passwd); do crontab -u $user -l; done 2>/dev/null
@@ -1389,9 +1396,9 @@ cat /etc/resolv.conf
 cat /etc/hosts
 
 # Network connections
-netstat -tulnp  # listening ports
-netstat -anop  # all connection types
-lsof -ni  # established connections
+netstat -tulnp  # all listening ports
+netstat -anop  # all connection types, with timers
+lsof -Pni  # established connections
 cat /proc/net/*  # lots of output??
 
 # iptables rules (must be root)
