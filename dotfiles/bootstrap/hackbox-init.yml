@@ -69,6 +69,7 @@
           # - zlib1g-dev  # sslscan dependency
           - apt-transport-https
           - build-essential
+          - catdoc  # text extractors for MS Office files
           - crackmapexec
           - curl
           - default-mysql-client
@@ -78,6 +79,7 @@
           - enum4linux
           - exploitdb
           - fd-find
+          - feroxbuster
           - fonts-wine
           - freerdp2-x11  # xfreerdp
           - fzf  # dependency for custom hashcat mode finder
@@ -115,6 +117,7 @@
           - python3-pip
           - rinetd
           - ripgrep
+          - rlwrap
           - rsync
           - seclists
           - smbclient
@@ -124,6 +127,7 @@
           - snmp-check
           - snmp-mibs-downloader
           - snmpwalk
+          - sshfs
           - sqlmap
           - sqsh
           - tcpdump
@@ -135,6 +139,7 @@
           - wine32
           - wine64
           - wireguard
+          - xclip
           - zsh
 
     go:

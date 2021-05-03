@@ -128,7 +128,7 @@ if [[ "$OS" == "linux" ]]; then
     # export VPNIP=$(ip -f inet addr show tun0 | grep -Po 'inet \\K\[\\d.\]+')
 
     # netcat listener
-    alias lsn='sudo nc -lnvp'
+    alias lsn='sudo ncat -lnvp'
 
     # create a pattern with metasploit's pattern_create.rb
     alias pattcreat='/usr/share/metasploit-framework/tools/exploit/pattern_create.rb'
@@ -159,7 +159,7 @@ if [[ "$OS" == "linux" ]]; then
         ## rdp to the offsec windows vm
         alias winvm='rdesktop -u admin -p lab 192.168.139.10 -g 1366x768'
         alias nixvm='rdesktop -u root -p lab 192.168.139.44 -g 1366x768'
-        
+
         # Capture last command in playbook
         alias plb="history | tail -n -1 | sed 's/^ *[0-9]* *//g' >> plb"
 

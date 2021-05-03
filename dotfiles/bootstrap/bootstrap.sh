@@ -26,7 +26,7 @@ function success {
 }
 
 info "Ensuring VMWare Tools are installed..."
-sudo apt update && sudo apt install -y open-vm-tools fuse
+sudo apt update && sudo apt install -y open-vm-tools fuse3
 
 info "Regenerating Host SSH Keys..."
 sudo rm -v /etc/ssh/ssh_host_*

