@@ -1067,6 +1067,7 @@ $a=[Ref].Assembly.GetTypes();foreach($b in $a){if ($b.Name -like "*iUtils") {$c=
 ### 5.4.2. Turn off Windows Firewall
 
 ```bat
+:: must be done from administrator prompt
 netsh advfirewall set allprofiles state off
 ```
 
