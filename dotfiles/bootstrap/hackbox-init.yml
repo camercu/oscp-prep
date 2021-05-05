@@ -78,6 +78,7 @@
           - download-mibs
           - enum4linux
           - exploitdb
+          - eyewitness  # website snapshotting tool
           - fd-find
           - feroxbuster
           - fonts-wine

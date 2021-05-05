@@ -112,6 +112,7 @@ Other great cheetsheets:
   - [8.2. Connect to Windows RDP](#82-connect-to-windows-rdp)
   - [8.3. Change Windows Domain Credentials](#83-change-windows-domain-credentials)
 - [9. Linux Persistence](#9-linux-persistence)
+  - [9.1. Grant passwordless sudo access](#91-grant-passwordless-sudo-access)
 - [10. Pivoting and Redirection](#10-pivoting-and-redirection)
   - [10.1. SSH Tunnels](#101-ssh-tunnels)
   - [10.2. Bending with iptables](#102-bending-with-iptables)
@@ -2041,7 +2042,13 @@ Set-ADAccountPassword -Identity someuser -OldPassword (ConvertTo-SecureString -A
 
 # 9. Linux Persistence
 
-TODO
+## 9.1. Grant passwordless sudo access
+
+Edit the `/etc/sudoers` file to have the following line:
+
+```
+myuser ALL=(ALL) NOPASSWD: ALL
+```
 
 # 10. Pivoting and Redirection
 
