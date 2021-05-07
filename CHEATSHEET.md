@@ -972,6 +972,22 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
 openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
 ```
 
+### Decrypting files with GPG
+
+```sh
+# import public and private keys into gpg
+gpg --import secring.gpg pubring.gpg
+
+# list imported pubkeys
+gpg --list-keys
+
+# list imported private keys
+gpg --list-secret-keys
+
+# decrypting file with keys already imported
+gpg -d -o secret.txt secret.txt.gpg
+```
+
 ## 4.6. Post Exploit Frameworks
 
 ### 4.6.1. Merlin Framework
@@ -1451,7 +1467,7 @@ psexec.exe -i -s regedit.exe
 :: check out HKLM\Software\Microsoft\Windows NT\Current Version\Winlogon\
 
 :: recursively list files with Alternate Data Streams
-dir /s /r | find ":$DATA"
+dir /s /r /a | find ":$DATA"
 gci -recurse | % { gi $_.FullName -stream * } | where {(stream -ne ':$Data') -and (stream -ne 'Zone.Identifier')}
 
 :: Check if OS is 64-bit
@@ -1559,6 +1575,9 @@ ps aux
 cat /home/*/.*history
 grep -E 'telnet|ssh|mysql' /home/*/.*history 2>/dev/null
 
+# Interesting files
+find / -type f -name *.gpg
+find / -type f -name id_rsa*
 
 ###############################
 ## NETWORK  ###################
@@ -2030,6 +2049,10 @@ powershell iwr -uri http://7-zip.org/a/7z1604-x64.exe -outfile 7zip.exe
 ### 7.2.9. Windows Files of Interest
 
 ```bat
+:: GPG keys
+dir /s /b /a C:\users\*.gpg
+:: usually under C:\Users\*\AppData\Roaming\gnupg\
+
 :: containing plaintext, encoded, or hashed credentials
 %SYSTEMDRIVE%\unattend.txt
 %SYSTEMDRIVE%\sysprep.inf
@@ -2178,6 +2201,7 @@ tar zcf loot.tar.gz \
 "/etc/ssh/ssh_host_*" \
 "/home/*/.ssh/id*" \
 "/home/*/.gnupg" \
+"/root/*/.gnupg" \
 "/root/.ssh/id*" \
 "/root/proof.txt"
 ```
