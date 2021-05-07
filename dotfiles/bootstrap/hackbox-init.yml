@@ -33,7 +33,6 @@
           # - dotnet-sdk
           # - fbrobe
           # - ffuf
-          # - flameshot  # screenshot tool
           # - gau
           # - getjs
           # - gf
@@ -41,7 +40,6 @@
           # - hakrawler
           # - httprobe
           # - jq
-          # - kazam  # screenshot tool
           # - kxss
           # - massdns
           # - monodevelop
@@ -81,6 +79,7 @@
           - eyewitness  # website snapshotting tool
           - fd-find
           - feroxbuster
+          - flameshot  # screenshot tool
           - fonts-wine
           - freerdp2-x11  # xfreerdp
           - fzf  # dependency for custom hashcat mode finder
