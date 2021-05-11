@@ -60,6 +60,7 @@ Other great cheetsheets:
     - [4.4.12. OpenSSL Encrypted Reverse Shell](#4412-openssl-encrypted-reverse-shell)
   - [4.5. Encryption](#45-encryption)
     - [4.5.1. Create self-signed SSL/TLS certificate](#451-create-self-signed-ssltls-certificate)
+    - [Decrypting files with GPG](#decrypting-files-with-gpg)
   - [4.6. Post Exploit Frameworks](#46-post-exploit-frameworks)
     - [4.6.1. Merlin Framework](#461-merlin-framework)
 - [5. Windows Privilege Escalation](#5-windows-privilege-escalation)
@@ -1523,6 +1524,11 @@ cat /etc/issue
 
 # check sudo permissions
 sudo -l
+
+# check for CVE-2021-3156 (Heap-based buffer overflow in sudo, privesc)
+sudoedit -s /
+# Vulnerable if it says 'sudoedit: /: not a regular file' instead of 'usage:...'
+# use exploit: https://github.com/CptGibbon/CVE-2021-3156.git
 
 # Credentials
 ls -l /home/*/.ssh/id*  # ssh keys
