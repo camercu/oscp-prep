@@ -55,17 +55,17 @@ alias ts='tmux new-session -s'
 
 ## encoding/decoding
 alias rot13="python3 -c 'import sys, codecs;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();print(codecs.encode(s,\"rot_13\"))'"
-alias urlencode="python3 -c 'import sys,os,urllib.parse as url;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();print(url.quote(os.fsencode(s)))'"
+alias urlencode="python3 -c 'import sys,os,urllib.parse as url;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();print(url.quote_plus(os.fsencode(s)))'"
 alias urldecode="python3 -c 'import sys,urllib.parse as url;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();print(url.unquote(s.strip()))'"
 alias b64encode="python3 -c 'import sys,os,base64 as b64;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();print(b64.b64encode(os.fsencode(s)).decode())'"
 alias b64e='b64encode'
 alias b64decode="python3 -c 'import sys,base64 as b;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();sys.stdout.buffer.write(b.b64decode(s.strip()));'"
 alias b64d='b64decode'
-alias b16encode="python3 -c 'import sys,os,base64 as b16;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();print(b16.b16encode(os.fsencode(s)).decode())'"
+alias b16encode=$'python3 -c \'import sys,os,base64 as b16;s=" ".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();print(b16.b16encode(os.fsencode(s)).decode())\''
 alias b16e='b16encode'
 alias b16decode="python3 -c 'import sys, base64 as b;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read().encode();sys.stdout.buffer.write(b.b16decode(s.strip().upper()));'"
 alias b16d='b16decode'
-alias bin2sc="python3 -c 'import sys,os,textwrap as tw;s=\" \".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read();[print(f\"\\\"{x}\\\"\") for x in tw.wrap(\"\".join(f\"\\\x{b:02x}\" for b in os.fsencode(s)),75)]'"
+alias bin2sc=$'python3 -c \'import sys,os,textwrap as tw;s=" ".join(sys.argv[1:]) if len(sys.argv)>1 else sys.stdin.read();[print(f"\\"{x}\\"") for x in tw.wrap("".join(f"\\\\x{b:02x}" for b in os.fsencode(s)),75)]\''
 
 ###  miscellaneous  ###
 alias df='df -H'
@@ -128,7 +128,7 @@ if [[ "$OS" == "linux" ]]; then
     # export VPNIP=$(ip -f inet addr show tun0 | grep -Po 'inet \\K\[\\d.\]+')
 
     # netcat listener
-    alias lsn='sudo ncat -lnvp'
+    alias lsn='sudo nc -lnvp'
 
     # create a pattern with metasploit's pattern_create.rb
     alias pattcreat='/usr/share/metasploit-framework/tools/exploit/pattern_create.rb'
