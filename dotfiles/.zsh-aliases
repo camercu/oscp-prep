@@ -123,6 +123,9 @@ if [[ "$OS" == "linux" ]]; then
     # fd-find alias
     alias fd='fdfind'
 
+    # nmap as root
+    alias nmap='sudo nmap'
+
     # display tun0 ip addr
     alias vpnip="ip a s tun0 | grep -w inet | awk '{print \$2}' | cut -d '/' -f 1"
     # export VPNIP=$(ip -f inet addr show tun0 | grep -Po 'inet \\K\[\\d.\]+')
@@ -150,6 +153,9 @@ if [[ "$OS" == "linux" ]]; then
         alias cdhtb='cd /mnt/vm-share/htb'
 
         alias smbsrv='impacket-smbserver'
+
+        # take notes while you work
+        alias notes='vim -p notes.md plb'
 
         ## openvpn
         alias thmconnect='sudo openvpn /mnt/vm-share/thm/tryhackme-ccu337.ovpn'
