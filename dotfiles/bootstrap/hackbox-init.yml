@@ -18,6 +18,7 @@
           - pwntools
           - httpie
           - requests
+          - pipx
       apt:
         install:
           # - Paramspider
@@ -32,7 +33,6 @@
           # - dnsvalidator
           # - dotnet-sdk
           # - fbrobe
-          # - ffuf
           # - gau
           # - getjs
           # - gf
@@ -45,7 +45,6 @@
           # - monodevelop
           # - mosh
           # - nodejs
-          # - oscanner  # Oracle enumeration tool
           # - projectdiscovery chaos
           # - projectdiscovery chaos-client
           # - projectdiscovery httpx
@@ -53,32 +52,29 @@
           # - projectdiscovery nuclei
           # - projectdiscovery shuffledns
           # - shellter  # AV-evasion by injecting malware into legit .exe
-          # - sipvicious  # used to audit SIP-based VoIP systems
           # - sn0int
-          # - sslscan  # audit SSL algorithms/cipher suites allowed
           # - subfinder
           # - subgen
           # - subjack
-          # - tnscmd10g  # tool to talk to Oracle TNS listener on port 1521/tcp
           # - urlprobe
           # - waybackurls
-          # - wkhtmltopdf  # HTML to PDF rendering
           # - zdns
           # - zlib1g-dev  # sslscan dependency
           - apt-transport-https
           - build-essential
           - catdoc  # text extractors for MS Office files
           - crackmapexec
-          - curl
+          - curl   # autorecon dependency
           - default-mysql-client
           - dirb
           - docker
           - download-mibs
-          - enum4linux
+          - enum4linux   # autorecon dependency
           - exploitdb
           - eyewitness  # website snapshotting tool
           - fd-find
           - feroxbuster
+          - ffuf  # autorecon dependency, web fuzzer
           - flameshot  # screenshot tool
           - fonts-wine
           - freerdp2-x11  # xfreerdp
@@ -86,7 +82,7 @@
           - gcc-multilib
           - git
           - gnome-screenshot
-          - gobuster
+          - gobuster   # autorecon dependency
           - hashcat
           - john
           - libbz2-dev
@@ -100,14 +96,15 @@
           - masscan
           - metasploit-framework
           - mingw-w64
-          - nbtscan  # scans IP networks for NetBIOS name information
+          - nbtscan  # autorecon dependency, scans IP networks for NetBIOS name information
           - ncat
           - neo4j
-          - nikto
-          - nmap
-          - onesixtyone
+          - nikto   # autorecon dependency
+          - nmap   # autorecon dependency
+          - onesixtyone   # autorecon dependency
           - openresolv  # required for wireguard
           - openvpn
+          - oscanner   # autorecon dependency, Oracle enumeration tool
           - postgresql
           - powercat  # powershell implementation of netcat
           - powershell-empire
@@ -115,30 +112,35 @@
           - pure-ftpd
           - python3-dev # pwntools dependency
           - python3-pip
+          - python3-venv
           - rinetd
           - ripgrep
           - rlwrap
           - rsync
-          - seclists
-          - smbclient
-          - smbmap
-          - smtp-user-enum
-          - snmp
+          - seclists   # autorecon dependency
+          - sipvicious   # autorecon dependency, used to audit SIP-based VoIP systems
+          - smbclient   # autorecon dependency
+          - smbmap   # autorecon dependency
+          - smtp-user-enum   # autorecon dependency
+          - snmp   # autorecon dependency
           - snmp-check
           - snmp-mibs-downloader
           - snmpwalk
-          - sshfs
           - sqlmap
           - sqsh
+          - sshfs
+          - sslscan   # autorecon dependency, audit SSL algorithms/cipher suites allowed
           - tcpdump
           - terminator
           - tmux
+          - tnscmd10g  # autorecon dependency, tool to talk to Oracle TNS listener on port 1521/tcp
           - vim
-          - whatweb  # recognize web technologies/plugins used by a site
+          - whatweb   # autorecon dependency, recognize web technologies/plugins used by a site
           - wine
           - wine32
           - wine64
           - wireguard
+          - wkhtmltopdf  # autorecon dependency, HTML to PDF rendering
           - xclip
           - zsh
 
