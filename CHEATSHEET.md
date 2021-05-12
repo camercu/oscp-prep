@@ -1526,8 +1526,9 @@ cat /etc/issue
 sudo -l
 
 # check for CVE-2021-3156 (Heap-based buffer overflow in sudo, privesc)
-# *check only works if you are in sudoers file. affects all legacy  versions
-# from 1.8.2 to 1.8.31p2 and all stable versions from 1.9.0 to 1.9.5p1
+# *check only works if you are in sudoers file. Affects all legacy versions
+# from 1.8.2 to 1.8.31p2 and all stable versions from 1.9.0 to 1.9.5p1.
+# Exploit works even if user isn't in sudoers file.
 sudoedit -s /
 # Vulnerable if it says 'sudoedit: /: not a regular file' instead of 'usage:...'
 # use exploit: https://github.com/CptGibbon/CVE-2021-3156.git
