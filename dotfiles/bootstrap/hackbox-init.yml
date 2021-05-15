@@ -19,6 +19,7 @@
           - httpie
           - requests
           - pipx
+          - pyftpdlib
       apt:
         install:
           # - Paramspider
@@ -68,7 +69,6 @@
           - default-mysql-client
           - dirb
           - docker
-          - download-mibs
           - enum4linux   # autorecon dependency
           - exploitdb
           - eyewitness  # website snapshotting tool
@@ -122,10 +122,9 @@
           - smbclient   # autorecon dependency
           - smbmap   # autorecon dependency
           - smtp-user-enum   # autorecon dependency
-          - snmp   # autorecon dependency
-          - snmp-check
+          - snmp   # autorecon dependency, includes snmpwalk
+          - snmpcheck
           - snmp-mibs-downloader
-          - snmpwalk
           - sqlmap
           - sqsh
           - sshfs
@@ -200,7 +199,7 @@
         name: "{{ packages.apt.install }}"
         state: latest
         update_cache: true
-      notify: Restart services
+      # notify: Restart services
 
     - name: Find latest release version of Go
       ansible.builtin.uri:
@@ -319,11 +318,11 @@
       notify: Rebooting machine
 
   handlers:
-    - name: Restart services
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        state: restarted
-      loop: "{{ services.enable }}"
+    # - name: Restart services
+    #   ansible.builtin.systemd:
+    #     name: "{{ item }}"
+    #     state: restarted
+    #   loop: "{{ services.enable }}"
 
     - name: Rebooting machine
       ansible.builtin.reboot:
