@@ -19,6 +19,7 @@ Other great cheetsheets:
   - [3.4. 80,443 - Web Enumeration](#34-80443---web-enumeration)
     - [3.4.1. Web Server Software Enumeration](#341-web-server-software-enumeration)
     - [3.4.2. Web Directory Scanning](#342-web-directory-scanning)
+    - [3.4.3. Common Web Vuln scanning with Nikto](#343-common-web-vuln-scanning-with-nikto)
   - [3.5. 88/749 Kerberos Enumeration](#35-88749-kerberos-enumeration)
   - [3.6. 110,995 - POP Enumeration](#36-110995---pop-enumeration)
   - [3.7. 111 - RPCbind Enumeration](#37-111---rpcbind-enumeration)
@@ -131,6 +132,7 @@ Other great cheetsheets:
   - [10.5. Bending with netsh](#105-bending-with-netsh)
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
+  - [Convert text to Windows UTF-16 format on Linux](#convert-text-to-windows-utf-16-format-on-linux)
 
 # 3. Scanning and Enumeration
 
@@ -267,7 +269,7 @@ Whatweb shows more details about tech stacks in use by server.
 whatweb -v -a3 VICTIM_IP
 ```
 
-PHP 5.x is vulnerable to Shellshock!
+**PHP 5.x is vulnerable to Shellshock!**
 
 ### 3.4.2. Web Directory Scanning
 
@@ -279,6 +281,12 @@ gobuster dir -eku http://VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt 
 # other good common list: /usr/share/seclists/Discovery/Web-Content/common.txt
 ```
 
+### 3.4.3. Common Web Vuln scanning with Nikto
+
+```sh
+nikto -o nikto.txt -h 10.11.1.123
+```
+
 ## 3.5. 88/749 Kerberos Enumeration
 
 ```sh
@@ -286,7 +294,8 @@ gobuster dir -eku http://VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt 
 ./kerbrute userenum --dc DC_IP -d DOMAINNAME userlist.txt
 
 # dump all LDAP users
-impacket-GetADUsers -all -no-pass -dc-ip DC_IP DOMAIN.tld
+impacket-GetADUsers -all -no-pass -dc-ip DC_IP DOMAIN.tld/
+impacket-GetADUsers -all -dc-ip DC_IP DOMAIN.tld/user:password
 
 # ASREPRoasting - Kerberos attack that allows password hashes to be retrieved
 # for users that do not require pre-authentication (user has “Do not use
@@ -1023,15 +1032,12 @@ cd bin/*
 
 ```bat
 :: Basic System Info
-systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+systeminfo
 hostname
 
 :: Who am I?
 echo %username%
 whoami /all
-
-:: Current User Domain
-echo %userdomain%
 
 :: What users/localgroups are on the machine?
 net user
@@ -1042,6 +1048,17 @@ net localgroup Administrators
 
 :: More info about a specific user. Check if user has privileges.
 net user user1
+
+:: Current User Domain
+echo %userdomain%
+
+:: What Active Directory Domain you belong to
+wmic computersystem get domain
+systeminfo | findstr /B /C:"Domain"
+
+:: Which Domain Controller you're authenticated to (logonserver)
+set l
+nltest /dsgetdc:<domain>
 
 :: View Domain Groups
 net group /domain
@@ -2124,8 +2141,8 @@ reg query "HKLM\SYSTEM\Current\ControlSet\Services\SNMP"
 reg query "HKCU\Software\SimonTatham\PuTTY\Sessions"
 
 :: Search for password in registry
-reg query HKLM /f password /t REG_SZ /s | clip
-reg query HKCU /f password /t REG_SZ /s | clip
+reg query HKLM /f password /t REG_SZ /s
+reg query HKCU /f password /t REG_SZ /s
 ```
 
 ### 7.3.3. Files with Passwords on Windows
@@ -2531,6 +2548,8 @@ can set up port forwarding using the `netsh` utility.
 
 :: establish IPv4 port forwarding from windows external IP to internal host
 netsh interface portproxy add v4tov4 listenport=4445 listenaddress=WIN_EXT_IP connectport=445 connectaddress=INTERNAL_VICTIM_IP
+:: example opening mysql connections to the outside on port 33306
+netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=33306 connectaddress=127.0.0.1 connectport=3306
 
 :: you also need to open a firewall rule to allow your inbound 4445 traffic
 netsh advfirewall firewall add rule name="fwd_4445_rule" protocol=TCP dir=in localip=WIN_EXT_IP localport=4445 action=allow
@@ -2546,4 +2565,12 @@ Put this at the top of your `~/.ssh/config` to disable it for all hosts:
 Host *
    StrictHostKeyChecking no
    UserKnownHostsFile=/dev/null
+```
+
+## Convert text to Windows UTF-16 format on Linux
+
+```sh
+echo "some text" | iconv -t UTF-16LE
+
+# useful for encoding a powershell command in base64
 ```
