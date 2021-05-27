@@ -12,6 +12,8 @@ Other great cheetsheets:
 - [2. Table of Contents](#2-table-of-contents)
 - [3. Scanning and Enumeration](#3-scanning-and-enumeration)
   - [3.1. Nmap Scanning](#31-nmap-scanning)
+  - [Simple Bash ping scanner](#simple-bash-ping-scanner)
+  - [Simple Bash port scanner](#simple-bash-port-scanner)
   - [3.2. 25,465,587 - SMTP/s Enumeration](#32-25465587---smtps-enumeration)
   - [3.3. 53 - DNS Enumeration](#33-53---dns-enumeration)
     - [3.3.1. DNS Zone Transfer](#331-dns-zone-transfer)
@@ -131,6 +133,8 @@ Other great cheetsheets:
   - [10.3. Bending with socat](#103-bending-with-socat)
   - [10.4. Bending with rinetd](#104-bending-with-rinetd)
   - [10.5. Bending with netsh](#105-bending-with-netsh)
+  - [Bending with sshuttle](#bending-with-sshuttle)
+  - [Bending with chisel](#bending-with-chisel)
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
   - [11.2. Convert text to Windows UTF-16 format on Linux](#112-convert-text-to-windows-utf-16-format-on-linux)
@@ -158,6 +162,38 @@ sudo nmap -n -v -sU --top-ports=20 --reason -oA nmap/udp-top20 -T4 VICTIM_IP
 # specifying safe and wildcard ftp-* scripts
 # logic: and, or, not all work. "," is like "or"
 nmap --script="safe and ftp-*" -v -n -p 21 -oA nmap/safe-ftp VICTIM_IP
+```
+
+## Simple Bash ping scanner
+
+Pings all hosts in a /24 subnet. Provide any IP address in the subnet as arg.
+
+```sh
+#!/bin/bash
+addr=${1:-10.1.1.0}
+subnet="${addr%.*}"
+for i in {1..254}; do
+  host="$subnet.$i"
+  ping -c1 -w1 $subnet.$i >& /dev/null && echo "$host UP ++++" || echo "$host down" &
+  sleep 0.1 || break  # lets you Ctrl+C out of loop
+done
+wait $(jobs -rp)
+echo "Done"
+```
+
+## Simple Bash port scanner
+
+Scans all 65535 ports of a single host. Provide host IP as arg.
+
+```sh
+#!/bin/bash
+host=${1}
+for port in {1..65535}; do
+  timeout .5 bash -c "(echo -n > /dev/tcp/$host/$port) >& /dev/null" &&
+    echo "port $port is open" &
+done
+wait $(jobs -rp)
+echo "Done"
 ```
 
 ## 3.2. 25,465,587 - SMTP/s Enumeration
@@ -2281,6 +2317,7 @@ tar zcf loot.tar.gz \
 /home/*/.gnupg \
 /root/*/.gnupg \
 /root/.ssh/id* \
+/root/network-secret.txt \
 /root/proof.txt
 ```
 
@@ -2568,7 +2605,28 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=33306 conn
 netsh advfirewall firewall add rule name="fwd_4445_rule" protocol=TCP dir=in localip=WIN_EXT_IP localport=4445 action=allow
 ```
 
+## Bending with sshuttle
+
+[Sshuttle](https://sshuttle.readthedocs.io/en/stable/usage.html) is a python library that
+handles setting up a combination of IPTABLES rules and SSH proxy tunnels to transparently
+route all traffic to a target internal subnet easily.
+
+```sh
+# the CIDR IP is the target subnet you want to proxy access to.
+sshuttle --dns -r user@jumpbox_ip 10.1.1.0/0
+```
+
+## Bending with chisel
+
+[Chisel](https://github.com/jpillora/chisel) lets you securely tunnel through
+firewalls and set up a SOCKS proxy through your tunnel.
+
+[Usage](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)
+
 # 11. Miscellaneous
+Host *
+   StrictHostKeyChecking no
+   UserKnownHostsFile=/dev/null
 
 ## 11.1. Disable SSH Host Key Checking
 

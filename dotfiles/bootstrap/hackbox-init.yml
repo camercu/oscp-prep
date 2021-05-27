@@ -20,6 +20,7 @@
           - requests
           - pipx
           - pyftpdlib
+          - updog # python http server replacement that supports ssl & file upload
       apt:
         install:
           # - Paramspider
@@ -125,6 +126,7 @@
           - snmp   # autorecon dependency, includes snmpwalk
           - snmpcheck
           - snmp-mibs-downloader
+          - sshuttle
           - sqlmap
           - sqsh
           - sshfs
@@ -218,6 +220,24 @@
         src: "https://golang.org/dl/{{latest_go_version['content']}}.linux-amd64.tar.gz"
         dest: /usr/local
         remote_src: true
+
+    - name: Check if Rust installed for kali user
+      ansible.builtin.stat:
+        path: /home/kali/.cargo
+      register: cargo_dir
+
+    - name: Fetch rustup
+      ansible.builtin.uri:
+        url: https://sh.rustup.rs
+        return_content: yes
+      when: cargo_dir.stat.exists == False
+      register: rustup_installer
+
+    - name: Run rustup installer
+      ansible.builtin.shell:
+        cmd: sh -s -- -y
+        stdin: "{{ rustup_installer.content }}"
+      when: cargo_dir.stat.exists == False
 
     # Pyenv lets us have python2 install alongside the default system python3
     - name: Install & configure pyenv for kali user
