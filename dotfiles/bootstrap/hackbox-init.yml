@@ -65,6 +65,7 @@
           - apt-transport-https
           - build-essential
           - catdoc  # text extractors for MS Office files
+          - chisel
           - crackmapexec
           - curl   # autorecon dependency
           - default-mysql-client
