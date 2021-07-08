@@ -160,10 +160,17 @@ mkdir -p scans/nmap; cd scans; nmap -v -n -A -oA nmap/initial-scan $VICTIM_IP
 # all TCP ports, fast discovery, then script scan:
 # verbose, no DNS resolution, fastest timing, all TCP ports, output all formats
 ports=$(nmap -v -n -T4 --min-rate=1000 -p- --open --reason $VICTIM_IP | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
-nmap -n -v -sC -sV -p $ports -oA nmap/tcp-all $VICTIM_IP
+nmap -n -v -sC -sV -Pn -p $ports -oA nmap/tcp-all $VICTIM_IP
 
+# fast full TCP discovery using massscan:
+sudo masscan -p1-65535 $VICTIM_IP --rate=1000 -e tun0 > masscan.txt
+tcpports=$(cat masscan.txt | cut -d ' ' -f 4 | cut -d '/' -f 1 | sort -n | tr '\n' ',' | sed 's/,$//')
+sudo nmap -n -p $tcpports -oA nmap/tcp-all -Pn --script "default,safe,vuln" -sV $VICTIM_IP
+
+# UDP fast scan
+sudo nmap -n -v -sU -F -T4 --reason -T4 -oA nmap/udp-fast $VICTIM_IP
 # top 50 UDP ports
-sudo nmap -n -v -sU --top-ports=50 --reason -T4 -oA nmap/udp-top50 $VICTIM_IP
+sudo nmap -n -v -sU -T4 --top-ports=50 --reason -oA nmap/udp-top50 $VICTIM_IP
 
 # specifying safe and wildcard ftp-* scripts
 # logic: and, or, not all work. "," is like "or"
@@ -254,6 +261,8 @@ See [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smtp)
 
 **PRO TIP**: Make sure you add the DNS entries you discover to your
 `/etc/hosts` file. Some web servers do redirection based on domain name!
+
+**Format of `/etc/hosts` entry**:
 
 ```
 10.10.10.10     victim.com mail.victim.com www.victim.com admin.victim.com
