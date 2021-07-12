@@ -163,8 +163,8 @@ if [[ "$OS" == "linux" ]]; then
         alias pwkconnect='echo OS-80249; sudo openvpn /mnt/vm-share/oscp/lab/connection/OS-80249-PWK.ovpn'
 
         ## rdp to the offsec windows vm
-        alias winvm='rdesktop -u admin -p lab 192.168.139.10 -g 1366x768'
-        alias nixvm='rdesktop -u root -p lab 192.168.139.44 -g 1366x768'
+        alias winvm='rdesktop -u admin -p lab 192.168.144.10 -g 1366x700'
+        alias nixvm='rdesktop -u root -p lab 192.168.144.44 -g 1366x700'
 
         # Capture last command in playbook
         alias plb="history | tail -n -1 | sed 's/^ *[0-9]* *//g' >> plb"

