@@ -147,6 +147,7 @@ Other great cheetsheets:
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
   - [11.2. Convert text to Windows UTF-16 format on Linux](#112-convert-text-to-windows-utf-16-format-on-linux)
+  - [11.3. Extract UDP packet data](#113-extract-udp-packet-data)
 
 # 3. Scanning and Enumeration
 
@@ -2914,3 +2915,21 @@ or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=
 # useful for encoding a powershell command in base64
 echo "some text" | iconv -t UTF-16LE
 ```
+
+## 11.3. Extract UDP packet data
+
+Using scapy:
+
+```python
+#!/usr/bin/env python3
+
+from scapy.all import *
+import sys
+
+def handler(packet):
+    print(str(packet.payload.payload.payload))
+
+pcap = sys.argv[1]
+sniff(offline=pcap, prn=handler, filter="udp")
+```
+
