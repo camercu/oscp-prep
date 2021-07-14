@@ -1,6 +1,6 @@
-# 1. Hacking Cheatsheet
+# 1. Pentesting Cheatsheet
 
-Commands and short scripts that accomplish useful things for hacking/red teaming.
+Commands and short scripts that accomplish useful things for penetration testing/red teaming.
 
 Other great cheetsheets:
 - [HackTricks](https://book.hacktricks.xyz/)
@@ -8,7 +8,7 @@ Other great cheetsheets:
 - [Awesome Penetration Testing](https://github.com/enaqx/awesome-pentest)
 
 # 2. Table of Contents
-- [1. Hacking Cheatsheet](#1-hacking-cheatsheet)
+- [1. Pentesting Cheatsheet](#1-pentesting-cheatsheet)
 - [2. Table of Contents](#2-table-of-contents)
 - [3. Scanning and Enumeration](#3-scanning-and-enumeration)
   - [3.1. Nmap Scanning](#31-nmap-scanning)
@@ -40,6 +40,7 @@ Other great cheetsheets:
     - [3.16.2. Grabbing MySQL Passwords](#3162-grabbing-mysql-passwords)
     - [3.16.3. Useful MySQL Files](#3163-useful-mysql-files)
   - [3.17. 5900 - VNC Enumeration](#317-5900---vnc-enumeration)
+  - [3.18. IPv6 to bypass IPv4 filters](#318-ipv6-to-bypass-ipv4-filters)
 - [4. Exploitation](#4-exploitation)
   - [4.1. Searchsploit](#41-searchsploit)
   - [4.2. Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
@@ -839,6 +840,47 @@ medusa -h $VICTIM_IP –u root -P pass.txt –M vnc
 ncrack -V --user root -P pass.txt $VICTIM_IP:PORT
 patator vnc_login host=$VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
 ```
+## 3.18. IPv6 to bypass IPv4 filters
+
+Sometimes if you see `filtered` on an nmap scan, the filter may only be applied on IPv4, but not IPv6. Try scanning it again using the host's IPv6 address.
+
+```bash
+# First take note of MAC address from nmap scan of device with 'filtered' port.
+# NOTE: nmap must be run as sudo to get MAC address.
+# If you don't have the MAC from nmap, you can probably get it from
+# your arp table with `arp -an`. If you have a hostname, you can
+# do a DNS lookup for the AAAA record.
+
+# get list of IPv6 neighbors on tun0 interface
+ping6 -c2 ff02::1%tun0 >/dev/null
+ip -6 n | grep -i MACADDR
+
+# Then rescan using nmap's IPv6 mode
+sudo nmap -6 -n -v -sC -sV -p FILTERED_PORT IPV6_ADDR
+```
+
+Here is another example of a script to try to get the link-local IPv6 address by building the EUI form from the MAC:
+
+```bash
+#!/bin/bash -e
+# Usage: ./ipv4to6.sh 192.168.0.1
+# source: https://askubuntu.com/a/771914
+
+IP=$1
+ping -c 1 $1 > /dev/null 2> /dev/null
+MAC=$(arp -an $1 | awk '{ print $4 }')
+IFACE=$(arp -an $1 | awk '{ print $7 }')
+
+python3 -c "
+from netaddr import IPAddress
+from netaddr.eui import EUI
+mac = EUI(\"$MAC\")
+ip = mac.ipv6(IPAddress('fe80::'))
+print('{ip}%{iface}'.format(ip=ip, iface=\"$IFACE\"))"
+```
+
+
+
 # 4. Exploitation
 
 ## 4.1. Searchsploit
@@ -2060,8 +2102,8 @@ void inject() {
 ```
 
 ```sh
-# find all SUID and GUID binaries
-find / -type f -a \( -perm -u+s -o -perm -g+s \) -exec ls -l {} \; 2> /dev/null
+# find all root-owned SUID and GUID binaries
+find / -type f \( -perm -g+s -a -gid 0 \) -o \( -perm -u+s -a -uid 0 \) -exec ls -l {} \; 2>/dev/null 
 
 # look for access to file that doesn't exist, but we might control
 strace /usr/local/bin/suid-so 2>&1 | grep -iE "open|access|no such file"
@@ -2792,6 +2834,11 @@ sudo iptables -t nat -A POSTROUTING -j MASQUERADE
 sudo iptables -I FORWARD -j ACCEPT
 # default policy to allow forwarding
 sudo iptables -P FORWARD ACCEPT
+```
+
+**NOTE**: to forward IP packets (when using `MASQUERADE` or `SNAT`), you must first enable it in the kernel via:
+
+```sh
 # Enable ip forwarding in kernel permanently (fwding req'd for MASQUERADE/SNAT)
 sudo sysctl -w net.ipv4.ip_forward=1
 # -- or temporarily until reboot --
@@ -2799,6 +2846,8 @@ echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
 # make iptables rules persistent (optional)
 sudo service iptables-persistent save
 ```
+
+
 
 ## 10.4. Bending with socat
 
@@ -2808,15 +2857,37 @@ On the jump-box:
 # basic port forwarding with socat listener
 sudo socat TCP4-LISTEN:80,fork TCP4:REMOTE_HOST_IP:80
 # optionally, do same thing bound to specific interface IP
-socat TCP4-LISTEN:80,bind=10.0.0.2,fork TCP4:REMOTE_HOST_IP:80
+sudo socat TCP4-LISTEN:80,bind=10.0.0.2,fork TCP4:REMOTE_HOST_IP:80
 
 # UDP relay
 socat -u UDP-RECVFROM:1978,fork,reuseaddr UDP-SENDTO:10.1.1.89:1978
+
+# IPv4 to IPv6 tunnel
+sudo socat TCP-LISTEN:110,reuseaddr,fork 'TCP6:[fe80::dead:beef%eth0]:110'
+
+# TCP to Unix Domain Socket
+socat TCP-LISTEN:1234,reuseaddr,fork UNIX-CLIENT:/tmp/foo
+# more secure version
+socat TCP-LISTEN:1234,reuseaddr,fork,su=nobody,range=127.0.0.0/8 UNIX-CLIENT:/tmp/foo
 ```
+
+General socat syntax
+
+```
+socat [options] <address> <address>
+```
+
+Where `<address>` is in the form:
+
+```
+protocol:ip:port
+```
+
+You can use `STDIN` as an address (equivalently, `-`)
 
 ## 10.5. Bending with rinetd
 
-Once installed, you can easily specify rinetd forwarding rules by changing the
+Once installed (`apt install -y rinetd`), you can easily specify rinetd forwarding rules by changing the
 config settings in `/etc/rinetd.conf`.
 
 Redirection rules are in the following format:
