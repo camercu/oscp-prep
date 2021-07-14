@@ -365,7 +365,7 @@ gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,htm
 # other good common list: /usr/share/seclists/Discovery/Web-Content/common.txt
 
 # adding a proxy to gobuster:
-# -p socks5://127.0.0.1:1080 (or --proxy)
+# --proxy socks5://127.0.0.1:1080
 
 # FFUF as a dirbuster through a SOCKS proxy
 ffuf -o ffuf.json -recursion -recursion-depth 2 -x socks5://localhost:1080 -e .php,.jsp,.txt,.cgi,.asp,.aspx -u http://$VICTIM_IP/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt
@@ -529,7 +529,7 @@ smbmap -H $VICTIM_IP
 smbmap -vH $VICTIM_IP
 
 # recursively list directory contents
-smbmap -RH $VICTIM_IP
+smbmap -R -H $VICTIM_IP
 
 # try executing a command using wmi (can try psexec with '--mode psexec')
 smbmap -x 'ipconfig' $VICTIM_IP
@@ -1372,6 +1372,16 @@ sc queryex type= service state= all | find /i "SERVICE_NAME:"
 sc queryex type= service state= inactive
 :: Check a service's config settings (look for unquoted service path in BINARY_PATH_NAME)
 sc qc SERVICENAME
+
+:: Vulnerable to Print NightMare (CVE-2021-1675, CVE-2021-34527)?
+:: Check running Print Spooler service using WMIC
+wmic service list brief | findstr "Spool"
+powershell Get-Service "Print Spooler"
+:: Check Registry to ensure NoWarningNoElevationOnInstall and UpdatePromptSettings
+:: either don't exist or are set to 0
+reg query "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Printers\PointAndPrint\NoWarningNoElevationOnInstall"
+reg query "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Printers\PointAndPrint\UpdatePromptSettings"
+powershell gci "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers\PointAndPrint"
 
 :: Drivers
 driverquery
