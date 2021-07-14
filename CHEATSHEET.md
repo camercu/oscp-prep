@@ -148,7 +148,7 @@ Other great cheetsheets:
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
   - [11.2. Convert text to Windows UTF-16 format on Linux](#112-convert-text-to-windows-utf-16-format-on-linux)
-  - [11.3. Extract UDP packet data](#113-extract-udp-packet-data)
+  - [11.3. Extract UDP pcap packet payload data](#113-extract-udp-pcap-packet-payload-data)
 
 # 3. Scanning and Enumeration
 
@@ -2114,7 +2114,7 @@ void inject() {
 
 ```sh
 # find all root-owned SUID and GUID binaries
-find / -type f \( -perm -g+s -a -gid 0 \) -o \( -perm -u+s -a -uid 0 \) -exec ls -l {} \; 2>/dev/null 
+find / -type f \( -perm -g+s -a -gid 0 \) -o \( -perm -u+s -a -uid 0 \) -exec ls -l {} \; 2>/dev/null
 
 # look for access to file that doesn't exist, but we might control
 strace /usr/local/bin/suid-so 2>&1 | grep -iE "open|access|no such file"
@@ -2987,7 +2987,7 @@ or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=
 echo "some text" | iconv -t UTF-16LE
 ```
 
-## 11.3. Extract UDP packet data
+## 11.3. Extract UDP pcap packet payload data
 
 Using scapy:
 
@@ -3004,3 +3004,14 @@ pcap = sys.argv[1]
 sniff(offline=pcap, prn=handler, filter="udp")
 ```
 
+Using Tshark from the command line:
+
+```bash
+tshark -r udp.pcap -w udp.hex -Y udp -T fields -e udp.payload | tr -d '\n' | xxd -r -p
+# -r = input file
+# -w = output file
+# -Y = wiresark display filter
+# -T = set the output format. "fields" shows only the fileds you select with -e
+# -e = chosen fields to display with '-T fields'
+# xxd: cannot combine '-r -p' like '-rp'
+```
