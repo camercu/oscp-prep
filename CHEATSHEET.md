@@ -3040,7 +3040,6 @@ Using scapy:
 
 ```python
 #!/usr/bin/env python3
-
 from scapy.all import *
 import sys
 
