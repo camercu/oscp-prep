@@ -75,7 +75,7 @@
           - exploitdb
           - eyewitness  # website snapshotting tool
           - fd-find
-          - feroxbuster
+          - feroxbuster  # autorecon dependency
           - ffuf  # autorecon dependency, web fuzzer
           - flameshot  # screenshot tool
           - fonts-wine

