@@ -150,8 +150,9 @@ Other great cheetsheets:
   - [10.9. Bending with netcat](#109-bending-with-netcat)
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
-  - [11.2. Convert text to Windows UTF-16 format on Linux](#112-convert-text-to-windows-utf-16-format-on-linux)
-  - [11.3. Extract UDP pcap packet payload data](#113-extract-udp-pcap-packet-payload-data)
+  - [11.2. Use Legacy Key Exchange Algorithm with SSH](#112-use-legacy-key-exchange-algorithm-with-ssh)
+  - [11.3. Convert text to Windows UTF-16 format on Linux](#113-convert-text-to-windows-utf-16-format-on-linux)
+  - [11.4. Extract UDP pcap packet payload data](#114-extract-udp-pcap-packet-payload-data)
 
 # 3. Scanning and Enumeration
 
@@ -3098,14 +3099,26 @@ Host *
 
 or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`
 
-## 11.2. Convert text to Windows UTF-16 format on Linux
+## 11.2. Use Legacy Key Exchange Algorithm with SSH
+
+If you try to ssh onto a host and get an error like:
+
+```
+Unable to negotiate with 10.11.1.252 port 22000: no matching key exchange method found. Their offer: diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+```
+
+You can get around this by adding the `-oKexAlgorithms=+diffie-hellman-group1-sha1` flag to your ssh command.
+
+You can also specify the `KexAlgorithms` variable in the ssh-config file.
+
+## 11.3. Convert text to Windows UTF-16 format on Linux
 
 ```sh
 # useful for encoding a powershell command in base64
 echo "some text" | iconv -t UTF-16LE
 ```
 
-## 11.3. Extract UDP pcap packet payload data
+## 11.4. Extract UDP pcap packet payload data
 
 Using scapy:
 
