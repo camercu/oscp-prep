@@ -3094,7 +3094,7 @@ Put this at the top of your `~/.ssh/config` to disable it for all hosts:
 ```
 Host *
    StrictHostKeyChecking no
-   UserKnownHostsFile=/dev/null
+   UserKnownHostsFile /dev/null
 ```
 
 or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`
@@ -3107,7 +3107,7 @@ If you try to ssh onto a host and get an error like:
 Unable to negotiate with 10.11.1.252 port 22000: no matching key exchange method found. Their offer: diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
 ```
 
-You can get around this by adding the `-oKexAlgorithms=+diffie-hellman-group1-sha1` flag to your ssh command.
+You can get around this by adding the `-oKexAlgorithms=+diffie-hellman-group1-sha1` flag to your ssh command. Be sure to pick one of the algorithms listed in their offer.
 
 You can also specify the `KexAlgorithms` variable in the ssh-config file.
 
