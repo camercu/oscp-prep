@@ -134,8 +134,8 @@ if [[ "$OS" == "linux" ]]; then
     alias lsn='sudo nc -lnvp'
 
     # create a pattern with metasploit's pattern_create.rb
-    alias pattcreat='/usr/share/metasploit-framework/tools/exploit/pattern_create.rb'
-    alias msp='pattcreat'
+    alias pattcreat='/usr/share/metasploit-framework/tools/exploit/pattern_create.rb -l'
+    alias pattoffs='/usr/share/metasploit-framework/tools/exploit/pattern_offset.rb -q'
 
     # start web server on port 80 or 443
     alias http80='sudo python3 -m http.server 80'
