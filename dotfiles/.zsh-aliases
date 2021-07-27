@@ -152,7 +152,7 @@ if [[ "$OS" == "linux" ]]; then
         alias cdthm='cd /mnt/vm-share/thm'
         alias cdhtb='cd /mnt/vm-share/htb'
 
-        alias smbsrv='impacket-smbserver'
+        alias smbsrv='impacket-smbserver share .'
 
         # take notes while you work
         alias notes='vim -p notes.md plb'
