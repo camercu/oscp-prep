@@ -29,7 +29,7 @@ Other great cheetsheets:
   - [3.10. 111 - RPCbind Enumeration](#310-111---rpcbind-enumeration)
   - [3.11. 119 - NNTP Enumeration](#311-119---nntp-enumeration)
   - [3.12. 135 - MSRPC Enumeration](#312-135---msrpc-enumeration)
-  - [3.13. 445 - SMB Enumeration](#313-445---smb-enumeration)
+  - [3.13. 139,445 - SMB Enumeration](#313-139445---smb-enumeration)
     - [3.13.1. Listing SMB Shares](#3131-listing-smb-shares)
     - [3.13.2. Interacting on SMB](#3132-interacting-on-smb)
   - [3.14. 1433 - Microsoft SQL Server Enumeration](#314-1433---microsoft-sql-server-enumeration)
@@ -151,7 +151,7 @@ Other great cheetsheets:
   - [10.9. Bending with netcat](#109-bending-with-netcat)
 - [11. Miscellaneous](#11-miscellaneous)
   - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
-  - [11.2. Use Legacy Key Exchange Algorithm with SSH](#112-use-legacy-key-exchange-algorithm-with-ssh)
+  - [11.2. Use Legacy Key Exchange Algorithm or Cipher with SSH](#112-use-legacy-key-exchange-algorithm-or-cipher-with-ssh)
   - [11.3. Convert text to Windows UTF-16 format on Linux](#113-convert-text-to-windows-utf-16-format-on-linux)
   - [11.4. Extract UDP pcap packet payload data](#114-extract-udp-pcap-packet-payload-data)
 
@@ -529,7 +529,39 @@ lsaenumsid        # get SIDs
 lookupsids <sid>  # lookup SID
 ```
 
-## 3.13. 445 - SMB Enumeration
+Users enumeration
+
+- **List users**: `querydispinfo` and `enumdomusers`
+- **Get user details**: `queryuser <0xrid>`
+- **Get user groups**: `queryusergroups <0xrid>`
+- **GET SID of a user**: `lookupnames <username>`
+- **Get users aliases**: `queryuseraliases [builtin|domain] <sid>`
+
+Groups enumeration
+
+- **List groups**: `enumdomgroups`
+- **Get group details**: `querygroup <0xrid>`
+- **Get group members**: `querygroupmem <0xrid>`
+
+Aliasgroups enumeration
+
+- **List alias**: `enumalsgroups <builtin|domain>`
+- **Get members**: `queryaliasmem builtin|domain <0xrid>`
+
+Domains enumeration
+
+- **List domains**: `enumdomains`
+- **Get SID**: `lsaquery`
+- **Domain info**: `querydominfo`
+
+More SIDs
+
+- **Find SIDs by name**: `lookupnames <username>`
+- **Find more SIDs**: `lsaenumsid`
+- **RID cycling (check more SIDs)**: `lookupsids <sid>`
+
+
+## 3.13. 139,445 - SMB Enumeration
 
 Use `enum4linux` or `smbmap` to gather tons of basic info (users, groups,
 shares, etc.)
@@ -562,6 +594,38 @@ enum4linux -u guest -aMld $VICTIM_IP | tee enum4linux.log
 # nmap script scans
 nmap --script="safe and smb-*" -n -v -p 445 $VICTIM_IP
 ```
+
+For port 139 (netbios), you can also gather information like so:
+
+```sh
+# connect without creds (null session)
+rpcclient -N $VICTIM_IP
+
+# connect without creds (null session)
+smbclient -N -L //$VICTIM_IP
+
+# enum4linux will also gather tons of info!
+# but smbmap will not :(
+
+# dump user information
+# can also add creds: [[domain/]username[:password]@]<VictimIP>
+impacket-samrdump -port 139 $VICTIM_IP
+```
+
+**NOTE:** In recent versions of Kali, you might see an error message like:
+
+```
+protocol negotiation failed: NT_STATUS_CONNECTION_DISCONNECTED
+```
+
+When connecting with smbclient. This is due to the fact that NTLMv1 (insecure) protocol was disabled by default. You can turn it back on by adding the following settings under `GLOBAL` in `/etc/samba/smb.conf`
+
+```
+client min protocol = CORE
+client max protocol = SMB3
+```
+
+Or you can add the flags `-m SMB2` or `-m SMB3` to your invocation of `smbclient` on the command line. However, this 2nd method does not apply to other tools like `enum4linux`
 
 ### 3.13.1. Listing SMB Shares
 
@@ -3278,7 +3342,7 @@ Host *
 
 or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`
 
-## 11.2. Use Legacy Key Exchange Algorithm with SSH
+## 11.2. Use Legacy Key Exchange Algorithm or Cipher with SSH
 
 If you try to ssh onto a host and get an error like:
 
@@ -3289,6 +3353,14 @@ Unable to negotiate with 10.11.1.252 port 22000: no matching key exchange method
 You can get around this by adding the `-oKexAlgorithms=+diffie-hellman-group1-sha1` flag to your ssh command. Be sure to pick one of the algorithms listed in their offer.
 
 You can also specify the `KexAlgorithms` variable in the ssh-config file.
+
+Similarly, if you get an error like:
+
+```
+Unable to negotiate with 10.11.1.115 port 22: no matching cipher found. Their offer: aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,arcfour,aes192-cbc,aes256-cbc
+```
+
+You can get around this by adding the `-c aes256-cbc` flag to your ssh command. Again, be sure to use one of the ciphers listed in their offer.
 
 ## 11.3. Convert text to Windows UTF-16 format on Linux
 
