@@ -2808,7 +2808,7 @@ If large files fail to upload properly, change the `php.ini` or `.user.ini` sett
 
 ```sh
 # on kali, find and edit file
-find / -iname php.ini 2>/dev/null
+locate php.ini
 sudo vim /etc/php/7.4/apache2/php.ini
 # in php.ini, change the following:
 memory_limit = -1         # disable php memory limit
