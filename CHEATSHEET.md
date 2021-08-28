@@ -394,7 +394,7 @@ nikto -o nikto.txt --maxtime=180s -C all -h $VICTIM_IP
 ### 3.7.4. WordPress Enumeration
 
 ```sh
-wpscan --url http://$VICTIM_IP/
+wpscan --update --url http://$VICTIM_IP/
 
 # --enumerate options:
 # p = Popular plugins
