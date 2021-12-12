@@ -2520,7 +2520,20 @@ $m|sort-object OU -unique|?{write-host ([string]::Format("[OU] {0}: {1}",$_.OU,$
 ## 6.1. Basic Linux Post-Exploit Enumeration
 
 ```sh
+# minimum commands
+unset HISTFILE
+uname -a
+cat /etc/*release
+set                # or 'env'
+ps -ef wwf
+ifconfig -a        # or ip a
+netstat -untap
+w
+last
+
+
 # unset history (shell command logging)
+unset HISTFILE
 export HISTFILE=
 unset HISTFILE HISTSIZE HISTFILESIZE PROMPT_COMMAND
 export HISTCONTROL=ignorespace
@@ -2541,6 +2554,7 @@ cat /etc/hostname
 # OS Version info
 uname -a
 cat /etc/*release
+cat /etc/*lease*
 cat /etc/issue
 
 # check sudo permissions
@@ -2553,6 +2567,9 @@ sudo -l
 sudoedit -s /
 # Vulnerable if it says 'sudoedit: /: not a regular file' instead of 'usage:...'
 # use exploit: https://github.com/CptGibbon/CVE-2021-3156.git
+
+# running processes
+ps -ef wwf
 
 # Credentials
 ls -l /home/*/.ssh/id*  # ssh keys
@@ -2594,12 +2611,6 @@ for user in $(cut -f1 -d: /etc/passwd); do crontab -u $user -l; done 2>/dev/null
 
 # find all SUID and SGID binaries
 find / -type f -a \( -perm -u+s -o -perm -g+s \) -exec ls -l {} \; 2> /dev/null
-
-# Get SELinux status
-getenforce
-
-# running processes
-ps -ef wwf
 
 # shell history
 cat /home/*/.*history
@@ -2689,6 +2700,9 @@ cat /proc/meminfo
 
 # Message of the Day
 cat /etc/motd
+
+# Get SELinux status
+getenforce
 ```
 
 ## 6.2. Watching for Linux Process Changes
