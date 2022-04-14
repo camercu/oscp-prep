@@ -51,6 +51,16 @@ wpscan --update --url http://$VICTIM_IP/ | tee wpscan.log
 # see cheatsheet for agressive scan
 ```
 
+- [ ] Check out robots.txt (should be in nmap output)
+- [ ] Examine SSL certs for emails & domains
+- [ ] Look for software versions (help/about pages?), check in `searchsploit`
+- [ ] View source, look for link directories and juicy comments
+- [ ] Try default creds for login portals
+- [ ] Try SQLi in all form fields and URL query params
+- [ ] Try LFI/RFI in URL query params
+- [ ] Try command injection in form fields
+- [ ] Try NoSQL injection in form fields
+
 ## SMB
 
 ```sh
@@ -65,8 +75,38 @@ smbmap -H $VICTIM_IP
 # recursively list directory contents
 smbmap -R -H $VICTIM_IP
 
+# tar entire smb share locally
+smbclient //10.10.10.123/SHARENAME -N -Tc smbfiles.tar
+
 # interactive SMB session without creds
 smbclient -N //$VICTIM_IP/SHARENAME
 # or with creds
 smbclient '\\TARGET_IP\dirname' -W DOMAIN -U username
+> help # view available commands
+# ls, cd, get, put
+# recursively get all files:
+> recurse on
+> prompt off
+> mget *
 ```
+
+## Linux enumeration
+
+```sh
+# basic SA
+env
+uname -a
+cat /etc/*release
+ip a
+netstat -untap
+ps -ef wwf
+sudo -l
+cat /etc/passwd
+cat /etc/crontab
+
+# find world-writable files
+find / -mount -type f -perm -o+w 2>/dev/null
+```
+
+- [ ] Look for plaintext credentials in config files, web source, shell history
+- [ ] [Download](tools/linux/get-linpeas.sh) and run `linpeas.sh` on the host
