@@ -434,7 +434,7 @@ wpscan --update --url http://$VICTIM_IP/
 # aggressive scan:
 wpscan --update \
        --url http://$VICTIM_IP/ \
-       --enumerate ap,at,cb,dbe \
+       --enumerate ap,at,cb,dbe,u \
        --detection-mode aggressive \
        --random-user-agent \
        --plugins-detection aggressive \
@@ -1319,6 +1319,8 @@ hashcat --example-hashes | grep -FB2 ' $1$'  # "-F"=force raw string lookup
 
 # specify mangling rules with addition of
 -r /usr/share/hashcat/rules/best64.rule
+# more extensive rule list:
+-r /usr/share/hashcat/rules/d3ad0ne.rule
 
 # basic crack syntax:
 # hashcat -m MODE [OPTIONS] HASH/FILE WORDLIST [WORDLIST...]
@@ -1336,12 +1338,36 @@ hashcat --restore
 # showing cracked hashes, with username, from /etc/shadow's sha512crypt hashes
 # hashcat has a potfile (hashcat.potfile) to store old passwords
 hashcat -m1800 --show --username --outfile-format=2 shadow
+
+# crack all LANMAN hashes with hashcat
+# '-1' flag creates a custom alphabet to use in mask as '?1', can do -2, -3
+# '--increment/-i' starts at zero-length and increments to full length of mask
+# '--potfile-path' specfies custom potfile
+hashcat -a 3 -m 3000 -1 "?u?d?s" --increment --potfile-path hashcat.potfile customer.ntds "?1?1?1?1?1?1?1"
+
+# create bruteforce wordlist for all passwords starting with "summer" and ending in 2-4 digits
+# '--increment-min' specifies min length to start mask bruteforce
+hashcat --stdout -a 3 --increment --increment-min 2 "summer?d?d?d?d" > wordlist
 ```
 
 NOTE: hashcat doesn't feed usernames into the wordlists automatically like john
 does, nor does it automatically reverse the usernames. To do this, you have to
 manually add the usernames as an additional wordlist file, and add mangling
 rules.
+
+**Attack modes:**
+
+- `0` - Straight: dictionary/wordlist, tries each word from every wordlist file once
+- `1` - Combinator: using 2 wordlist files, each word from first file is prepended to each word in second file; can use same file twice
+- `3` - Mask: brute force with characters fitting the supplied mask (in place of wordlist)
+  - `?l` = lowercase ASCII letters
+  - `?u` = uppercase ASCII letters
+  - `?d` = digits 0-9
+  - `?s` = printable special characters + space
+  - `?a` = all of `?l` + `?u` + `?d` + `?s`
+  - Example: 1 uppercase, followed by 2 lowercase, followed by 3 digits: `?u?l?l?d?d?d`
+- `6` - Hybrid Wordlist + Mask: append mask to each word in wordlist
+- `7` - Hybrid Mask + Wordlist: prepend mask to each word in wordlist
 
 ### 4.2.3. MS SQL Server Bruteforcing
 
