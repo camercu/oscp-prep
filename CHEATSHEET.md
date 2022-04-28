@@ -769,7 +769,7 @@ snmptranslate -TB 'vacm.*table'
 
 # find out what directories are searched for MIBS:
 net-snmp-config --default-mibdirs # only if installed
-snmptranslate -Dinit_mib .1.3 2>&1 |grep MIBDIR
+snmptranslate -Dinit_mib .1.3 |& grep MIBDIR
 ```
 
 Also search for OID info at [http://www.oid-info.com/](http://www.oid-info.com/basic-search.htm)
