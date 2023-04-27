@@ -22,7 +22,7 @@ These are some commands I use all the time:
 
 ```sh
 # Prefer rustscan for speed, but sometimes too fast and ports not detected
-sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -n -Pn -sV -sC -oA tcp-all
+sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -v -n -Pn --script "default,safe,vuln" -sV -oA tcp-all
 
 # nmap scripts are located at:
 /usr/share/nmap/scripts
@@ -46,9 +46,6 @@ whatweb -v -a3 http://10.10.10.123 | tee whatweb.log
 ulimit -n 8192 # prevent file access error during scanning
 gobuster dir -ezqrkw /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 100 -x "html,htm,txt,sh,php,cgi" -o gobust.log -u http://10.10.10.123
 
-# Wordpress sites:
-wpscan --update --url http://$VICTIM_IP/ | tee wpscan.log
-# see cheatsheet for agressive scan
 ```
 
 - [ ] Check out robots.txt (should be in nmap output)
@@ -60,6 +57,14 @@ wpscan --update --url http://$VICTIM_IP/ | tee wpscan.log
 - [ ] Try LFI/RFI in URL query params
 - [ ] Try command injection in form fields
 - [ ] Try NoSQL injection in form fields
+
+Attacking common web frameworks:
+
+```sh
+# Wordpress sites:
+wpscan --update --url http://$VICTIM_IP/ | tee wpscan.log
+# see cheatsheet for agressive scan
+```
 
 ## SMB
 
