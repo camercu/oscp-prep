@@ -1,4 +1,4 @@
-# OSCP Prep
+# 1 OSCP Prep
 
 My extended cheatsheet is [CHEATSHEET.md](CHEATSHEET.md).
 
@@ -14,11 +14,11 @@ Here is my general workflow:
 8. Perform OS- or service-specific privesc to get root!
 9. If box is part of network (e.g. Active Directory), gather useful data (creds) to help pivot.
 
-# Quick Reference
+# 2 Quick Reference
 
 These are some commands I use all the time:
 
-## Scanning
+## 2.1 Scanning
 
 ```sh
 # Prefer rustscan for speed, but sometimes too fast and ports not detected
@@ -36,7 +36,7 @@ nmap --script-help="nfs-*"
 - [ ] Don't forget UDP!
 - [ ] (advanced) Don't forget IPv6
 
-## Web Services
+## 2.2 Web Services
 
 ```sh
 # check what technologies a website is using
@@ -66,7 +66,7 @@ wpscan --update --url http://$VICTIM_IP/ | tee wpscan.log
 # see cheatsheet for agressive scan
 ```
 
-## SMB
+## 2.3 SMB
 
 ```sh
 # general enumeration scan. Also try with usernames: guest, administrator
@@ -95,7 +95,7 @@ smbclient '\\TARGET_IP\dirname' -W DOMAIN -U username
 > mget *
 ```
 
-## Linux enumeration
+## 2.4 Linux enumeration
 
 ```sh
 # basic SA
