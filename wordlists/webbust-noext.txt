@@ -162,7 +162,6 @@ packages
 language
 icon
 frontend
-favicon
 events
 documents
 translations
