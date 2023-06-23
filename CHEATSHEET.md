@@ -614,7 +614,7 @@ Get a wordlist and emails from the site using `cewl`:
 
 ```sh
 # save emails to file, min word length = 5
-cewl -e --email_file emails.txt -m 5  http://VICTIM_IP | tee cewl.txt
+cewl -e --email_file emails.txt -m 5 -w cewl.txt http://VICTIM_IP
 ```
 
 Hydra is great for hitting web login forms. To use it, first capture a failed login using Burp. You need that to see how it submits the login request and to see how to identify a failed login.
@@ -2640,9 +2640,9 @@ rules.
 # -w FILE : write words to file
 # --lowercase : convert all words to lowercase
 # --with-numbers : include words with numbers
-# -d NUM : max depth to spider
+# -d NUM : max depth to spider (0 = only that page)
 # -m NUM : minimum word length
-cewl -e --email_file emails.txt -w cewl.txt --lowercase --with-numbers -d 3 -m 5 URL
+cewl -e --email_file emails.txt -w cewl.txt --lowercase --with-numbers -d 1 -m 5 URL
 ```
 
 **`crunch`**:
