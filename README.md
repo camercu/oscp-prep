@@ -48,7 +48,7 @@ gobuster dir -ezqrkw /usr/share/seclists/Discovery/Web-Content/directory-list-2.
 
 ```
 
-- [ ] Check out robots.txt (should be in nmap output)
+- [ ] Check out `robots.txt` and `sitemap.xml` (should be in nmap output)
 - [ ] Examine SSL certs for emails & domains
 - [ ] Look for software versions (help/about pages?), check in `searchsploit`
 - [ ] View source, look for link directories and juicy comments

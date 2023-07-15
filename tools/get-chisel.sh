@@ -24,3 +24,5 @@ mv chisel-linux_amd64 chisel64
 mv chisel-windows_386 chisel32.exe
 mv chisel-windows_amd64 chisel64.exe
 
+# make executable
+chmod +x chisel32 chisel64
